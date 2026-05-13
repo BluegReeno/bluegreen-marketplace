@@ -1,6 +1,13 @@
 # Claude Code local settings
 .claude/settings.local.json
 
+# Credentials — NEVER commit these
+.edifice-credentials.json
+*.credentials.json
+config.json
+.env
+.env.*
+
 # Session handoff (ephemeral, not versioned)
 /HANDOFF.md
 
