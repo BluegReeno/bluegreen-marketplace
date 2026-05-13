@@ -19,7 +19,8 @@ One renderer already uses docxtpl with a branded template:
 - `render_cr_visite.py` — docxtpl + `templates/suivi_chantier.docx` ✅
 
 The dispatcher `render_report.py` reads `project_type` from `context.json` and routes
-to the right renderer. **It must not be modified.**
+to the right renderer. **It must not be modified** (except for org-aware template path
+resolution in Step 5).
 
 ### Why migrate to docxtpl
 
@@ -39,12 +40,13 @@ plugins/edifice-mission-report/
 │   │   ├── diagnostic.docx     ← TO CREATE
 │   │   ├── suivi_chantier.docx ← MOVE from templates/ root
 │   │   └── devis.docx          ← TO CREATE
-│   └── blue-green/             ← placeholder, empty for now
-├── render_report.py            ← update: org-aware path resolution
+│   └── blue-green/             ← placeholder only (.gitkeep)
+├── render_report.py            ← update: org-aware path resolution + --org flag
 ├── render_diagnostic.py        ← migrate to docxtpl
 ├── render_cr_visite.py         ← update: new template path
 ├── render_devis.py             ← migrate to docxtpl
-└── skills/edifice/SKILL.md     ← update: document org override + trigger phrases
+├── tests/                      ← test instructions (see tests/README.md)
+└── skills/edifice/SKILL.md     ← update: org override + trigger phrases
 ```
 
 Org detection in `render_report.py` — cascade (do not over-engineer):
@@ -64,27 +66,65 @@ The `project_type` comes from `context.json` — already works, no change needed
 ### Step 1 — Reorganize templates directory
 
 Move `templates/suivi_chantier.docx` → `templates/ic-ingenieurs/suivi_chantier.docx`.
-Create `templates/blue-green/` placeholder (empty dir with `.gitkeep`).
-Update `render_report.py` to pass the template path from the new location to `render_cr`.
+Create `templates/blue-green/.gitkeep` (empty placeholder).
+Update `render_report.py` to resolve template path via `_template_path(org, project_type)`.
 
 ### Step 2 — Create `templates/ic-ingenieurs/diagnostic.docx`
 
-**This is the hardest step.** Create a branded Word template for the diagnostic report.
+**This is the most important and hardest step.** Create a branded Word template for
+the diagnostic report. **The first page must look like a professional IC Ingénieurs
+Conseils document** — matching the visual identity of their existing reports.
 
-IC brand reference (extract from existing `render_diagnostic.py`):
-- `IC_BLUE = RGBColor(0x1F, 0x3A, 0x5F)` — headers, table borders
-- `IC_ORANGE = RGBColor(0xE8, 0x6A, 0x1A)` — IE badges, accents
-- Alternating row: `F0F4F8`
-- Font: Calibri
+#### First page — IC Ingénieurs Conseils branding requirements
 
-**Sections and docxtpl tags** (all `{{ }}` are Jinja2, `{% %}` are loops):
+The first page is the client-facing cover. It must include:
+- **Logo IC Ingénieurs Conseils** — top left or top center
+- **Document type** (large, prominent): e.g. "RAPPORT DE DIAGNOSTIC STRUCTURAL"
+- **Service title**: `{{ titre_service }}`
+- **Client block**: Nom client (`{{ client }}`), résidence (`{{ residence }}`)
+- **Address**: `{{ adresse }}`
+- **Reference / dossier**: `{{ ref_dossier }}`
+- **Date de visite**: `{{ date_visite }}`
+- IC Ingénieurs footer with address/contact
+
+**Reference documents to study for the cover page design** (open in Word before
+creating the template):
+
+1. `plugins/edifice-mission-report/templates/ic-ingenieurs/suivi_chantier.docx`
+   — already IC branded, same cover page structure. **Primary reference.**
+
+2. The IC Ingénieurs reference template in the Edifice repo:
+   `../edifice/agent/document-generator/organizations/ic-ingenieurs/templates/rapport-diag-template.docx`
+   — contains the full IC diagnostic layout including cover page.
+   Open it in Word to extract: logo placement, font sizes, color blocks, header/footer.
+
+3. Real IC reports in Google Drive (reference only — do not include confidential data):
+   ```
+   ~/Library/CloudStorage/GoogleDrive-renaud@bluegreen.ai/
+     Drive partagés/PARTENAIRES/IC Ingénieurs Conseils/Template IC/
+   ```
+
+**IC brand colors** (from `render_diagnostic.py`):
+- `IC_BLUE = #1F3A5F` — headers, borders, cover background block
+- `IC_ORANGE = #E86A1A` — IE badges, accent lines, section separators
+- Alternating table row: `#F0F4F8`
+- Font: Calibri (body), Calibri Bold (headings)
+
+#### Body sections and docxtpl tags
 
 ```
-[Page de garde]
+[Page de garde — full page]
+  [Logo block — top]
+  [Color band or background — IC blue]
+  RAPPORT DE DIAGNOSTIC STRUCTURAL
   {{ titre_service }}
-  {{ client }}         {{ residence }}
-  {{ adresse }}        {{ ref_dossier }}
-  {{ date_visite }}
+  ─────────────────────────────────
+  Client     : {{ client }}
+  Résidence  : {{ residence }}
+  Adresse    : {{ adresse }}
+  Dossier    : {{ ref_dossier }}
+  Date visite: {{ date_visite }}
+  [Footer with IC contact]
 
 [1. Objet de la mission]
   {{ objet_visite }}
@@ -93,14 +133,19 @@ IC brand reference (extract from existing `render_diagnostic.py`):
   {{ description_batiment }}
 
 [3. Échelle d'évaluation IE]
-  Static table (IE 1–5 with color badges) — hardcoded in template, no tags
+  Static table (IE 1–5 with color-coded rows) — hardcoded in template, no tags
+  | IE 1 | Risque de ruine immédiate | rouge |
+  | IE 2 | Désordres graves          | orange |
+  | IE 3 | Dégradation modérée       | jaune |
+  | IE 4 | Dégradation légère        | vert clair |
+  | IE 5 | Bon état                  | vert |
 
 [4. Résultats de la visite]
   {% for obs in observations %}
-  Row 1: {{ obs.ref }} | {{ obs.zone }} | {{ obs.localisation }} | IE {{ obs.ie }}
-  Row 2 (merged): {{ obs.desordre }}
-  Row 3 (merged): Photo: {{ obs.photo_image }}   ← InlineImage(doc, path, width=Cm(8))
-  Row 4 (merged): Action : {{ obs.action }}
+  Row header: {{ obs.ref }} | {{ obs.zone }} | {{ obs.localisation }} | IE {{ obs.ie }}
+  Row (merged): {{ obs.desordre }}
+  Row (merged): {{ obs.photo_image }}   ← InlineImage(doc, path, width=Cm(8))
+  Row (merged): Action : {{ obs.action }}
   {% endfor %}
 
 [5. Synthèse]
@@ -109,16 +154,6 @@ IC brand reference (extract from existing `render_diagnostic.py`):
 [6. Conclusion et recommandations]
   {{ conclusion }}
 ```
-
-**Reference template to open and study** (IC branded, already deployed):
-```
-plugins/edifice-mission-report/templates/ic-ingenieurs/suivi_chantier.docx
-```
-Replicate its page layout, header, footer, and font style.
-
-**Also study** (different document-generator approach):
-The `agent/document-generator/` directory in `BluegReeno/edifice` repo has IC templates
-and a `render_ic_report.py` script — useful reference for IC brand conventions.
 
 ### Step 3 — Migrate `render_diagnostic.py` to docxtpl
 
@@ -133,6 +168,7 @@ def render_diagnostic(context: dict, photos_dir: str = ".", output_path: str = "
 ```python
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Cm
+from pathlib import Path
 
 TEMPLATE_PATH = Path(__file__).parent / "templates" / "ic-ingenieurs" / "diagnostic.docx"
 
@@ -153,19 +189,22 @@ def _build_context(context, photos_dir, doc):
 ```
 
 **Dependencies** (update `requirements.txt`):
-- Remove: `python-docx`, `lxml` (not needed for docxtpl)
+- Remove: `python-docx`, `lxml` (no longer needed)
 - Add: `docxtpl>=0.18`
-- Keep: `pillow` (for image handling in docxtpl)
+- Keep: `pillow`
 
 ### Step 4 — Create `templates/ic-ingenieurs/devis.docx` + migrate `render_devis.py`
 
-Same approach as Step 2+3 but for the devis report.
+Same approach as Step 2+3. Cover page follows the same IC branding rules.
+Document type line: "RAPPORT PRÉLIMINAIRE — DEMANDE DE DEVIS".
 
 **Sections and tags:**
 ```
 [Page de garde]
-  "RAPPORT PRÉLIMINAIRE — DEMANDE DE DEVIS"
-  {{ titre_service }} | {{ client }} | {{ adresse }} | {{ date_visite }} | {{ technicien }}
+  [IC logo + branding — same as diagnostic]
+  RAPPORT PRÉLIMINAIRE — DEMANDE DE DEVIS
+  {{ titre_service }}
+  Client : {{ client }} | {{ adresse }} | {{ date_visite }} | Technicien : {{ technicien }}
 
 [1. Contexte client]
   Tableau : {{ client }} | {{ type_acteur }} | {{ interlocuteur_nom }} | {{ interlocuteur_role }} | {{ interlocuteur_contact }}
@@ -174,11 +213,12 @@ Same approach as Step 2+3 but for the devis report.
   Tableau : {{ type_mission }} | {{ declencheur }} | {{ livrable }} | {{ urgence }}
 
 [3. Bâtiment]
-  Tableau : {{ adresse }} | {{ type_batiment }} | {{ annee_construction }} | {{ nb_etages }} | {{ description_batiment }}
+  Tableau : {{ adresse }} | {{ type_batiment }} | {{ annee_construction }} | {{ nb_etages }}
+  {{ description_batiment }}
 
 [4. Documents fournis]
-  {% for doc in documents_fournis %}
-  {{ doc.document }} | {{ "✓ Oui" if doc.fourni else "✗ Non" }}
+  {% for d in documents_fournis %}
+  {{ d.document }} | {{ "✓ Oui" if d.fourni else "✗ Non" }}
   {% endfor %}
 
 [5. Observations terrain]
@@ -196,22 +236,25 @@ Same approach as Step 2+3 but for the devis report.
   {% endfor %}
 
 [Validation]
-  {{ technicien }} | {{ date_visite }} | {{ date_envoi }}
+  Technicien : {{ technicien }} | Date visite : {{ date_visite }} | Date envoi : {{ date_envoi }}
 ```
 
 ### Step 5 — Update `render_report.py` for org-aware dispatch
 
 ```python
+import os
+from pathlib import Path
+
 PLUGIN_DIR = Path(__file__).resolve().parent
 
 def _template_path(org: str, project_type: str) -> Path:
     path = PLUGIN_DIR / "templates" / org / f"{project_type}.docx"
     if not path.exists():
-        raise SystemExit(f"Template not found: {path}\nSet EDIFICE_ORG or add --org flag.")
+        raise SystemExit(f"Template not found: {path}\nSet EDIFICE_ORG or use --org flag.")
     return path
 
-def render(context, photos_dir, output_path):
-    org = context.get("org") or os.environ.get("EDIFICE_ORG") or "ic-ingenieurs"
+def render(context, photos_dir, output_path, org=None):
+    org = org or context.get("org") or os.environ.get("EDIFICE_ORG") or "ic-ingenieurs"
     project_type = context.get("project_type", "diagnostic")
 
     if project_type == "diagnostic":
@@ -226,49 +269,109 @@ def render(context, photos_dir, output_path):
     elif project_type == "devis":
         from render_devis import render_devis
         render_devis(context, photos_dir=photos_dir, output_path=output_path)
+
+    else:
+        raise SystemExit(f"Unknown project_type: {project_type!r}")
 ```
 
-Add `--org` CLI flag to `render_report.py` for override from command line.
+Add `--org` CLI flag to `argparse` in `main()`.
 
 ### Step 6 — Update `SKILL.md`
 
-In the `/edifice report` section, document:
-1. That template selection is automatic from `context.json.project_type`
+In the `/edifice report` section:
+1. Template selection is automatic from `context.json.project_type`
 2. Org override: `EDIFICE_ORG=ic-ingenieurs` env var or `--org ic-ingenieurs` flag
-3. Update the `uv run` command to use `docxtpl` instead of `python-docx`
-4. Natural language triggers to add to `description:` field:
-   - "génère le rapport", "generate the report", "create the report"
-   - "faire le rapport", "rapport de visite", "diagnostic report"
+3. Update `uv run` invocation: `--with "docxtpl>=0.18"` replaces `--with "python-docx>=1.1"`
+4. Add natural language triggers to `description:` field:
+   - "génère le rapport", "generate the report", "create the report", "faire le rapport"
 
-Also update the `uv run` invocation in SKILL.md:
 ```bash
-# OLD
-uv run --with "python-docx>=1.1" --with pillow python3 $PLUGIN_DIR/render_report.py ...
-
-# NEW
-uv run --with "docxtpl>=0.18" --with pillow python3 $PLUGIN_DIR/render_report.py ...
+# Updated uv run command in SKILL.md
+uv run \
+  --with "docxtpl>=0.18" \
+  --with pillow \
+  python3 $PLUGIN_DIR/render_report.py \
+  mission/context.json \
+  --photos-dir mission/photos \
+  --output mission/rapport.docx
 ```
 
 ---
 
-## Test data available
+## Test data
 
-**Diagnostic (primary test — most complete):**
+See `plugins/edifice-mission-report/tests/README.md` for full instructions.
+
+### Test 1 — `diagnostic` (primary)
+
+**Mission**: Diagnostic structurel planchers bois, Rue de Varenne, Paris 7e
+**Format**: v2.0 (current — `observations[]`, top-level `project_type`)
+**Path**:
 ```
 ~/Library/CloudStorage/GoogleDrive-renaud@bluegreen.ai/
   Drive partagés/PARTENAIRES/IC Ingénieurs Conseils/Dev-xxx-Diag rue de varenne/
-  mission/context.json     ← 8 observations, synthese rédigée, project_type=diagnostic
-  mission/photos/          ← 28 photos terrain
+  mission/context.json        ← 8 observations, synthèse rédigée
+  mission/photos/             ← 28 photos terrain
+```
+**Validation**: compare output with `mission/rapport.docx` (current programmatic output).
+
+### Test 2 — `suivi_chantier`
+
+**Mission**: Visite chantier ferraillage bâtiment C, Le Gros Saule, Aulnay-sous-Bois (2026-04-17)
+**Format**: ⚠️ **v1.0 (old)** — uses `notes[]` instead of `observations[]`, `project_type`
+nested as `mission.type`
+**Path**:
+```
+~/Library/CloudStorage/GoogleDrive-renaud@bluegreen.ai/
+  Drive partagés/PARTENAIRES/IC Ingénieurs Conseils/
+  IC-LeGrosSaule_Aulnay_2026/VisitesChantier/
+  mission-2026-04-17-Visite-chantier---ferraillage-/
+  context.json                ← 28 notes
+  photos/                     ← 69 photos
 ```
 
-**Suivi chantier:**
-```
-~/edifice-missions/yani-savigny-2026-05-06/mission/
-  context.json             ← 6 notes, project_type=suivi_chantier
-  photos/                  ← 18 photos
+**⚠️ v1.0 format handling required**: add `normalize_v1(ctx)` in `render_report.py`
+that converts old format to v2.0 before dispatch:
+```python
+def normalize_v1(ctx):
+    """Upgrade v1.0 context.json to v2.0 format."""
+    if ctx.get("edifice_version", "2.0") != "1.0":
+        return ctx
+    mission = ctx.get("mission", {})
+    building = ctx.get("building", {})
+    observations = []
+    for note in ctx.get("notes", []):
+        observations.append({
+            "ref": note.get("ref", ""),
+            "localisation": "",
+            "etage_facade": "",
+            "observation": note.get("description", ""),
+            "action": "",
+            "photo": note.get("photos", [""])[0].replace("photos/", "") if note.get("photos") else "",
+        })
+    return {
+        "edifice_version": "2.0",
+        "project_type": mission.get("type", "suivi_chantier"),
+        "titre_service": mission.get("name", ""),
+        "client": "",
+        "residence": building.get("name", ""),
+        "adresse": building.get("address", ""),
+        "ref_dossier": "",
+        "date_visite": (mission.get("visited_at") or "")[:10],
+        "participants": [],
+        "objet_visite": mission.get("brief", ""),
+        "synthese": "",
+        "conclusion": "",
+        "observations": observations,
+    }
 ```
 
-Compare output with `mission/rapport.docx` (current programmatic output) to validate.
+**Reference IC suivi_chantier template** (study before creating the new one):
+```
+mission-2026-04-17-Visite-chantier---ferraillage-/template_cr_visite_aulnay.docx
+```
+This is Laurent's current working template. The new `templates/ic-ingenieurs/suivi_chantier.docx`
+should match its visual style.
 
 ---
 
@@ -279,18 +382,19 @@ Compare output with `mission/rapport.docx` (current programmatic output) to vali
 - `render_cr(context, photos_dir, output_path, template_path)` signature must be preserved
 - `render_devis(context, photos_dir, output_path)` signature must be preserved
 - `uv run` invocation in SKILL.md is the user-facing entry point — must stay working
-- `python-docx` import in `render_diagnostic.py` must be replaced (no mixed deps)
+- All `python-docx` imports must be removed from migrated renderers
 - `requirements.txt` must reflect the new dep set
 
 ---
 
 ## What NOT to build
 
-- No Blue Green templates yet (placeholder dir only)
+- No Blue Green templates (placeholder dir + `.gitkeep` only)
 - No org auto-detection from Supabase profile (future improvement)
 - No new CLI arguments beyond `--org`
 - No changes to `pull_mission.py`, `push_mission.py`, `pair.py`
 - No changes to the schema-contract (no Supabase schema touched)
+- Do not add `devis` test data — skip devis validation for now (no rich test mission available)
 
 ---
 
@@ -299,21 +403,28 @@ Compare output with `mission/rapport.docx` (current programmatic output) to vali
 | File | Why |
 |------|-----|
 | `plugins/edifice-mission-report/render_report.py` | Dispatcher — understand routing |
-| `plugins/edifice-mission-report/render_cr_visite.py` | Reference docxtpl renderer already working |
+| `plugins/edifice-mission-report/render_cr_visite.py` | Reference docxtpl renderer (working) |
 | `plugins/edifice-mission-report/render_diagnostic.py` | Source to migrate (python-docx) |
-| `plugins/edifice-mission-report/templates/suivi_chantier.docx` | Reference IC template (open in Word) |
-| `plugins/edifice-mission-report/skills/edifice/SKILL.md` | SKILL to update |
+| `plugins/edifice-mission-report/render_devis.py` | Source to migrate (python-docx) |
+| `plugins/edifice-mission-report/templates/suivi_chantier.docx` | Current IC template (before move) |
 | `plugins/edifice-mission-report/requirements.txt` | Deps to update |
+| `plugins/edifice-mission-report/skills/edifice/SKILL.md` | SKILL to update |
+| `plugins/edifice-mission-report/tests/README.md` | Test data locations |
+| `../edifice/agent/document-generator/organizations/ic-ingenieurs/templates/rapport-diag-template.docx` | IC cover page reference (open in Word) |
 
 ---
 
 ## Definition of done
 
-- [ ] `templates/ic-ingenieurs/diagnostic.docx` exists and renders cleanly on Varenne test data
-- [ ] `templates/ic-ingenieurs/suivi_chantier.docx` at new path, renderer updated
-- [ ] `templates/ic-ingenieurs/devis.docx` exists and renders cleanly
-- [ ] All 3 renderers use docxtpl — zero `python-docx` imports
-- [ ] `render_report.py` passes template path from org-aware resolution
-- [ ] `requirements.txt` updated: docxtpl>=0.18, pillow; no python-docx, no lxml
-- [ ] `SKILL.md` `uv run` invocation uses docxtpl dep, org override documented
-- [ ] `uv run ... render_report.py mission/context.json` works end-to-end for all 3 types
+- [ ] `templates/ic-ingenieurs/diagnostic.docx` — branded cover page + all sections + docxtpl tags
+- [ ] `templates/ic-ingenieurs/suivi_chantier.docx` — moved from root, path updated in renderer
+- [ ] `templates/ic-ingenieurs/devis.docx` — branded cover page + all sections + docxtpl tags
+- [ ] `templates/blue-green/.gitkeep` — placeholder exists
+- [ ] `render_diagnostic.py` — docxtpl only, zero python-docx imports
+- [ ] `render_cr_visite.py` — updated to `templates/ic-ingenieurs/suivi_chantier.docx` path
+- [ ] `render_devis.py` — docxtpl only, zero python-docx imports
+- [ ] `render_report.py` — org-aware `_template_path()`, `normalize_v1()`, `--org` flag
+- [ ] `requirements.txt` — `docxtpl>=0.18` + `pillow`, no `python-docx`, no `lxml`
+- [ ] `SKILL.md` — `uv run` uses docxtpl, org override documented
+- [ ] Test diagnostic: `uv run render_report.py mission/context.json` on Varenne data → clean DOCX
+- [ ] Test suivi_chantier: runs on ferraillage v1.0 data after normalization → clean DOCX
