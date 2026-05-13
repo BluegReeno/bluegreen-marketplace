@@ -83,6 +83,21 @@ git add -A && git commit -m "chore: sync edifice-mission-report vX.Y.Z"
 
 ---
 
+## Plugin Skill Constraint — Cowork Ephemeral Sandboxes
+
+Claude Cowork mounts a **fresh ephemeral directory each session** — nothing is pre-installed. Every dependency is downloaded from scratch. A slow cold start breaks the UX.
+
+**Rules (non-negotiable for every plugin skill):**
+- No `pip install -r requirements.txt` step — ever
+- Use stdlib (`urllib`, `json`, `pathlib`, `re`…) wherever possible — `pull_mission.py` is the reference: migrated off `supabase` SDK → stdlib `urllib` for zero cold-start cost
+- When a package is unavoidable: `uv run --with pkg1 --with pkg2 script.py` — keep the list as short as possible
+- `uv` is the only allowed package manager at runtime. `pip`, `pipenv`, `poetry` are forbidden in skill scripts
+- `requirements.txt` is a human-readable manifest only — never executed at runtime
+
+See `docs/brief.md` → "Plugin skill constraints" for full rationale and decision tree.
+
+---
+
 ## Common Gotchas
 
 - `marketplace.json` version must match `plugin.json` version after each sync

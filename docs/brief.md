@@ -82,6 +82,40 @@ edifice/
 
 ---
 
+## Plugin skill constraints — Cowork ephemeral sandboxes ★
+
+**Context**: Claude Cowork mounts a fresh ephemeral directory for every session. Nothing is pre-installed. Every Python dependency declared in a skill is downloaded from scratch at session start. A slow cold start (>15–20 s) breaks the UX.
+
+### Rule: zero mandatory pre-install step
+
+Skills must **never** require the user to run `pip install -r requirements.txt` or any equivalent before using a command. Each script invocation must be self-sufficient.
+
+### Decision tree for script dependencies
+
+| Situation | Pattern | Example |
+|-----------|---------|---------|
+| Pure stdlib (json, pathlib, urllib, re…) | `python3 script.py` | `pull_mission.py`, `push_mission.py`, `pair.py` |
+| 1–2 small packages, unavoidable | `uv run --with pkg1 --with pkg2 script.py` | `render_report.py` (`python-docx`, `Pillow`) |
+| Heavy SDK (supabase, langchain…) | **Refactor to stdlib first** — if impossible, `uv run --with` | `pull_mission.py` was migrated from `supabase` SDK → stdlib `urllib` |
+
+### Established precedent: `/edifice pull`
+
+`pull_mission.py` was explicitly refactored to **remove the `supabase` SDK dependency** entirely. It now uses `urllib` (stdlib) for all Supabase REST calls and token refresh. Result: zero download at session start, instant cold start.
+
+This is the reference implementation. Every new script in every future plugin must start from this constraint:
+
+> **Can this be done with stdlib? If yes, do it. If not, use `uv run --with` with the smallest possible package list.**
+
+### `requirements.txt` — documentation only
+
+`requirements.txt` in the plugin directory is kept as a **dependency manifest for humans**, not for runtime installation. It documents what the plugin depends on in aggregate. It is never executed via `pip install -r`.
+
+### `uv` as the only allowed package manager
+
+`uv` is the only tool plugins may use to pull dependencies at runtime. It is listed as a prerequisite in the marketplace README (`brew install uv`). `pip`, `pipenv`, `poetry` are forbidden in skill scripts.
+
+---
+
 ## `schema-contract.json` — the cross-repo sync anchor ★
 
 Lives inside the plugin directory (both in `edifice` and mirrored to `bluegreen-marketplace`).
