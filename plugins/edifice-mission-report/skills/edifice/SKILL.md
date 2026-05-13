@@ -7,7 +7,7 @@ description: >
   "run edifice". Also activates when the user says "/edifice pair" or
   "pair edifice" or "connecter edifice" when the laptop has not been
   paired yet.
-version: 0.3.3
+version: 0.3.4
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 

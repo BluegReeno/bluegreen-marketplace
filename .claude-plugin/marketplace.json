@@ -9,7 +9,7 @@
       "description": "Pull an Edifice building inspection mission from Supabase, qualify with AI, generate the DOCX report.",
       "source": "./plugins/edifice-mission-report",
       "skills": ["./plugins/edifice-mission-report/skills/edifice"],
-      "version": "0.3.3",
+      "version": "0.3.4",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
