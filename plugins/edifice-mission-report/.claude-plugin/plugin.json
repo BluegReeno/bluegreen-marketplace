@@ -1,0 +1,6 @@
+{
+  "name": "edifice-mission-report",
+  "version": "0.3.3",
+  "description": "Pull an Edifice mission from Supabase and render the DOCX report.",
+  "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" }
+}

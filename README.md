@@ -1,59 +1,51 @@
-# [Project Name]
+# BlueGreen Marketplace
 
-[One sentence description of your project]
+Public distribution registry for [Blue Green AI](https://bluegreen.ai) Claude Code plugins.
 
-## Quick Start
+## Install the marketplace
 
-```bash
-# Install dependencies
-[your install command]
-
-# Run development server
-[your dev command]
-
-# Run tests
-[your test command]
-```
-
-## Project Structure
+In Claude Code or Cowork (one-time):
 
 ```
-src/
-├── ...
+/plugin marketplace add BluegReeno/bluegreen-marketplace
 ```
 
-## Documentation
+## Available plugins
 
-- **[PRD](.claude/PRD.md)** - Product Requirements Document
-- **[Status](.claude/STATUS.md)** - Current sprint and priorities
-- **[Workflow Guide](docs/workflow-guide.md)** - Development methodology and commands
+### `edifice-mission-report` — Building inspection reports
 
-## AI Context Architecture
+Pull an Edifice mission from Supabase, qualify observations with AI, and generate the DOCX diagnostic report — directly from Claude Cowork or Claude Code.
 
-This project uses a **3-tier context system** for efficient AI-assisted development:
-
-| Tier | Location | Loaded | Purpose |
-|------|----------|--------|---------|
-| 1 | `CLAUDE.md` | Always | Global rules, tech stack, core principles |
-| 2 | `.claude/rules/` | Auto (by path) | Domain-specific conventions |
-| 3 | `.claude/docs/` | On-demand | Deep architecture guides |
-
-See `.claude/rules/README.md` and `.claude/docs/README.md` for details.
-
-## Development
-
-This project uses Claude Code with a PRD-first methodology. See the [workflow guide](docs/workflow-guide.md) for details.
-
-### Key Commands
-
-```bash
-/core_piv_loop:prime          # Load project context
-/core_piv_loop:plan-feature   # Plan a new feature
-/core_piv_loop:execute        # Execute with task tracking
-/handoff                      # Capture session state for continuation
-/commit                       # Create clean commit with context tracking
+**Install:**
+```
+/plugin install edifice-mission-report@bluegreen-marketplace
 ```
 
-## License
+**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account.
 
-[Your license]
+See [`plugins/edifice-mission-report/README.md`](plugins/edifice-mission-report/README.md) for full setup instructions.
+
+---
+
+### `hal-crm` *(coming soon)*
+
+Interact with client projects, quotes, and tasks via natural language.
+
+---
+
+## Enable auto-updates
+
+`/plugin` → Marketplaces tab → `bluegreen-marketplace` → enable auto-update.
+
+---
+
+## For developers
+
+This repo is a **read-only distribution mirror**. Plugin code is developed in private repos and synced here on release.
+
+| Plugin | Source repo | Release trigger |
+|--------|------------|----------------|
+| `edifice-mission-report` | `BluegReeno/edifice` (private) | Manual rsync on version tag |
+| `hal-crm` | `BluegReeno/hal` (private) | Future sprint |
+
+See `docs/brief.md` for the full architecture rationale.

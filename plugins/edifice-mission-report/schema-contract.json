@@ -1,0 +1,24 @@
+{
+  "plugin": "edifice-mission-report",
+  "plugin_version": "0.3.3",
+  "supabase_tables": {
+    "edifice_projects": [
+      "id", "name", "status", "type", "mission_context",
+      "organization_ids", "building_id", "created_at"
+    ],
+    "edifice_buildings": [
+      "id", "name", "address", "building_type", "description"
+    ],
+    "edifice_notes": [
+      "id", "name", "content", "zone", "localisation",
+      "ie", "created_at", "updated_at"
+    ],
+    "edifice_photos": [
+      "id", "filename", "storage_path", "note_id", "created_at"
+    ]
+  },
+  "hal_mcp_tools": [
+    { "name": "get_mission_with_assets", "hal_mcp_min_version": "1.0.0" }
+  ],
+  "_note": "Any Supabase migration that changes a column listed here must update this file and bump plugin_version in the same commit."
+}
