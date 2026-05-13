@@ -137,7 +137,10 @@ def parse_yaml_frontmatter(text: str) -> dict:
     for line in text.strip().splitlines():
         if ":" in line:
             key, _, val = line.partition(":")
-            result[key.strip()] = val.strip()
+            v = val.strip()
+            if len(v) >= 2 and v[0] in ('"', "'") and v[-1] == v[0]:
+                v = v[1:-1]
+            result[key.strip()] = v
     return result
 
 

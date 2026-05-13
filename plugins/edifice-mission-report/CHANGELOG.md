@@ -4,6 +4,13 @@ All notable changes to this plugin are documented here.
 
 ---
 
+## [0.3.4] — 2026-05-13 — Bugfix: YAML frontmatter quote stripping
+
+### Fixed
+- `parse_yaml_frontmatter` now strips surrounding quotes from values (e.g. `supabase_url: "https://..."` was parsed with quotes included, breaking HTTP calls)
+
+---
+
 ## [0.3.3] — 2026-05-13 — Initial marketplace publish
 
 First publication to `bluegreen-marketplace`.
