@@ -9,7 +9,7 @@ All notable changes to this plugin are documented here.
 First publication to `bluegreen-marketplace`.
 
 ### What's included
-- `/edifice pull` — pull mission data via `pull_mission.py` (Supabase SDK + refresh token)
+- `/edifice pull` — pull mission data via `pull_mission.py` (stdlib urllib — no SDK required)
 - `/edifice pull` also supports `get_mission_with_assets` MCP tool (hal-mcp Phase 1)
 - `/edifice improve` — AI-assisted observation enrichment
 - `/edifice report` — generate DOCX report (diagnostic / suivi_chantier / devis)
