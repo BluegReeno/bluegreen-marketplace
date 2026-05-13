@@ -41,11 +41,11 @@ Interact with client projects, quotes, and tasks via natural language.
 
 ## For developers
 
-This repo is a **read-only distribution mirror**. Plugin code is developed in private repos and synced here on release.
+Plugin code lives directly in this repo. Each plugin is self-contained under `plugins/<name>/`.
 
-| Plugin | Source repo | Release trigger |
-|--------|------------|----------------|
-| `edifice-mission-report` | `BluegReeno/edifice` (private) | Manual rsync on version tag |
-| `hal-crm` | `BluegReeno/hal` (private) | Future sprint |
+| Plugin | Status |
+|--------|--------|
+| `edifice-mission-report` | Active |
+| `hal-crm` | Coming soon |
 
 See `docs/brief.md` for the full architecture rationale.
