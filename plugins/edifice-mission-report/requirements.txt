@@ -1,4 +1,2 @@
-supabase>=2.28,<3.0
-python-docx>=1.1
+docxtpl>=0.18
 Pillow>=10.0
-pyyaml>=6.0
