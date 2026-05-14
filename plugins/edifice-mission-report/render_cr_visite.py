@@ -63,7 +63,7 @@ def format_date_french(iso_date: str) -> str:
 
 # === Template path ===
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-TEMPLATE_PATH = os.path.join(SCRIPT_DIR, "template_cr_visite_aulnay.docx")
+TEMPLATE_PATH = os.path.join(SCRIPT_DIR, "templates", "ic-ingenieurs", "suivi_chantier.docx")
 
 
 def set_cell_shading(cell, color):
@@ -194,9 +194,14 @@ def render_cr(context, photos_dir=".", output_path="cr_visite.docx", template_pa
                     run.text = run.text.replace("{{ date_visite }}", date_french)
 
     # === 2. Populate participants table ===
+    # Find first table with >= 4 columns (robust to cover table additions)
     participants = context.get("participants", [])
-    if participants and len(doc.tables) > 0:
-        ptable = doc.tables[0]
+    ptable = None
+    for t in doc.tables:
+        if t.rows and len(t.rows[0].cells) >= 4:
+            ptable = t
+            break
+    if participants and ptable is not None:
 
         # Clear existing data rows
         while len(ptable.rows) > 1:
@@ -219,9 +224,14 @@ def render_cr(context, photos_dir=".", output_path="cr_visite.docx", template_pa
                 set_cell_margins(cell, 30, 30, 60, 60)
 
     # === 3. Populate observations table ===
+    # Find first table with exactly 3 columns (robust to cover table additions)
     observations = context.get("observations", [])
-    if observations and len(doc.tables) > 1:
-        obs_table = doc.tables[1]
+    obs_table = None
+    for t in doc.tables:
+        if t.rows and len(t.rows[0].cells) == 3:
+            obs_table = t
+            break
+    if observations and obs_table is not None:
 
         # Clear existing data rows (keep header)
         while len(obs_table.rows) > 1:

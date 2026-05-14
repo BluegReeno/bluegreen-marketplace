@@ -238,7 +238,7 @@ Uses `render_report.py` — a unified dispatcher that requires no Supabase conne
 **1. Generate (all types — diagnostic, suivi_chantier, devis)**
 ```bash
 uv run \
-  --with "python-docx>=1.1" \
+  --with "docxtpl>=0.18" \
   --with pillow \
   python3 $PLUGIN_DIR/render_report.py \
   mission/context.json \
@@ -247,11 +247,11 @@ uv run \
 ```
 
 `render_report.py` reads `project_type` from `context.json` and routes automatically:
-- `diagnostic`      → `render_diagnostic.py`  + `agent/document-generator/.../rapport-diag-template.docx` (IC branded)
-- `suivi_chantier`  → `render_cr_visite.py` + `templates/suivi_chantier.docx`
-- `devis`           → `render_devis.py`  (programmatic, no template yet)
+- `diagnostic`      → `render_diagnostic.py`  + `templates/ic-ingenieurs/diagnostic.docx`
+- `suivi_chantier`  → `render_cr_visite.py`   + `templates/ic-ingenieurs/suivi_chantier.docx`
+- `devis`           → `render_devis.py`        + `templates/ic-ingenieurs/devis.docx`
 
-**Note Cowork sandbox** — if a SOCKS proxy error occurs, add `--with socksio --with "httpx[socks]"`.
+Org override: `--org ic-ingenieurs` (default) or env var `EDIFICE_ORG=ic-ingenieurs`.
 
 **2. Confirm to user**
 Tell the user: "Rapport généré : `mission/rapport.docx`" and provide the file path.
@@ -261,7 +261,7 @@ Tell the user: "Rapport généré : `mission/rapport.docx`" and provide the file
 ## Types de rapports — schemas JSON et renderers
 
 ### `diagnostic` — Rapport de diagnostic structurel
-Renderer : `render_diagnostic.py` | Programmatique, aucun template requis
+Renderer : `render_diagnostic.py` | docxtpl + `templates/ic-ingenieurs/diagnostic.docx`
 
 ```json
 {
@@ -293,7 +293,7 @@ Renderer : `render_diagnostic.py` | Programmatique, aucun template requis
 Zones valides : libre (par pièce ou par type). IE : 1=Critique | 2=Grave | 3=Modéré | 4=Mineur | 5=Bon état
 
 ### `suivi_chantier` — Compte-rendu de visite de chantier
-Renderer : `render_cr_visite.py` + `templates/suivi_chantier.docx`
+Renderer : `render_cr_visite.py` + `templates/ic-ingenieurs/suivi_chantier.docx`
 
 ```json
 {
@@ -325,7 +325,7 @@ Renderer : `render_cr_visite.py` + `templates/suivi_chantier.docx`
 ```
 
 ### `devis` — Rapport préliminaire / demande de devis
-Renderer : `render_devis.py` | Programmatique, aucun template requis
+Renderer : `render_devis.py` | docxtpl + `templates/ic-ingenieurs/devis.docx`
 
 ```json
 {
