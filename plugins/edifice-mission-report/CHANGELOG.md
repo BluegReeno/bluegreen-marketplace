@@ -2,6 +2,36 @@
 
 All notable changes to this plugin are documented here.
 
+## Versioning convention
+
+`0.MINOR.PATCH` (pré-1.0) :
+- **PATCH** (`0.x.Y+1`) — bugfix, ajout de champ optionnel, amélioration interne sans impact sur l'interface
+- **MINOR** (`0.X+1.0`) — changement d'interface utilisateur : nouveau champ obligatoire dans le JSON, renommage de commande CLI, changement de comportement observable
+
+Règle : les refactors internes (changement de librairie, restructuration code) qui ne modifient pas l'interface publique → PATCH, pas MINOR.
+
+---
+
+## [0.4.1] — 2026-05-18 — Complete docxtpl migration + service_type uniformity
+
+### Changed
+- `render_cr_visite.py` — rewritten as lean docxtpl runner (~70 lines vs 220). Eliminates all
+  programmatic python-docx table manipulation, XML shading, and EXIF rotation.
+- `render_devis.py` — `titre_service` renamed to `service_type` to match template and other renderers.
+- `templates/ic-ingenieurs/suivi_chantier.docx` — manually updated: Jinja2 `{%tr for %}` loops
+  for participants and observations, IC branded header/footer, `date_rapport` in header.
+- `templates/ic-ingenieurs/devis.docx` — `{{ titre_service }}` → `{{ service_type }}`.
+
+### Architecture
+All 3 renderers (`render_diagnostic.py`, `render_cr_visite.py`, `render_devis.py`) are now lean
+docxtpl runners with the same pattern. `service_type` is now the uniform variable name across all
+3 templates. Template layout is fully owned by Word, not Python.
+
+### Known trade-off
+`InlineImage` does not apply EXIF rotation. Photos from Android are displayed as-stored; Word and
+LibreOffice apply EXIF at render time. The old python-docx code handled this in Python — no longer needed
+for modern viewers.
+
 ---
 
 ## [0.4.0] — 2026-05-14 — Migrate DOCX renderers to docxtpl + IC branded templates
