@@ -39,7 +39,7 @@ def _build_context(context: dict) -> dict:
         })
 
     return {
-        "titre_service":         context.get("titre_service", ""),
+        "service_type":          context.get("service_type", ""),
         "client":                context.get("client", ""),
         "type_acteur":           context.get("type_acteur", ""),
         "interlocuteur_nom":     context.get("interlocuteur_nom", ""),
