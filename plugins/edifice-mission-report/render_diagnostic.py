@@ -64,7 +64,7 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
             "description":     obs.get("description") or obs.get("observation") or obs.get("desordre", ""),
             "cause":           obs.get("cause", ""),
             "recommendations": obs.get("recommendations") or obs.get("action", ""),
-            "ie":              str(obs.get("ie", "")) if obs.get("ie") is not None else "",
+            "ie":              str(obs.get("assessment") or obs.get("ie") or ""),
             "photo1": photos_img[0],
             "photo2": photos_img[1],
             "photo3": photos_img[2],

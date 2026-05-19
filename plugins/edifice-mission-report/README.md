@@ -55,17 +55,14 @@ The generated report appears in `mission/rapport.docx` next to the briefing file
 
 ## Manual usage (without Claude)
 
-```bash
-uv run --with "supabase>=2.28,<3.0" --with docxtpl --with pyyaml \
-  python pull_mission.py mission-example.edifice.md
-```
+The pull/push flow now goes through the **hal-mcp** server (tools
+`get_mission_with_assets` and `push_mission_context`). Run the skill from
+Claude Code to use them. The only standalone scripts kept here are:
 
-Options:
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--output-dir` | `mission/` | Where to save downloaded data and the report |
-| `--report-type` | `suivi_chantier` | Which DOCX template to use |
+- `download_photos.py <context.json> <output_dir>` — download photos from
+  signed URLs already present in `context.json`
+- `render_report.py mission/context.json --photos-dir mission/photos --output mission/rapport.docx`
+  — generate the DOCX from `context.json`
 
 ## Troubleshooting
 
