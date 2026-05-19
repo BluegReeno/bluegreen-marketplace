@@ -1,0 +1,38 @@
+{
+  "organization": "ic-ingenieurs",
+  "_note": "Source of truth for the `assessment` field values per service_type. The MCP tool push_mission_context auto-maps assessment → condition_index for diagnostic missions.",
+  "service_types": {
+    "diagnostic": {
+      "note_type": "disorder",
+      "values": ["1", "2", "3", "4", "-"],
+      "labels": {
+        "1": "Très mauvais — risque sécuritaire",
+        "2": "Mauvais — réparation prioritaire",
+        "3": "Moyen — surveillance requise",
+        "4": "Bon — entretien courant",
+        "-": "Non applicable"
+      },
+      "condition_index_map": {
+        "1": "poor",
+        "2": "poor",
+        "3": "medium",
+        "4": "good",
+        "-": "good"
+      }
+    },
+    "suivi_chantier": {
+      "note_type": "note",
+      "values": ["observation", "a_faire", "reserve"],
+      "labels": {
+        "observation": "Observation",
+        "a_faire": "À faire",
+        "reserve": "Réserve"
+      }
+    },
+    "devis": {
+      "note_type": "note",
+      "values": [],
+      "labels": {}
+    }
+  }
+}

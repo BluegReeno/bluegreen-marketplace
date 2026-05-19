@@ -12,6 +12,34 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.5.0] — 2026-05-19 — Note assessment schema v1 + MCP-first refactor
+
+### Changed (interface)
+- `/edifice pull` now calls the **hal-mcp** `get_mission_with_assets` tool
+  directly and downloads photos via signed URLs. The Python script
+  `pull_mission.py` is removed.
+- `/edifice push` now calls the **hal-mcp** `push_mission_context` tool. The
+  Python script `push_mission.py` is removed.
+- Unified vocabulary on `observations[]`: `desordre`/`observation` →
+  `description`, `ie` → `assessment`, `etage_facade`/`localisation` →
+  `location`. Renderers keep fallbacks for legacy keys.
+
+### Added
+- `download_photos.py` — stdlib-only helper that downloads photos from
+  `context.json` signed URLs.
+- `organizations/ic-ingenieurs/assessment-config.json` — single source of
+  truth for the `assessment` values per service_type.
+
+### Removed
+- `pull_mission.py`, `push_mission.py` — replaced by MCP tools.
+
+### Schema
+- Migration `20260519000000_note_assessment_zone.sql` (edifice repo) adds
+  `zone` + `assessment` columns to `edifice_notes`, backfilled from
+  `metadata`.
+
+---
+
 ## [0.4.1] — 2026-05-18 — Complete docxtpl migration + service_type uniformity
 
 ### Changed
