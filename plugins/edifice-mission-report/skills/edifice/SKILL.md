@@ -7,7 +7,7 @@ description: >
   "run edifice". Also activates when the user says "/edifice pair" or
   "pair edifice" or "connecter edifice" when the laptop has not been
   paired yet.
-version: 0.4.1
+version: 0.5.0
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 
@@ -28,27 +28,27 @@ if cfg.exists():
     try:
         d = json.loads(cfg.read_text())
         pd = d.get('plugin_dir', '')
-        if pd and pathlib.Path(pd, 'pull_mission.py').exists():
+        if pd and pathlib.Path(pd, 'download_photos.py').exists():
             print(pd); sys.exit(0)
     except Exception:
         pass
 
 # 2. env var
 env = os.environ.get('EDIFICE_PLUGIN_DIR', '')
-if env and pathlib.Path(env, 'pull_mission.py').exists():
+if env and pathlib.Path(env, 'download_photos.py').exists():
     print(env); sys.exit(0)
 
 # 3. Claude Code marketplace cache (bluegreen-marketplace or legacy edifice-marketplace)
 for _mkt in ['bluegreen-marketplace', 'edifice-marketplace']:
     cache_root = home / '.claude' / 'plugins' / 'cache' / _mkt / 'edifice-mission-report'
     if cache_root.exists():
-        candidates = sorted(cache_root.glob('*/pull_mission.py'), key=lambda p: p.stat().st_mtime, reverse=True)
+        candidates = sorted(cache_root.glob('*/download_photos.py'), key=lambda p: p.stat().st_mtime, reverse=True)
         if candidates:
             print(str(candidates[0].parent)); sys.exit(0)
 
-# 4. Cowork app sandbox: /sessions/*/mnt/.remote-plugins/plugin_*/pull_mission.py
+# 4. Cowork app sandbox: /sessions/*/mnt/.remote-plugins/plugin_*/download_photos.py
 import glob as _glob
-for pat in ['/sessions/*/mnt/.remote-plugins/*/pull_mission.py']:
+for pat in ['/sessions/*/mnt/.remote-plugins/*/download_photos.py']:
     matches = sorted(_glob.glob(pat), key=lambda p: os.path.getmtime(p), reverse=True)
     if matches:
         print(os.path.dirname(matches[0])); sys.exit(0)
@@ -59,7 +59,7 @@ for dev_path in [
     home / 'projects' / 'edifice' / 'plugins' / 'edifice-mission-report',
     pathlib.Path('C:/Users') / os.environ.get('USERNAME', '') / 'Projects' / 'edifice' / 'plugins' / 'edifice-mission-report',
 ]:
-    if dev_path.joinpath('pull_mission.py').exists():
+    if dev_path.joinpath('download_photos.py').exists():
         print(str(dev_path)); sys.exit(0)
 
 print('PLUGIN_DIR_NOT_FOUND')
@@ -86,49 +86,16 @@ MISSION_DIR="./mission"
 
 ## /edifice pull
 
-Pull mission data via `pull_mission.py`. Reads the `*.edifice.md` briefing,
-downloads project + building + notes + photos from Supabase (with auto token
-refresh), writes the result to `./mission/`, and prints a structured summary.
+Pull mission data via the **hal-mcp** server. Reads the `*.edifice.md`
+briefing, fetches project + building + notes + photos (with signed URLs) from
+Supabase through the `get_mission_with_assets` MCP tool, writes
+`mission/context.json`, then downloads the photos.
 
 ### Steps
 
-**0. Setup Cowork sandbox — faire EN PREMIER**
-
-Vérifier si on tourne dans le sandbox Cowork :
-```bash
-pwd
-```
-Si le résultat commence par `/sessions/`, on est dans le sandbox. Deux choses à faire avant tout.
-
-#### A. BRIEFING — toujours utiliser le chemin sandbox
-
-Le dossier de travail est monté dans la VM à `/sessions/<name>/mnt/`. Utiliser `find .` pour obtenir le chemin sandbox automatiquement — **ne jamais utiliser le chemin Mac** (`/Users/.../CloudStorage/...`) pour lancer des scripts bash : ça deadlocke (OSError errno 35 EDEADLK).
-
-```bash
-BRIEFING=$(find . -maxdepth 1 -name "*.edifice.md" | head -1)
-# → ./mission.edifice.md (chemin sandbox via virtiofs — pas de deadlock)
-```
-
-#### B. Credentials — bootstrap depuis le Mac via Read tool
-
-`~/.edifice-mission-report/` sur le Mac n'est **pas monté** dans la VM (seul le dossier de travail l'est). Bootstrapper en début de session :
-
-1. Utiliser le **Read tool** pour lire `~/.edifice-mission-report/config.json` (= dernier compte pairé)
-   - Si `EDIFICE_USER` est défini → lire `~/.edifice-mission-report/config-<EDIFICE_USER>.json` à la place
-2. Écrire le contenu dans le home du sandbox via bash :
-```bash
-mkdir -p ~/.edifice-mission-report
-cat > ~/.edifice-mission-report/config.json << 'CREDS'
-{ ... contenu lu par Read tool ... }
-CREDS
-```
-
-> Le Read tool s'exécute côté Mac (pas dans la VM) → accède à `~` Mac sans problème.
-> Le `cat >` s'exécute dans la VM → écrit dans `~` sandbox (éphémère, durée de session).
-> L'email de l'utilisateur n'est **pas** dans le `.edifice.md` — `config.json` (dernier pairé) suffit dans le cas standard.
-
 **1. Parse mission ID from briefing**
 ```bash
+BRIEFING=$(find . -maxdepth 1 -name "*.edifice.md" | head -1)
 python3 -c "
 import re, pathlib, sys
 text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8')
@@ -137,51 +104,42 @@ print(m.group(1) if m else 'NOT_FOUND')
 " "$BRIEFING"
 ```
 
-**2. Pull data + photos avec auto-refresh**
+**2. Call MCP tool `get_mission_with_assets`** with the mission UUID. The
+response contains: `project`, `building`, `notes[]`, `photos[]` (each with
+`signed_url` valid 1h), `note_count`, `photo_count`.
+
+**3. Build `mission/context.json`** from the MCP response. Use the unified
+vocabulary end-to-end (see `/edifice improve` below for the per-type schema).
+
+- `project_type` ← `project.type` (`diagnostic` | `suivi_chantier` | `devis`)
+- Header fields (`titre_service`, `client`, `residence`, `adresse`,
+  `code_postal_ville`, `description_batiment`, `ref_dossier`, `date_visite`,
+  `objet_visite`, `synthese`, `conclusion`) ← derived from
+  `project.mission_context` + `building`
+- `observations[]` ← `notes[]`, one per note, with the unified fields:
+  `ref`, `note_id`, `name`, `zone`, `location`, `description`, `assessment`,
+  `recommendations`, `metadata`. For each observation, attach `photos[]`
+  (and `photo` for templates that take a single one) — the filenames of
+  photos whose `note_id` matches the observation.
+- `photos[]` ← the full photos array from the MCP response (with `signed_url`)
+- `building_id` ← `project.building_id`
+
+Write the result to `./mission/context.json` with the Write tool.
+
+**4. Download photos via signed URLs**
 ```bash
-python3 $PLUGIN_DIR/pull_mission.py "$BRIEFING" --pull-only
+python3 $PLUGIN_DIR/download_photos.py ./mission/context.json ./mission/photos/
 ```
 
-`pull_mission.py` :
-- Lit `~/.edifice-mission-report/config.json` (bootstrappé à l'étape 0B)
-- Auto-refresh le token si expiré (stdlib urllib — aucune dépendance externe)
-- Télécharge projet, bâtiment, notes, photos
-- Écrit `mission/data/` + `mission/photos/` + `mission/context.json` → dans le dossier de travail, donc directement dans GDrive/OneDrive
+No auth needed — signed URLs are pre-authorized.
 
-En cas d'erreur "Credentials not found" → vérifier que l'étape 0B a bien été faite.
+**5. Display mission summary**
 
-**3. Display mission summary**
-```bash
-python3 - <<'EOF'
-import json, pathlib
+Print: mission name, type, building, note count, photo count, then one line
+per observation: `ref | zone | assessment | name | description[:80]`.
 
-data_dir = pathlib.Path("mission/data")
-ctx = json.loads(pathlib.Path("mission/context.json").read_text())
-project = json.loads((data_dir / "project.json").read_text())
-building = json.loads((data_dir / "building.json").read_text()) or {}
-notes = json.loads((data_dir / "notes.json").read_text())
-photos = json.loads((data_dir / "photos.json").read_text())
-
-print(f"Mission : {project.get('name', '')}")
-print(f"Type    : {project.get('type', 'inconnu')}")
-print(f"Bâtiment: {building.get('name', '')} — {building.get('address', '')}")
-print(f"Notes   : {len(notes)}")
-print(f"Photos  : {len(photos)}")
-print()
-print("Observations:")
-for obs in ctx.get("observations", []):
-    ref = obs.get("ref", "")
-    name = obs.get("name", "")
-    text = (obs.get("observation") or "")[:80]
-    zone = obs.get("zone") or "—"
-    ie = obs.get("ie")
-    ie_str = f"IE={ie}" if ie else ""
-    print(f"  {ref:8} | {zone:4} {ie_str:5} | {name:25} | {text}")
-EOF
-```
-
-Present the output clearly to the user. Mention the mission type — it determines
-which template `/edifice report` will use.
+Mention the mission type — it determines which template `/edifice report`
+will use.
 
 ---
 
@@ -194,37 +152,62 @@ The user describes improvements to one or more observations. Claude reads
 
 1. Read `mission/context.json` with the Read tool.
 2. Understand what the user wants to change:
-   - "note 3 doit mentionner une fissure de 3mm" → update `observations[2].desordre`
-   - "groupe toutes les notes par zone APT/BAL/CAV/FAC et ajoute les IE" → update
-     `zone` and `ie` fields for all observations, and rename `ref` (APT-01, etc.)
-   - "améliore la description de l'observation APT-02" → enrich the `desordre` text
+   - "note 3 doit mentionner une fissure de 3mm" → update `observations[2].description`
+   - "groupe toutes les notes par zone APT/BAL/CAV/FAC et ajoute les assessments"
+     → update `zone` and `assessment` fields for all observations, and rename
+     `ref` (APT-01, etc.)
+   - "améliore la description de l'observation APT-02" → enrich the `description`
    - "ajoute une synthèse globale" → update the `synthese` field
 3. Edit `mission/context.json` with the Edit tool (or Write to replace entirely for
    large restructures).
 4. Show the user a diff-style summary of what changed.
 
+### Vocabulaire unifié — observations
+
+Tous les types utilisent les mêmes noms de champs côté `observations[]` :
+
+| Champ | Rôle |
+|-------|------|
+| `note_id` | UUID de la note source (requis pour `/edifice push`) |
+| `ref` | Référence affichée (`OBS-01`, `V1-02`, `APT-03`, etc.) |
+| `name` | Nom court de l'observation |
+| `zone` | Zone / regroupement (`Chambre 1`, `APT`, `BAL`, etc.) |
+| `location` | Localisation précise (`linteau fenêtre nord`, `10ème — Façade Est`) |
+| `description` | Texte principal — désordre observé / commentaire |
+| `assessment` | Qualification (voir tableau par service_type ci-dessous) |
+| `recommendations` | Action / proposition de réparation |
+| `metadata` | Données libres (JSONB) |
+
 ### Context.json — champs éditables par type
 
-**`diagnostic`** — champs à enrichir :
-`description_batiment`, `objet_visite`, `synthese`, `conclusion`
-Observations : `zone`, `localisation`, `desordre`, `ie`, `action`
+**`diagnostic`** — header : `description_batiment`, `objet_visite`, `synthese`, `conclusion`
+Observations : `zone`, `location`, `description`, `assessment`, `recommendations`
 
-**`suivi_chantier`** — champs à enrichir :
-`participants`, `objet_visite`, `synthese`, `conclusion`
-Observations : `etage_facade`, `observation`, `action`
+**`suivi_chantier`** — header : `participants`, `objet_visite`, `synthese`, `conclusion`
+Observations : `location`, `description`, `assessment`, `recommendations`
 
-**`devis`** — champs à enrichir :
-`type_acteur`, `interlocuteur_nom`, `interlocuteur_role`, `declencheur`,
-`livrable`, `urgence`, `description_batiment`, `documents_fournis`,
+**`devis`** — header : `type_acteur`, `interlocuteur_nom`, `interlocuteur_role`,
+`declencheur`, `livrable`, `urgence`, `description_batiment`, `documents_fournis`,
 `proposition_mission`, `incertitudes`, `chiffrage`
-Observations : `localisation`, `desordre`, `donnees_cles`, `ref_photo`
+Observations : `location`, `description`, `metadata.donnees_cles`, `metadata.ref_photo`
 
-**IE scale** (diagnostic uniquement) :
-- 1 = Risque de ruine immédiate → mise en sécurité immédiate
-- 2 = Désordres graves sans ruine → réparation court terme
-- 3 = Dégradation sans gravité → entretien moyen terme
-- 4 = Dégradation légère → entretien long terme
-- 5 = Bon état → surveillance
+### Valeurs de `assessment` par service_type
+
+| service_type | values |
+|--------------|--------|
+| `diagnostic` (note type=`disorder`) | `"1"`, `"2"`, `"3"`, `"4"`, `"-"` |
+| `suivi_chantier` | `"observation"`, `"a_faire"`, `"reserve"` |
+| `devis` | `null` / absent |
+
+**Échelle diagnostic** :
+- `"1"` = Risque de ruine immédiate → mise en sécurité immédiate
+- `"2"` = Désordres graves sans ruine → réparation court terme
+- `"3"` = Dégradation sans gravité → entretien moyen terme
+- `"4"` = Dégradation légère → entretien long terme
+- `"-"` = Non applicable / bon état
+
+Source de vérité (mapping `assessment` → `condition_index`, labels, etc.) :
+`organizations/ic-ingenieurs/assessment-config.json`.
 
 ---
 
@@ -279,18 +262,21 @@ Renderer : `render_diagnostic.py` | docxtpl + `templates/ic-ingenieurs/diagnosti
   "observations": [
     {
       "ref": "OBS-01",
+      "note_id": "uuid",
+      "name": "Plancher fléchi chambre 1",
       "zone": "Chambre 1",
-      "localisation": "Plancher — côté fenêtre",
-      "desordre": "Flèche visible du plancher bois",
-      "ie": 3,
-      "action": "Contrôle des appuis des solives",
+      "location": "Plancher — côté fenêtre",
+      "description": "Flèche visible du plancher bois",
+      "assessment": "3",
+      "recommendations": "Contrôle des appuis des solives",
       "photo": "filename.jpg"
     }
   ]
 }
 ```
 
-Zones valides : libre (par pièce ou par type). IE : 1=Critique | 2=Grave | 3=Modéré | 4=Mineur | 5=Bon état
+Zones valides : libre (par pièce ou par type).
+Assessment (diagnostic) : voir tableau dans `/edifice improve`.
 
 ### `suivi_chantier` — Compte-rendu de visite de chantier
 Renderer : `render_cr_visite.py` + `templates/ic-ingenieurs/suivi_chantier.docx`
@@ -315,9 +301,12 @@ Renderer : `render_cr_visite.py` + `templates/ic-ingenieurs/suivi_chantier.docx`
   "observations": [
     {
       "ref": "V1-01",
-      "etage_facade": "10ème — Façade Est",
-      "observation": "Traces de truelle visibles",
-      "action": "Reprendre les traces",
+      "note_id": "uuid",
+      "name": "Traces de truelle façade Est",
+      "location": "10ème — Façade Est",
+      "description": "Traces de truelle visibles",
+      "assessment": "a_faire",
+      "recommendations": "Reprendre les traces",
       "photo": "photo1.jpg"
     }
   ]
@@ -350,10 +339,14 @@ Renderer : `render_devis.py` | docxtpl + `templates/ic-ingenieurs/devis.docx`
   ],
   "observations": [
     {
-      "localisation": "Chambre 1",
-      "desordre": "Linteau dégradé, pourriture avancée",
-      "donnees_cles": "L=2,20m — section 25×25cm",
-      "ref_photo": "P1"
+      "note_id": "uuid",
+      "name": "Linteau dégradé chambre 1",
+      "location": "Chambre 1",
+      "description": "Linteau dégradé, pourriture avancée",
+      "metadata": {
+        "donnees_cles": "L=2,20m — section 25×25cm",
+        "ref_photo": "P1"
+      }
     }
   ],
   "proposition_mission": "Diagnostic structurel complet...",
@@ -374,20 +367,25 @@ Renderer : `render_devis.py` | docxtpl + `templates/ic-ingenieurs/devis.docx`
 ## /edifice push
 
 Push the updated `mission/context.json` observations back to Supabase
-(`edifice_notes` table).
+(`edifice_notes` table) via the **hal-mcp** `push_mission_context` tool.
 
 ### Steps
 
-**1. Push**
-```bash
-python3 $PLUGIN_DIR/push_mission.py "$BRIEFING"
-```
+**1. Read `mission/context.json`** with the Read tool.
 
-The script reads `mission/context.json`, updates each note in Supabase using
-its `note_id`, and reports how many were updated.
+**2. Call MCP tool `push_mission_context`** with:
+- `observations`: each observation that has a `note_id`, including any subset
+  of `description`, `location`, `zone`, `assessment`, `recommendations`,
+  `metadata` (only fields that were edited need to be sent — the MCP applies
+  partial updates)
+- `building_id` + `building_description`: include only if the building
+  description was enriched
 
-**2. Confirm to user**
-Tell the user how many notes were pushed and whether any errors occurred.
+The MCP tool auto-maps `assessment` → `condition_index` for diagnostic
+missions (`"1" | "2"` → `poor`, `"3"` → `medium`, `"4" | "-"` → `good`).
+
+**3. Confirm to user**
+Report `{ updated, skipped, errors }` from the MCP response.
 
 ---
 

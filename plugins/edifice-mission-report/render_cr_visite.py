@@ -52,11 +52,11 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
                     photo_img = InlineImage(doc, str(path), width=Cm(5.0))
                 except Exception:
                     photo_img = None
-        observation_text = obs.get("observation", "")
-        action_text = obs.get("action", "")
+        observation_text = obs.get("description") or obs.get("observation", "")
+        action_text = obs.get("recommendations") or obs.get("action", "")
         observation_action = observation_text + ("\n→ " + action_text if action_text else "")
         observations.append({
-            "etage_facade":       obs.get("etage_facade", ""),
+            "etage_facade":       obs.get("location") or obs.get("etage_facade", ""),
             "observation_action": observation_action,
             "photo":              photo_img,
         })
