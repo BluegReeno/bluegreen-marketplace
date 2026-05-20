@@ -108,22 +108,41 @@ from their signed URLs. It prints the summary.
 
 ## /edifice improve
 
-The user describes improvements to one or more observations. Claude reads
-`mission/context.json`, edits the relevant entries directly, then confirms.
+This is the intelligence step. The user reviews notes and photos with Claude,
+qualifies observations, and reclassifies notes if needed. Claude reads
+`mission/context.json`, edits entries directly, then confirms.
 
 ### How to handle the user's request
 
 1. Read `mission/context.json` with the Read tool.
-2. Understand what the user wants to change:
+2. Understand what the user wants:
    - "note 3 doit mentionner une fissure de 3mm" → update `observations[2].description`
-   - "groupe toutes les notes par zone APT/BAL/CAV/FAC et ajoute les assessments"
-     → update `zone` and `assessment` fields for all observations, and rename
-     `ref` (APT-01, etc.)
-   - "améliore la description de l'observation APT-02" → enrich the `description`
+   - "groupe par zone APT/BAL/CAV/FAC et ajoute les IE" → update `zone` + `assessment` for all observations, rename `ref`
+   - "améliore la description de OBS-02" → enrich the `description`
    - "ajoute une synthèse globale" → update the `synthese` field
-3. Edit `mission/context.json` with the Edit tool (or Write to replace entirely for
-   large restructures).
+3. Edit `mission/context.json` with the Edit tool (Write for large restructures).
 4. Show the user a diff-style summary of what changed.
+
+### Reclassifying notes ↔ observations
+
+Context: `observations[]` = structured notes (disorder/reservation, need qualification).
+`notes[]` = free notes (reminders, context — no required fields).
+
+The technicien classifies note types on the PWA during field capture, but they
+can be wrong or uncertain. During `/edifice improve`, review photos together and
+reclassify if needed:
+
+**From `notes[]` → `observations[]`** (e.g. a facade photo that is actually a structural defect):
+- Move the entry from `notes[]` to `observations[]`
+- Add the required fields for the mission type (zone + assessment + recommendations for diagnostic)
+- Set `type` to `"disorder"` (diagnostic) or `"reservation"` (suivi_chantier)
+
+**From `observations[]` → `notes[]`** (e.g. a note logged as disorder that is just context):
+- Move the entry to `notes[]`, remove structured fields
+- Set `type` to `"note"`
+
+`/edifice push` will persist the reclassification (`type` field) back to Supabase,
+so future pulls will route correctly automatically.
 
 ### Vocabulaire unifié — observations
 
