@@ -108,67 +108,73 @@ def build_header(project: dict, building: dict | None, project_type: str) -> dic
     return _build_header_diagnostic(project, building, mc)
 
 
-def build_observations(notes: list, photos: list, project_type: str) -> list:
-    # Index photos by note_id
+# Routing config: which note.type goes into observations[] vs notes[]
+# Source of truth: organizations/ic-ingenieurs/assessment-config.json
+_OBSERVATION_TYPE = {
+    "diagnostic": "disorder",
+    "suivi_chantier": "reservation",
+    # devis: TBD — all notes go to notes[] for now
+}
+
+
+def _filenames_for_note(note_id: str, photos_by_note: dict) -> list[str]:
+    return [
+        pathlib.Path(p["storage_path"]).name
+        for p in photos_by_note.get(note_id, [])
+        if p.get("storage_path")
+    ]
+
+
+def build_observations(notes: list, photos: list, project_type: str) -> tuple[list, list]:
+    """Return (observations, free_notes) routed by note.type per service_type."""
     photos_by_note: dict[str, list] = {}
     for p in photos:
         nid = p.get("note_id")
         if nid:
             photos_by_note.setdefault(nid, []).append(p)
 
-    obs = []
-    for i, note in enumerate(notes):
+    obs_type = _OBSERVATION_TYPE.get(project_type)  # note.type that goes to observations[]
+    observations = []
+    free_notes = []
+    obs_counter = 0
+
+    for note in notes:
         nid = note.get("id", "")
-        note_photos = photos_by_note.get(nid, [])
-        filenames = [
-            pathlib.Path(p["storage_path"]).name
-            for p in note_photos
-            if p.get("storage_path")
-        ]
+        note_type = note.get("type") or "note"
+        filenames = _filenames_for_note(nid, photos_by_note)
+        photo = filenames[0] if filenames else ""
 
-        if project_type == "devis":
-            obs.append({
-                "ref": f"OBS-{i + 1:02d}",
+        if obs_type and note_type == obs_type:
+            obs_counter += 1
+            prefix = "V" if project_type == "suivi_chantier" else "OBS"
+            entry: dict = {
+                "ref": f"{prefix}-{obs_counter:02d}",
                 "note_id": nid,
                 "name": note.get("name") or "",
                 "location": note.get("location") or "",
                 "description": note.get("description") or "",
-                "metadata": {
-                    "donnees_cles": "",
-                    "ref_photo": filenames[0] if filenames else "",
-                },
-                "photos": filenames,
-                "photo": filenames[0] if filenames else "",
-            })
-        elif project_type == "suivi_chantier":
-            obs.append({
-                "ref": f"V1-{i + 1:02d}",
-                "note_id": nid,
-                "name": note.get("name") or "",
-                "location": note.get("location") or "",
-                "description": note.get("description") or "",
-                "assessment": note.get("assessment") or "",  # observation | a_faire | reserve
+                "assessment": note.get("assessment") or "",
                 "recommendations": note.get("recommendations") or "",
                 "photos": filenames,
-                "photo": filenames[0] if filenames else "",
+                "photo": photo,
                 "metadata": note.get("metadata") or {},
-            })
-        else:  # diagnostic
-            obs.append({
-                "ref": f"OBS-{i + 1:02d}",
+            }
+            if project_type == "diagnostic":
+                entry["zone"] = note.get("zone") or ""
+            observations.append(entry)
+        else:
+            # Free note — no required fields, kept as-is for context
+            free_notes.append({
                 "note_id": nid,
+                "type": note_type,
                 "name": note.get("name") or "",
-                "zone": note.get("zone") or "",
-                "location": note.get("location") or "",
                 "description": note.get("description") or "",
-                "assessment": note.get("assessment") or "",  # 1 | 2 | 3 | 4 | -
-                "recommendations": note.get("recommendations") or "",
                 "photos": filenames,
-                "photo": filenames[0] if filenames else "",
+                "photo": photo,
                 "metadata": note.get("metadata") or {},
             })
 
-    return obs
+    return observations, free_notes
 
 
 # ---------------------------------------------------------------------------
@@ -219,9 +225,9 @@ def main() -> None:
     project_type = project.get("type") or "diagnostic"
 
     header = build_header(project, building, project_type)
-    observations = build_observations(notes, photos, project_type)
+    observations, free_notes = build_observations(notes, photos, project_type)
 
-    context = {**header, "observations": observations, "photos": photos}
+    context = {**header, "observations": observations, "notes": free_notes, "photos": photos}
     context_path = output_dir / "context.json"
     context_path.write_text(json.dumps(context, indent=2, ensure_ascii=False), encoding="utf-8")
 
@@ -229,31 +235,37 @@ def main() -> None:
 
     # Summary
     print(f"\n✅  context.json → {context_path}")
-    print(f"   {len(observations)} observations | {len(photos)} photos ({ok} téléchargées, {skipped} skippées)")
     print(f"   Type : {project_type}")
-    print()
+    print(f"   {len(observations)} observation(s) structurée(s) | {len(free_notes)} note(s) libre(s) | {len(photos)} photo(s) ({ok} téléchargées, {skipped} skippées)")
+
     if project_type == "diagnostic":
-        print("Champs à remplir avec /edifice improve :")
-        print("  header    → description_batiment, objet_visite, synthese, conclusion")
-        print("  observations → zone, location, assessment (1-4/-), recommendations")
+        print("\nObservations (désordres) — à qualifier avec /edifice improve :")
+        print(f"  → zone, location, assessment (1=critique … 4=bon / -=N/A), recommendations")
+        if free_notes:
+            print(f"\nNotes libres ({len(free_notes)}) — contexte, rappels, non structurées :")
+            for n in free_notes:
+                print(f"  · {(n.get('name') or '')[:50]}  [{n.get('type','')}]")
     elif project_type == "suivi_chantier":
-        print("Champs à remplir avec /edifice improve :")
-        print("  header    → participants, objet_visite, synthese, conclusion")
-        print("  observations → location, assessment (observation/a_faire/reserve), recommendations")
+        print("\nObservations (réservations) — à qualifier avec /edifice improve :")
+        print(f"  → location, assessment (observation / a_faire / reserve), recommendations")
+        if free_notes:
+            print(f"\nNotes libres ({len(free_notes)}) — points généraux :")
+            for n in free_notes:
+                print(f"  · {(n.get('name') or '')[:50]}")
     elif project_type == "devis":
-        print("Champs à remplir avec /edifice improve :")
-        print("  header    → declencheur, description_batiment, proposition_mission, chiffrage")
-        print("  observations → location, description, metadata.donnees_cles")
-    print()
-    print(f"{'Ref':<8} {'Zone':<15} {'IE':<4} {'Nom':<30} Description")
-    print("-" * 80)
-    for obs in observations:
-        ref = obs.get("ref", "")
-        zone = (obs.get("zone") or "")[:14]
-        ie = obs.get("assessment") or ""
-        name = (obs.get("name") or "")[:29]
-        desc = (obs.get("description") or "")[:40]
-        print(f"{ref:<8} {zone:<15} {ie:<4} {name:<30} {desc}")
+        print("\nNotes — structure à définir lors du premier devis.")
+
+    if observations:
+        print()
+        print(f"{'Ref':<8} {'Zone':<15} {'IE':<4} {'Nom':<30} Description")
+        print("-" * 80)
+        for obs in observations:
+            ref = obs.get("ref", "")
+            zone = (obs.get("zone") or "")[:14]
+            ie = obs.get("assessment") or ""
+            name = (obs.get("name") or "")[:29]
+            desc = (obs.get("description") or "")[:40]
+            print(f"{ref:<8} {zone:<15} {ie:<4} {name:<30} {desc}")
 
 
 if __name__ == "__main__":
