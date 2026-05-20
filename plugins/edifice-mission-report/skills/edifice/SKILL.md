@@ -387,29 +387,3 @@ missions (`"1" | "2"` → `poor`, `"3"` → `medium`, `"4" | "-"` → `good`).
 **3. Confirm to user**
 Report `{ updated, skipped, errors }` from the MCP response.
 
----
-
-## /edifice pair
-
-First-time laptop pairing. Run once per laptop (Mac or Windows).
-Requires: Python 3.8+, no external dependencies.
-
-### Steps
-
-**1. Résoudre PLUGIN_DIR** (voir section "Plugin directory" en haut du skill)
-
-**2. Lancer pair.py**
-```bash
-python3 $PLUGIN_DIR/pair.py
-```
-
-Le script :
-- Appelle hal-gateway device flow (init → poll)
-- Affiche le code à entrer dans la PWA
-- Attend la confirmation
-- Sauvegarde les credentials dans `~/.edifice-mission-report/config.json`
-- Enregistre hal-mcp dans `~/.claude.json`
-
-**3. Dire à l'utilisateur de redémarrer Claude Code**
-
-> "✅ Pairing terminé. **Redémarre Claude Code** pour activer hal-mcp, puis tu pourras utiliser `/edifice pull`."
