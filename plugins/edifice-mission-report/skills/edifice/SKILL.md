@@ -4,10 +4,8 @@ description: >
   This skill should be used when the user is in a directory containing a
   *.edifice.md file, or asks to "pull an Edifice mission", "generate an
   Edifice report", "create a diagnostic report", "generate a devis", or
-  "run edifice". Also activates when the user says "/edifice pair" or
-  "pair edifice" or "connecter edifice" when the laptop has not been
-  paired yet.
-version: 0.5.0
+  "run edifice".
+version: 0.6.0
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 
@@ -22,51 +20,40 @@ import json, os, pathlib, sys
 
 home = pathlib.Path.home()
 
-# 1. config.json explicit plugin_dir
-cfg = home / '.edifice-mission-report' / 'config.json'
-if cfg.exists():
-    try:
-        d = json.loads(cfg.read_text())
-        pd = d.get('plugin_dir', '')
-        if pd and pathlib.Path(pd, 'download_photos.py').exists():
-            print(pd); sys.exit(0)
-    except Exception:
-        pass
-
-# 2. env var
+# 1. env var
 env = os.environ.get('EDIFICE_PLUGIN_DIR', '')
-if env and pathlib.Path(env, 'download_photos.py').exists():
+if env and pathlib.Path(env, 'build_context.py').exists():
     print(env); sys.exit(0)
 
-# 3. Claude Code marketplace cache (bluegreen-marketplace or legacy edifice-marketplace)
+# 2. Claude Code marketplace cache (bluegreen-marketplace)
 for _mkt in ['bluegreen-marketplace', 'edifice-marketplace']:
     cache_root = home / '.claude' / 'plugins' / 'cache' / _mkt / 'edifice-mission-report'
     if cache_root.exists():
-        candidates = sorted(cache_root.glob('*/download_photos.py'), key=lambda p: p.stat().st_mtime, reverse=True)
+        candidates = sorted(cache_root.glob('*/build_context.py'), key=lambda p: p.stat().st_mtime, reverse=True)
         if candidates:
             print(str(candidates[0].parent)); sys.exit(0)
 
-# 4. Cowork app sandbox: /sessions/*/mnt/.remote-plugins/plugin_*/download_photos.py
+# 3. Cowork app sandbox: /sessions/*/mnt/.remote-plugins/plugin_*/build_context.py
 import glob as _glob
-for pat in ['/sessions/*/mnt/.remote-plugins/*/download_photos.py']:
+for pat in ['/sessions/*/mnt/.remote-plugins/*/build_context.py']:
     matches = sorted(_glob.glob(pat), key=lambda p: os.path.getmtime(p), reverse=True)
     if matches:
         print(os.path.dirname(matches[0])); sys.exit(0)
 
-# 5. Known dev paths (Mac + Windows)
+# 4. Known dev paths (Mac + Windows)
 for dev_path in [
-    home / 'Projects' / 'edifice' / 'plugins' / 'edifice-mission-report',
-    home / 'projects' / 'edifice' / 'plugins' / 'edifice-mission-report',
-    pathlib.Path('C:/Users') / os.environ.get('USERNAME', '') / 'Projects' / 'edifice' / 'plugins' / 'edifice-mission-report',
+    home / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'edifice-mission-report',
+    home / 'projects' / 'bluegreen-marketplace' / 'plugins' / 'edifice-mission-report',
+    pathlib.Path('C:/Users') / os.environ.get('USERNAME', '') / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'edifice-mission-report',
 ]:
-    if dev_path.joinpath('download_photos.py').exists():
+    if dev_path.joinpath('build_context.py').exists():
         print(str(dev_path)); sys.exit(0)
 
 print('PLUGIN_DIR_NOT_FOUND')
 PYEOF
 )
 if [ "$PLUGIN_DIR" = "PLUGIN_DIR_NOT_FOUND" ]; then
-  echo "ERROR: Plugin dir introuvable. Lance /edifice pair ou définis EDIFICE_PLUGIN_DIR."
+  echo "ERROR: Plugin dir introuvable. Définis EDIFICE_PLUGIN_DIR=<chemin> dans ton shell."
   exit 1
 fi
 ```
@@ -86,60 +73,36 @@ MISSION_DIR="./mission"
 
 ## /edifice pull
 
-Pull mission data via the **hal-mcp** server. Reads the `*.edifice.md`
-briefing, fetches project + building + notes + photos (with signed URLs) from
-Supabase through the `get_mission_with_assets` MCP tool, writes
-`mission/context.json`, then downloads the photos.
+Three steps. Claude does only step 2 (one MCP call + one file write).
+The script handles everything else deterministically.
 
 ### Steps
 
 **1. Parse mission ID from briefing**
 ```bash
 BRIEFING=$(find . -maxdepth 1 -name "*.edifice.md" | head -1)
-python3 -c "
+MISSION_ID=$(python3 -c "
 import re, pathlib, sys
 text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8')
 m = re.search(r'edifice_mission_id:\s*([0-9a-f-]{36})', text)
 print(m.group(1) if m else 'NOT_FOUND')
-" "$BRIEFING"
+" "$BRIEFING")
+echo "Mission ID: $MISSION_ID"
 ```
 
-**2. Call MCP tool `get_mission_with_assets`** with the mission UUID. The
-response contains: `project`, `building`, `notes[]`, `photos[]` (each with
-`signed_url` valid 1h), `note_count`, `photo_count`.
+**2. Call MCP `get_mission_with_assets`** with `MISSION_ID`.
+Write the raw JSON response to `mission/mcp_response.json` with the Write tool.
+Do not interpret or transform the response — write it verbatim.
 
-**3. Build `mission/context.json`** from the MCP response. Use the unified
-vocabulary end-to-end (see `/edifice improve` below for the per-type schema).
-
-- `project_type` ← `project.type` (`diagnostic` | `suivi_chantier` | `devis`)
-- Header fields (`titre_service`, `client`, `residence`, `adresse`,
-  `code_postal_ville`, `description_batiment`, `ref_dossier`, `date_visite`,
-  `objet_visite`, `synthese`, `conclusion`) ← derived from
-  `project.mission_context` + `building`
-- `observations[]` ← `notes[]`, one per note, with the unified fields:
-  `ref`, `note_id`, `name`, `zone`, `location`, `description`, `assessment`,
-  `recommendations`, `metadata`. For each observation, attach `photos[]`
-  (and `photo` for templates that take a single one) — the filenames of
-  photos whose `note_id` matches the observation.
-- `photos[]` ← the full photos array from the MCP response (with `signed_url`)
-- `building_id` ← `project.building_id`
-
-Write the result to `./mission/context.json` with the Write tool.
-
-**4. Download photos via signed URLs**
+**3. Run build_context.py**
 ```bash
-python3 $PLUGIN_DIR/download_photos.py ./mission/context.json ./mission/photos/
+mkdir -p mission
+python3 $PLUGIN_DIR/build_context.py mission/mcp_response.json ./mission --photos-dir ./mission/photos
 ```
 
-No auth needed — signed URLs are pre-authorized.
-
-**5. Display mission summary**
-
-Print: mission name, type, building, note count, photo count, then one line
-per observation: `ref | zone | assessment | name | description[:80]`.
-
-Mention the mission type — it determines which template `/edifice report`
-will use.
+The script builds `mission/context.json` with all fields pre-filled for the
+mission's `project_type`, maps notes → observations, and downloads all photos
+from their signed URLs. It prints the summary.
 
 ---
 
