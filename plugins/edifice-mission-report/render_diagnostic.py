@@ -13,8 +13,20 @@ from pathlib import Path
 
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Cm
+from PIL import Image
 
 TEMPLATE_PATH = Path(__file__).parent / "templates" / "ic-ingenieurs" / "diagnostic.docx"
+
+
+def _inline_image_auto_orient(doc, path_str, max_width_cm=7.5, max_height_cm=10.0):
+    try:
+        with Image.open(path_str) as img:
+            w, h = img.size
+        if h > w:
+            return InlineImage(doc, path_str, height=Cm(max_height_cm))
+        return InlineImage(doc, path_str, width=Cm(max_width_cm))
+    except Exception:
+        return InlineImage(doc, path_str, width=Cm(max_width_cm))
 
 MOIS_FR = [
     "janvier", "février", "mars", "avril", "mai", "juin",
@@ -49,7 +61,7 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
             path = Path(photos_dir) / str(p)
             if path.exists():
                 try:
-                    photos_img.append(InlineImage(doc, str(path), width=Cm(7.5)))
+                    photos_img.append(_inline_image_auto_orient(doc, str(path)))
                 except Exception:
                     photos_img.append(None)
             else:

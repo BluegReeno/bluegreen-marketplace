@@ -14,6 +14,7 @@ import argparse
 import datetime
 import json
 import pathlib
+import re
 import sys
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -22,6 +23,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # ---------------------------------------------------------------------------
 # Context builders
 # ---------------------------------------------------------------------------
+
+def _clean_address(addr: str) -> str:
+    if not addr:
+        return addr
+    return re.sub(r"\s*\([^)]+\)", "", addr).strip()
+
 
 def _parse_mission_context(project: dict) -> dict:
     mc = project.get("mission_context") or {}
@@ -40,7 +47,7 @@ def _build_header_diagnostic(project: dict, building: dict | None, mc: dict) -> 
         "titre_service": mc.get("titre_service") or project.get("name") or "",
         "client": mc.get("client") or "",
         "residence": mc.get("residence") or (building.get("name") if building else "") or "",
-        "adresse": mc.get("adresse") or (building.get("address") if building else "") or "",
+        "adresse": _clean_address(mc.get("adresse") or (building.get("address") if building else "") or ""),
         "code_postal_ville": mc.get("code_postal_ville") or "",
         "ref_dossier": mc.get("ref_dossier") or "",
         "date_visite": mc.get("date_visite") or datetime.date.today().isoformat(),
@@ -59,7 +66,7 @@ def _build_header_suivi_chantier(project: dict, building: dict | None, mc: dict)
         "client": mc.get("client") or "",
         "residence": mc.get("residence") or (building.get("name") if building else "") or "",
         "batiments_visites": mc.get("batiments_visites") or "",
-        "adresse": mc.get("adresse") or (building.get("address") if building else "") or "",
+        "adresse": _clean_address(mc.get("adresse") or (building.get("address") if building else "") or ""),
         "code_postal_ville": mc.get("code_postal_ville") or "",
         "ref_dossier": mc.get("ref_dossier") or "",
         "date_visite": mc.get("date_visite") or datetime.date.today().isoformat(),
@@ -80,7 +87,7 @@ def _build_header_devis(project: dict, building: dict | None, mc: dict) -> dict:
         "interlocuteur_nom": mc.get("interlocuteur_nom") or "",
         "interlocuteur_role": mc.get("interlocuteur_role") or "",
         "interlocuteur_contact": mc.get("interlocuteur_contact") or "",
-        "adresse": mc.get("adresse") or (building.get("address") if building else "") or "",
+        "adresse": _clean_address(mc.get("adresse") or (building.get("address") if building else "") or ""),
         "type_batiment": (building.get("building_type") if building else "") or "",
         "annee_construction": mc.get("annee_construction") or "",
         "nb_etages": mc.get("nb_etages") or "",
