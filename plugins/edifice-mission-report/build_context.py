@@ -16,6 +16,7 @@ import json
 import pathlib
 import sys
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 # ---------------------------------------------------------------------------
@@ -181,24 +182,37 @@ def build_observations(notes: list, photos: list, project_type: str) -> tuple[li
 # Photo download
 # ---------------------------------------------------------------------------
 
-def download_photos(photos: list, photos_dir: pathlib.Path) -> tuple[int, int]:
+def _download_one(photo: dict, photos_dir: pathlib.Path) -> tuple[str, bool, str]:
+    signed_url = photo.get("signed_url")
+    storage_path = photo.get("storage_path") or ""
+    filename = pathlib.Path(storage_path).name if storage_path else (
+        photo.get("original_filename") or photo.get("filename") or ""
+    )
+    if not signed_url or not filename:
+        return filename, False, "missing url or filename"
+    dest = photos_dir / filename
+    if dest.exists():
+        return filename, True, "already exists"
+    try:
+        urllib.request.urlretrieve(signed_url, dest)
+        return filename, True, ""
+    except Exception as e:
+        return filename, False, str(e)
+
+
+def download_photos(photos: list, photos_dir: pathlib.Path, workers: int = 8) -> tuple[int, int]:
     photos_dir.mkdir(parents=True, exist_ok=True)
     ok = skipped = 0
-    for photo in photos:
-        signed_url = photo.get("signed_url")
-        storage_path = photo.get("storage_path") or ""
-        filename = pathlib.Path(storage_path).name if storage_path else (
-            photo.get("original_filename") or photo.get("filename") or ""
-        )
-        if not signed_url or not filename:
-            skipped += 1
-            continue
-        try:
-            urllib.request.urlretrieve(signed_url, photos_dir / filename)
-            ok += 1
-        except Exception as e:
-            print(f"  ✗ {filename}: {e}", file=sys.stderr)
-            skipped += 1
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(_download_one, p, photos_dir): p for p in photos}
+        for future in as_completed(futures):
+            filename, success, err = future.result()
+            if success:
+                ok += 1
+            else:
+                if err:
+                    print(f"  ✗ {filename}: {err}", file=sys.stderr)
+                skipped += 1
     return ok, skipped
 
 
