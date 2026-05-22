@@ -24,10 +24,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # Context builders
 # ---------------------------------------------------------------------------
 
+# BAN API addresses include city suffix in parens — e.g. "12 Rue Carnot (Saint-Denis)"
 def _clean_address(addr: str) -> str:
     if not addr:
-        return addr
-    return re.sub(r"\s*\([^)]+\)", "", addr).strip()
+        return ""
+    return re.sub(r"\s*\([^)]+\)\s*$", "", addr).strip()
 
 
 def _parse_mission_context(project: dict) -> dict:

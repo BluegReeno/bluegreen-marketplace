@@ -12,6 +12,23 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.6.1] — 2026-05-22 — Portrait photo orientation + address cleanup
+
+### Fixed
+- `render_diagnostic.py`, `render_cr_visite.py` — `_inline_image_auto_orient()` uses
+  `ImageOps.exif_transpose()` for EXIF-correct dimensions, adds overflow guard for narrow
+  columns (portrait capped at `max_width_cm` when height constraint would overflow), and
+  logs Pillow failures to stderr instead of silently reverting. Resolves the portrait
+  rendering note from v0.4.1.
+- `build_context.py` — `_clean_address()` anchors regex to end of string (`$`) to avoid
+  stripping mid-string parentheticals (e.g. building designations); fixes `return addr`
+  type hole when addr is falsy.
+
+### Performance
+- `build_context.py` — parallel photo download via `ThreadPoolExecutor(max_workers=8)`.
+
+---
+
 ## [0.5.0] — 2026-05-19 — Note assessment schema v1 + MCP-first refactor
 
 ### Changed (interface)

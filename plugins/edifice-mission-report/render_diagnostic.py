@@ -8,12 +8,13 @@ Usage:
 
 import argparse
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Cm
-from PIL import Image
+from PIL import Image, ImageOps
 
 TEMPLATE_PATH = Path(__file__).parent / "templates" / "ic-ingenieurs" / "diagnostic.docx"
 
@@ -21,11 +22,16 @@ TEMPLATE_PATH = Path(__file__).parent / "templates" / "ic-ingenieurs" / "diagnos
 def _inline_image_auto_orient(doc, path_str, max_width_cm=7.5, max_height_cm=10.0):
     try:
         with Image.open(path_str) as img:
-            w, h = img.size
+            corrected = ImageOps.exif_transpose(img)
+            w, h = corrected.size
         if h > w:
+            # Guard: portrait at max_height might exceed max_width in narrow columns
+            if max_height_cm * (w / h) > max_width_cm:
+                return InlineImage(doc, path_str, width=Cm(max_width_cm))
             return InlineImage(doc, path_str, height=Cm(max_height_cm))
         return InlineImage(doc, path_str, width=Cm(max_width_cm))
-    except Exception:
+    except Exception as e:
+        print(f"  ⚠ orient {path_str}: {e}", file=sys.stderr)
         return InlineImage(doc, path_str, width=Cm(max_width_cm))
 
 MOIS_FR = [
