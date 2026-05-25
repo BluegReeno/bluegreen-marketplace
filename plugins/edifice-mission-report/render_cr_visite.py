@@ -8,13 +8,29 @@ Usage:
 
 import argparse
 import json
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Cm
+from PIL import Image, ImageOps
 
 TEMPLATE_PATH = Path(__file__).parent / "templates" / "ic-ingenieurs" / "suivi_chantier.docx"
+
+def _auto_rotate(path: Path) -> Path:
+    """Return path to EXIF-corrected copy if orientation tag requires rotation, else original."""
+    try:
+        img = Image.open(path)
+        rotated = ImageOps.exif_transpose(img)
+        if rotated is img:
+            return path
+        tmp = Path(tempfile.mktemp(suffix=path.suffix))
+        rotated.save(tmp)
+        return tmp
+    except Exception:
+        return path
+
 
 MOIS_FR = [
     "janvier", "février", "mars", "avril", "mai", "juin",
@@ -49,7 +65,7 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
             path = Path(photos_dir) / photo_file
             if path.exists():
                 try:
-                    photo_img = InlineImage(doc, str(path), width=Cm(5.0))
+                    photo_img = InlineImage(doc, str(_auto_rotate(path)), width=Cm(5.0))
                 except Exception:
                     photo_img = None
         observation_text = obs.get("description") or obs.get("observation", "")

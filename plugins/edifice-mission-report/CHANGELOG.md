@@ -12,6 +12,16 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.6.2] — 2026-05-25 — EXIF auto-rotation fix
+
+### Fixed
+- `render_diagnostic.py` + `render_cr_visite.py` — photos are now auto-rotated based on
+  EXIF orientation tag before being embedded as `InlineImage`. Fixes Android photos displayed
+  sideways in generated DOCX reports. Uses `PIL.ImageOps.exif_transpose` (Pillow already
+  required by docxtpl). No-op if EXIF tag is absent or already correct.
+
+---
+
 ## [0.5.0] — 2026-05-19 — Note assessment schema v1 + MCP-first refactor
 
 ### Changed (interface)
