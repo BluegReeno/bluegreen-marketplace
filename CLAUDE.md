@@ -19,7 +19,7 @@ Clients install plugins via:
 
 | Plugin | Source repo | Status |
 |--------|------------|--------|
-| `edifice-mission-report` | `edifice/plugins/edifice-mission-report/` | v0.3.3 — live |
+| `edifice-mission-report` | `plugins/edifice-mission-report/` (developed here) | v0.6.3 — live |
 | `hal-crm` | `hal/plugins/hal-crm/` | placeholder — future sprint |
 
 ---
@@ -54,15 +54,9 @@ bluegreen-marketplace/
 Releases are intentional and infrequent (~1-2/month). No GitHub Actions by design (see `docs/brief.md` — Out of scope).
 
 ```bash
-# 1. Copy plugin from edifice
-rsync -av --delete \
-  ../edifice/plugins/edifice-mission-report/ \
-  plugins/edifice-mission-report/
-
-# 2. Bump version in .claude-plugin/marketplace.json
-# 3. Append entry to edifice/docs/plugin-release-log.md
-# 4. Commit and push
-git add -A && git commit -m "chore: sync edifice-mission-report vX.Y.Z"
+# 1. Bump version in plugin.json, SKILL.md, and marketplace.json (must stay identical)
+# 2. Commit and push
+git add -A && git commit -m "chore(edifice-mission-report): release vX.Y.Z"
 ```
 
 ---
@@ -100,8 +94,8 @@ See `docs/brief.md` → "Plugin skill constraints" for full rationale and decisi
 
 ## Common Gotchas
 
-- `marketplace.json` version must match `plugin.json` version after each sync
-- Do not develop plugin code here — development happens in `edifice/` and `hal/`
+- `marketplace.json` version must match `plugin.json` and `SKILL.md` version — all three always identical
+- `edifice-mission-report` is developed directly in this repo (`plugins/edifice-mission-report/`)
 - `plugins/hal-crm/` is intentionally empty — do not add code until the hal CRM Postgres migration is done
 
 ---
