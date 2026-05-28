@@ -20,6 +20,7 @@ The public interface is identical regardless of backend:
 import json
 import os
 import re
+import sys
 import unicodedata
 from pathlib import Path
 
@@ -607,7 +608,9 @@ class ObsidianAPI:
                     self._init_api(cfg)
                     # Quick connectivity check
                     self._backend.status()
-                except Exception:
+                except Exception as e:
+                    print(f"[obsidian_api] REST API unavailable ({e!r}), falling back to filesystem",
+                          file=sys.stderr)
                     self._backend = None
 
             if self._backend is None:

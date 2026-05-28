@@ -26,7 +26,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 OBSIDIAN_SCRIPTS = SCRIPT_DIR / "obsidian"
-SCHEMAS_PATH = OBSIDIAN_SCRIPTS / "references" / "schemas.md"
+
 
 FOLDER_HINTS = {
     "candidature": "CRM-JobSearch",
@@ -127,7 +127,8 @@ def search_vault(query: str, vault: str) -> list[dict]:
         return []
     try:
         return json.loads(r.stdout)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(f"search_vault.py output parse error: {e} — raw: {r.stdout[:200]!r}", file=sys.stderr)
         return []
 
 
@@ -165,13 +166,6 @@ def update_field(path: str, field: str, value, vault: str) -> dict:
         return {"ok": True, "stdout": r.stdout}
 
 
-def load_schemas() -> str:
-    """Load schemas.md as the source of truth for note types and fields."""
-    if SCHEMAS_PATH.exists():
-        return SCHEMAS_PATH.read_text(encoding="utf-8")
-    return ""
-
-
 def main():
     parser = argparse.ArgumentParser(description="Update the Obsidian vault from natural language")
     parser.add_argument("--vault", required=True, help="Path to the Obsidian vault root")
@@ -183,8 +177,6 @@ def main():
     if not Path(args.vault).exists():
         print(f"ERROR: vault not found: {args.vault}", file=sys.stderr)
         sys.exit(1)
-
-    load_schemas()
 
     folder_hint = detect_folder_hint(args.text)
     entity = extract_entity(args.text)

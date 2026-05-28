@@ -11,7 +11,7 @@ In Claude Code or Cowork:
 ## Install a plugin
 
 ```
-/plugin install edifice-mission-report@bluegreen-marketplace
+/plugin install hal@bluegreen-marketplace
 ```
 
 ## Enable auto-updates
@@ -20,7 +20,7 @@ In Claude Code or Cowork:
 
 ## Available plugins
 
-| Plugin | Description |
-|---|---|
-| `edifice-mission-report` | Pull a building inspection mission, qualify with AI, generate DOCX report |
-| `hal-crm` *(coming soon)* | Interact with client projects, quotes, and tasks via natural language |
+| Plugin | Skills | Description |
+|--------|--------|-------------|
+| `hal` | `/edifice`, `/hal update` | Building inspection reports + Obsidian vault updates |
+| `hal-crm` *(coming soon)* | — | Client projects and tasks via natural language |

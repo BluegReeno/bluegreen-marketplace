@@ -25,11 +25,9 @@ from obsidian_api import ObsidianAPI
 
 
 def next_monday(from_date=None):
-    """Return next Monday as YYYY-MM-DD string."""
+    """Return next Monday as YYYY-MM-DD string (returns today if today is Monday)."""
     d = from_date or datetime.now().date()
-    days_ahead = 7 - d.weekday()  # Monday = 0
-    if days_ahead <= 0:
-        days_ahead += 7
+    days_ahead = (7 - d.weekday()) % 7  # 0 on Monday → returns today
     return (d + timedelta(days=days_ahead)).isoformat()
 
 
@@ -94,7 +92,11 @@ def main():
                         help="Preview changes without applying them")
     args = parser.parse_args()
 
-    api = ObsidianAPI()
+    try:
+        api = ObsidianAPI()
+    except Exception as e:
+        print(json.dumps({"error": str(e)}), file=sys.stderr)
+        sys.exit(1)
     dry = args.dry_run
     actions = []
 

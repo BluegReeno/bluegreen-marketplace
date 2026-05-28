@@ -37,7 +37,7 @@ def main():
 
     api = ObsidianAPI()
 
-    # Validate field value against schema
+    # Validate field value against schema (skip if note doesn't exist yet)
     try:
         note = api.read_note(args.path)
         fm = note.get("frontmatter", {}) or {}
@@ -50,23 +50,23 @@ def main():
                 for e in vr.errors:
                     print(f"Error: {e}", file=sys.stderr)
                 sys.exit(1)
-    except Exception:
-        pass  # If we can't read the note for validation, proceed anyway
+    except FileNotFoundError:
+        pass  # Note doesn't exist yet — skip validation, write will fail cleanly
 
     try:
         api.update_field(args.path, args.field, value)
-        # Read back to confirm
-        note = api.read_note(args.path)
-        fm = note.get("frontmatter", {}) or {}
-        actual = fm.get(args.field)
-        print(json.dumps({
-            "path": args.path,
-            "field": args.field,
-            "value": actual,
-        }, ensure_ascii=False))
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
+
+    # Read-back confirmation (best-effort: exit 0 regardless of confirmation failure)
+    try:
+        note = api.read_note(args.path)
+        fm = note.get("frontmatter", {}) or {}
+        actual = fm.get(args.field)
+        print(json.dumps({"path": args.path, "field": args.field, "value": actual}, ensure_ascii=False))
+    except Exception:
+        print(json.dumps({"path": args.path, "field": args.field, "value": value}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

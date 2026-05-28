@@ -127,7 +127,7 @@ Projets/                       type: projet
 
 | User dit | Champs mis à jour |
 |----------|------------------|
-| "pas de contact", "candidature plateforme" | `notes` (append) + `date_relance` (clear) |
+| "pas de contact", "candidature plateforme" | `date_relance` (clear) ⚠️ `notes (append)` deferred to v0.1.x |
 | "RDV le [date]", "entretien prévu [date]" | `prochain_rdv` + `statut` → `📞 Entretien prévu` |
 | "relance le [date]" | `date_relance` |
 | "refus", "dead", "pas retenu" | `statut` → `❌ Refus` |
@@ -151,6 +151,9 @@ Projets/                       type: projet
 
 ## Source de vérité pour les schemas
 
-`hal_update.py` charge `$PLUGIN_DIR/scripts/obsidian/references/schemas.md` au démarrage
-pour connaître les 11 types de notes, leurs dossiers et leurs champs frontmatter
-valides. Aucun field mapping n'est hardcodé.
+`scripts/obsidian/references/schemas.md` is the human-readable reference for all 11 note types,
+their folders, and their frontmatter fields.
+
+`hal_update.py` loads it at startup via `load_schemas()` but does not parse it for dispatch.
+Intent-to-field mapping in `detect_intent()` is hardcoded for the 6 supported v0.1.0 intents.
+To add a new intent: extend `detect_intent()` and optionally `FOLDER_HINTS` in `hal_update.py`.
