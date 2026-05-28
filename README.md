@@ -12,24 +12,27 @@ In Claude Code or Cowork (one-time):
 
 ## Available plugins
 
-### `edifice-mission-report` — Building inspection reports
+### `hal` — Second brain and mission workflow
 
-Pull an Edifice mission from Supabase, qualify observations with AI, and generate the DOCX diagnostic report — directly from Claude Cowork or Claude Code.
+Two skills in one plugin:
+
+- **`/edifice`** — Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report
+- **`/hal update`** — Update the Obsidian SecondLife vault from a natural-language instruction
 
 **Install:**
 ```
-/plugin install edifice-mission-report@bluegreen-marketplace
+/plugin install hal@bluegreen-marketplace
 ```
 
-**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account.
+**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac), a paired Edifice account (for `/edifice`), and an Obsidian vault at `OBSIDIAN_VAULT_PATH` (for `/hal update`).
 
-See [`plugins/edifice-mission-report/README.md`](plugins/edifice-mission-report/README.md) for full setup instructions.
+See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions.
 
 ---
 
 ### `hal-crm` *(coming soon)*
 
-Interact with client projects, quotes, and tasks via natural language.
+Interact with client projects, quotes, and tasks via natural language — backed by Supabase CRM.
 
 ---
 
@@ -43,9 +46,24 @@ Interact with client projects, quotes, and tasks via natural language.
 
 Plugin code lives directly in this repo. Each plugin is self-contained under `plugins/<name>/`.
 
-| Plugin | Status |
-|--------|--------|
-| `edifice-mission-report` | Active |
-| `hal-crm` | Coming soon |
+| Plugin | Skills | Status |
+|--------|--------|--------|
+| `hal` | `edifice`, `hal` | v0.1.0 — active |
+| `hal-crm` | — | Coming soon |
+
+```
+plugins/hal/
+├── .claude-plugin/plugin.json
+├── .mcp.json                    # hal-mcp SSE server
+├── skills/
+│   ├── edifice/SKILL.md         # /edifice — building inspection reports
+│   └── hal/SKILL.md             # /hal update — Obsidian vault writes
+├── scripts/
+│   ├── *.py                     # edifice: build_context, render_*, download_photos
+│   ├── hal_update.py            # NL parser + orchestrator for vault writes
+│   └── obsidian/                # bundled obsidian-crm scripts (source of truth)
+├── templates/                   # DOCX report templates
+└── organizations/               # client config
+```
 
 See `docs/brief.md` for the full architecture rationale.
