@@ -32,6 +32,18 @@ def _auto_rotate(path: Path) -> Path:
         return path
 
 
+def _inline_image_auto_orient(doc: DocxTemplate, path: Path, max_width_cm: float, max_height_cm: float) -> InlineImage:
+    """Width constraint for landscape photos, height constraint for portrait (avoids tiny rendering)."""
+    corrected = _auto_rotate(path)
+    try:
+        w, h = Image.open(corrected).size
+        if h > w:
+            return InlineImage(doc, str(corrected), height=Cm(max_height_cm))
+    except Exception:
+        pass
+    return InlineImage(doc, str(corrected), width=Cm(max_width_cm))
+
+
 MOIS_FR = [
     "janvier", "février", "mars", "avril", "mai", "juin",
     "juillet", "août", "septembre", "octobre", "novembre", "décembre",
@@ -65,7 +77,7 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
             path = Path(photos_dir) / photo_file
             if path.exists():
                 try:
-                    photo_img = InlineImage(doc, str(_auto_rotate(path)), width=Cm(5.0))
+                    photo_img = _inline_image_auto_orient(doc, path, max_width_cm=5.0, max_height_cm=8.0)
                 except Exception:
                     photo_img = None
         observation_text = obs.get("description") or obs.get("observation", "")
