@@ -16,7 +16,7 @@ from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Cm
 from PIL import Image, ImageOps
 
-TEMPLATE_PATH = Path(__file__).parent / "templates" / "ic-ingenieurs" / "diagnostic.docx"
+TEMPLATE_PATH = Path(__file__).parent.parent / "templates" / "ic-ingenieurs" / "diagnostic.docx"
 
 def _auto_rotate(path: Path) -> Path:
     """Return path to EXIF-corrected copy if orientation tag requires rotation, else original."""
