@@ -17,10 +17,10 @@ Clients install plugins via:
 /plugin marketplace add BluegReeno/bluegreen-marketplace
 ```
 
-| Plugin | Source repo | Status |
-|--------|------------|--------|
-| `edifice-mission-report` | `plugins/edifice-mission-report/` (developed here) | v0.6.3 — live |
-| `hal-crm` | `hal/plugins/hal-crm/` | placeholder — future sprint |
+| Plugin | Status | Skills |
+|--------|--------|--------|
+| `hal` | `plugins/hal/` — developed here | `edifice` + `hal` |
+| `hal-crm` | placeholder — future sprint | — |
 
 ---
 
@@ -31,13 +31,28 @@ bluegreen-marketplace/
 ├── .claude-plugin/
 │   └── marketplace.json          # registry entry point (Anthropic schema)
 ├── plugins/
-│   ├── edifice-mission-report/   # mirrored from edifice (manual sync on release)
+│   ├── hal/
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/edifice/SKILL.md
-│   │   ├── *.py                  # pull_mission, render_*, pair scripts
+│   │   ├── .mcp.json             # hal-mcp SSE server + version
+│   │   ├── skills/
+│   │   │   ├── edifice/SKILL.md  # /edifice — building inspection reports
+│   │   │   └── hal/SKILL.md      # /hal update — Obsidian vault writes
+│   │   ├── scripts/
+│   │   │   ├── *.py              # edifice: build_context, render_*, download_photos
+│   │   │   ├── hal_update.py     # NL parser + orchestrator for vault writes
+│   │   │   └── obsidian/         # bundled obsidian-crm scripts ← source of truth ★
+│   │   │       ├── obsidian_api.py
+│   │   │       ├── note_schemas.py
+│   │   │       ├── search_vault.py
+│   │   │       ├── read_note.py
+│   │   │       ├── list_notes.py
+│   │   │       ├── create_note.py
+│   │   │       ├── update_frontmatter.py
+│   │   │       ├── sprint_transition.py
+│   │   │       └── references/schemas.md
 │   │   ├── templates/            # *.docx report templates
+│   │   ├── organizations/        # client config
 │   │   ├── requirements.txt
-│   │   ├── schema-contract.json  # cross-repo sync anchor ★
 │   │   └── CHANGELOG.md
 │   └── hal-crm/
 │       └── .gitkeep              # placeholder — future sprint
@@ -47,6 +62,40 @@ bluegreen-marketplace/
 └── README.md                     # public-facing install guide
 ```
 
+### Source of truth — obsidian-crm scripts
+
+`plugins/hal/scripts/obsidian/` **is the single source of truth** for vault I/O scripts. Do not sync from `MyClaudeSkills/obsidian-crm` or any other location at runtime — the bundle is self-contained for Cowork ephemeral sandboxes.
+
+---
+
+## Versioning Policy
+
+Each component tracks its own version independently.
+
+| Component | Version field | File |
+|-----------|--------------|------|
+| Plugin `hal` | `"version"` | `plugins/hal/.claude-plugin/plugin.json` |
+| Skill `edifice` | `version:` frontmatter | `plugins/hal/skills/edifice/SKILL.md` |
+| Skill `hal` | `version:` frontmatter | `plugins/hal/skills/hal/SKILL.md` |
+| MCP `hal-mcp` | `"version"` | `plugins/hal/.mcp.json` |
+| Marketplace | `"version"` | `.claude-plugin/marketplace.json` |
+
+**Bump rule per release:**
+- Each modified component → PATCH+1 on that component
+- Plugin → always PATCH+1 once per release (regardless of how many components changed)
+- Marketplace version = plugin version (always in sync)
+- `MINOR` (`0.x.0`) for interface changes (new command, new required field)
+- `PATCH` (`0.0.x`) for bugfix and internal improvements
+
+**Example:**
+
+| Release | What changed | `edifice` | `hal` skill | `hal-mcp` | plugin |
+|---------|-------------|:---------:|:-----------:|:---------:|:------:|
+| v0.1.0 (initial) | — | 0.1.0 | 0.1.0 | 0.1.0 | **0.1.0** |
+| next — edifice only | edifice bugfix | **0.1.1** | 0.1.0 | 0.1.0 | **0.1.1** |
+| next — hal skill | new vault field | 0.1.1 | **0.1.1** | 0.1.0 | **0.1.2** |
+| next — Supabase migration | hal skill interface | 0.1.1 | **0.2.0** | **0.2.0** | **0.2.0** |
+
 ---
 
 ## Release Process (manual — no CI)
@@ -54,9 +103,10 @@ bluegreen-marketplace/
 Releases are intentional and infrequent (~1-2/month). No GitHub Actions by design (see `docs/brief.md` — Out of scope).
 
 ```bash
-# 1. Bump version in plugin.json, SKILL.md, and marketplace.json (must stay identical)
-# 2. Commit and push
-git add -A && git commit -m "chore(edifice-mission-report): release vX.Y.Z"
+# 1. Bump version in each modified component (see Versioning Policy above)
+# 2. Bump plugin version in plugin.json and marketplace.json (must stay identical)
+# 3. Commit and push
+git add -A && git commit -m "chore(hal): release vX.Y.Z"
 ```
 
 ---
@@ -94,8 +144,10 @@ See `docs/brief.md` → "Plugin skill constraints" for full rationale and decisi
 
 ## Common Gotchas
 
-- `marketplace.json` version must match `plugin.json` and `SKILL.md` version — all three always identical
-- `edifice-mission-report` is developed directly in this repo (`plugins/edifice-mission-report/`)
+- `marketplace.json` version must match `plugin.json` version — always in sync
+- Component skill versions (SKILL.md) are independent — they only bump when that skill changes
+- `hal` plugin is developed directly in this repo (`plugins/hal/`)
+- `plugins/hal/scripts/obsidian/` is the source of truth for vault I/O — do not edit scripts elsewhere
 - `plugins/hal-crm/` is intentionally empty — do not add code until the hal CRM Postgres migration is done
 
 ---
