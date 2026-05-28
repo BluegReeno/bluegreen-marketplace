@@ -13,7 +13,7 @@ from pathlib import Path
 
 from docxtpl import DocxTemplate
 
-TEMPLATE_PATH = Path(__file__).parent / "templates" / "ic-ingenieurs" / "devis.docx"
+TEMPLATE_PATH = Path(__file__).parent.parent / "templates" / "ic-ingenieurs" / "devis.docx"
 
 MOIS_FR = [
     "janvier", "février", "mars", "avril", "mai", "juin",
