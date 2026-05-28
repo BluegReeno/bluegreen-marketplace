@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "hal-mcp": {
-      "type": "http",
-      "url": "https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp"
-    }
-  }
-}

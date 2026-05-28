@@ -1,8 +1,12 @@
-# Changelog — edifice-mission-report
+# Changelog — hal
 
 All notable changes to this plugin are documented here.
 
 ## Versioning convention
+
+Per-component versioning (see repo `CLAUDE.md`). Each component (plugin, skill `edifice`,
+skill `hal`, MCP `hal-mcp`) tracks its own SemVer-ish version. Plugin PATCH bumps once per
+release; component PATCH bumps only when that component changes.
 
 `0.MINOR.PATCH` (pré-1.0) :
 - **PATCH** (`0.x.Y+1`) — bugfix, ajout de champ optionnel, amélioration interne sans impact sur l'interface
@@ -11,6 +15,31 @@ All notable changes to this plugin are documented here.
 Règle : les refactors internes (changement de librairie, restructuration code) qui ne modifient pas l'interface publique → PATCH, pas MINOR.
 
 ---
+
+## [0.1.0] — 2026-05-28 — HAL plugin : renommage + skill /hal (Obsidian vault)
+
+### Changed
+- Plugin renommé `edifice-mission-report` → `hal`.
+- Scripts edifice déplacés à la racine du plugin → `scripts/` pour aligner avec la structure mixte (edifice + hal). Le `PLUGIN_DIR` reste la racine du plugin ; les renderers résolvent désormais `templates/` via `__file__.parent.parent`.
+- Skill `edifice` : version reset à 0.1.0 sous le plugin renommé (l'historique précédent reste documenté ci-dessous).
+- `EDIFICE_PLUGIN_DIR` env var → `HAL_PLUGIN_DIR`.
+
+### Added
+- Skill `hal` v0.1.0 — `/hal update` : mise à jour du vault Obsidian SecondLife depuis une instruction en langage naturel.
+- `scripts/hal_update.py` — NL parser + orchestrateur des writes via les scripts `obsidian-crm`.
+- `scripts/obsidian/` — bundle des scripts `obsidian-crm` (vault I/O, source de vérité unique pour le plugin) + `references/schemas.md` (11 types de notes CRM).
+- `requirements.txt` : `rapidfuzz>=3.0` pour le fuzzy matching des titres de notes.
+- `.mcp.json` : champ `version: 0.1.0` sur l'entrée `hal-mcp` (versioning explicite du MCP).
+
+### Architecture
+- Politique de versioning par composant documentée dans `CLAUDE.md` (plugin / skill / MCP indépendants).
+- `/hal` v0.2.0 (future) — migration data layer Obsidian → Supabase via les outils CRM `hal-mcp`, quand la migration sera prête.
+
+---
+
+## Legacy — edifice-mission-report
+
+Historique avant le renommage en `hal`.
 
 ## [0.6.2] — 2026-05-25 — EXIF auto-rotation fix
 

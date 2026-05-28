@@ -5,11 +5,14 @@
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
   "plugins": [
     {
-      "name": "edifice-mission-report",
-      "description": "Pull an Edifice building inspection mission from Supabase, qualify with AI, generate the DOCX report.",
-      "source": "./plugins/edifice-mission-report",
-      "skills": ["./plugins/edifice-mission-report/skills/edifice"],
-      "version": "0.6.3",
+      "name": "hal",
+      "description": "HAL — second brain and mission workflow for BlueGreen and IC Ingénieurs Conseils.",
+      "source": "./plugins/hal",
+      "skills": [
+        "./plugins/hal/skills/edifice",
+        "./plugins/hal/skills/hal"
+      ],
+      "version": "0.1.0",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"

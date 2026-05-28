@@ -5,7 +5,7 @@ description: >
   *.edifice.md file, or asks to "pull an Edifice mission", "generate an
   Edifice report", "create a diagnostic report", "generate a devis", or
   "run edifice".
-version: 0.6.3
+version: 0.1.0
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 
@@ -21,39 +21,39 @@ import json, os, pathlib, sys
 home = pathlib.Path.home()
 
 # 1. env var
-env = os.environ.get('EDIFICE_PLUGIN_DIR', '')
-if env and pathlib.Path(env, 'build_context.py').exists():
+env = os.environ.get('HAL_PLUGIN_DIR', '')
+if env and pathlib.Path(env, 'scripts', 'build_context.py').exists():
     print(env); sys.exit(0)
 
 # 2. Claude Code marketplace cache (bluegreen-marketplace)
-for _mkt in ['bluegreen-marketplace', 'edifice-marketplace']:
-    cache_root = home / '.claude' / 'plugins' / 'cache' / _mkt / 'edifice-mission-report'
+for _mkt in ['bluegreen-marketplace']:
+    cache_root = home / '.claude' / 'plugins' / 'cache' / _mkt / 'hal'
     if cache_root.exists():
-        candidates = sorted(cache_root.glob('*/build_context.py'), key=lambda p: p.stat().st_mtime, reverse=True)
+        candidates = sorted(cache_root.glob('*/scripts/build_context.py'), key=lambda p: p.stat().st_mtime, reverse=True)
         if candidates:
-            print(str(candidates[0].parent)); sys.exit(0)
+            print(str(candidates[0].parent.parent)); sys.exit(0)
 
-# 3. Cowork app sandbox: /sessions/*/mnt/.remote-plugins/plugin_*/build_context.py
+# 3. Cowork app sandbox: /sessions/*/mnt/.remote-plugins/plugin_*/scripts/build_context.py
 import glob as _glob
-for pat in ['/sessions/*/mnt/.remote-plugins/*/build_context.py']:
+for pat in ['/sessions/*/mnt/.remote-plugins/*/scripts/build_context.py']:
     matches = sorted(_glob.glob(pat), key=lambda p: os.path.getmtime(p), reverse=True)
     if matches:
-        print(os.path.dirname(matches[0])); sys.exit(0)
+        print(os.path.dirname(os.path.dirname(matches[0]))); sys.exit(0)
 
 # 4. Known dev paths (Mac + Windows)
 for dev_path in [
-    home / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'edifice-mission-report',
-    home / 'projects' / 'bluegreen-marketplace' / 'plugins' / 'edifice-mission-report',
-    pathlib.Path('C:/Users') / os.environ.get('USERNAME', '') / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'edifice-mission-report',
+    home / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'hal',
+    home / 'projects' / 'bluegreen-marketplace' / 'plugins' / 'hal',
+    pathlib.Path('C:/Users') / os.environ.get('USERNAME', '') / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'hal',
 ]:
-    if dev_path.joinpath('build_context.py').exists():
+    if dev_path.joinpath('scripts', 'build_context.py').exists():
         print(str(dev_path)); sys.exit(0)
 
 print('PLUGIN_DIR_NOT_FOUND')
 PYEOF
 )
 if [ "$PLUGIN_DIR" = "PLUGIN_DIR_NOT_FOUND" ]; then
-  echo "ERROR: Plugin dir introuvable. Définis EDIFICE_PLUGIN_DIR=<chemin> dans ton shell."
+  echo "ERROR: Plugin dir introuvable. Définis HAL_PLUGIN_DIR=<chemin> dans ton shell."
   exit 1
 fi
 ```
@@ -97,7 +97,7 @@ Do not interpret or transform the response — write it verbatim.
 **3. Run build_context.py**
 ```bash
 mkdir -p mission
-python3 $PLUGIN_DIR/build_context.py mission/mcp_response.json ./mission --photos-dir ./mission/photos
+python3 $PLUGIN_DIR/scripts/build_context.py mission/mcp_response.json ./mission --photos-dir ./mission/photos
 ```
 
 The script builds `mission/context.json` with all fields pre-filled for the
@@ -205,7 +205,7 @@ Uses `render_report.py` — a unified dispatcher that requires no Supabase conne
 uv run \
   --with "docxtpl>=0.18" \
   --with pillow \
-  python3 $PLUGIN_DIR/render_report.py \
+  python3 $PLUGIN_DIR/scripts/render_report.py \
   mission/context.json \
   --photos-dir mission/photos \
   --output mission/rapport.docx

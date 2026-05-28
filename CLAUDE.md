@@ -113,7 +113,10 @@ git add -A && git commit -m "chore(hal): release vX.Y.Z"
 
 ## schema-contract.json — Cross-repo sync anchor ★
 
-`plugins/edifice-mission-report/schema-contract.json` declares which Supabase tables/columns this plugin depends on. It is a mirror — the source of truth lives in `edifice/plugins/edifice-mission-report/schema-contract.json`.
+`plugins/hal/schema-contract.json` will declare which Supabase tables/columns this plugin
+depends on. It is a mirror — the source of truth lives in `edifice/plugins/hal/schema-contract.json`.
+
+> **Status**: not yet created — planned for the Supabase migration sprint (hal v0.2.0).
 
 **Rule**: after any plugin sync, verify this file matches the current prod Supabase tables. Any version bump that changes table/column dependencies must update this file too.
 
