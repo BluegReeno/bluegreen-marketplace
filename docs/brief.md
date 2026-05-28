@@ -1,3 +1,5 @@
+> **Historical document** — This is the original sprint brief written before the plugin was renamed from `edifice-mission-report` to `hal`. References to `edifice-mission-report` below are intentional and reflect the state at time of writing.
+
 # bluegreen-marketplace — Foundation brief
 
 > **Status**: ready to implement

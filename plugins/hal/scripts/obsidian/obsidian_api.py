@@ -146,8 +146,7 @@ class _RestBackend:
         return r.status_code == 200
 
     def status(self) -> dict:
-        import requests
-        r = requests.get(f"{self.base_url}/", verify=False, timeout=3)
+        r = self._requests.get(f"{self.base_url}/", verify=False, timeout=3)
         r.raise_for_status()
         return r.json()
 
@@ -566,6 +565,7 @@ class _FileBackend:
             return str(fm.get(m.group(1), "")) == m.group(2)
 
         # Unknown condition — pass through (be permissive)
+        print(f"Warning: unknown WHERE condition ignored: {cond!r}", file=sys.stderr)
         return True
 
     def note_exists(self, path: str) -> bool:

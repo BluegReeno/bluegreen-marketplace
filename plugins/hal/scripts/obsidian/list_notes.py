@@ -29,7 +29,6 @@ def main():
 
     try:
         entries = api.list_directory(args.folder)
-        # Filter to .md files only
         md_files = [e for e in entries if isinstance(e, str) and e.endswith(".md")]
         if not md_files:
             # API may return dicts with "path" key
@@ -45,7 +44,6 @@ def main():
             if len(results) >= args.limit:
                 break
 
-            # Build vault-relative path
             path = f"{args.folder}/{filepath}" if "/" not in filepath else filepath
 
             try:

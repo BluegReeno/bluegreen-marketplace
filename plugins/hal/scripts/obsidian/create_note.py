@@ -79,7 +79,6 @@ def main():
         print("Error: name, type, and folder are required", file=sys.stderr)
         sys.exit(1)
 
-    # Validate fields against schema
     result = validate_create(note_type, fields)
     for w in result.warnings:
         print(f"Warning: {w}", file=sys.stderr)
@@ -93,7 +92,6 @@ def main():
     if schema and schema.body_sections and not body:
         body = "\n\n".join(f"{h}\n" for h in schema.body_sections)
 
-    # Build frontmatter
     fm = {"type": note_type}
     fm.update(fields)
 
@@ -102,7 +100,6 @@ def main():
     if body:
         content += f"\n{body}\n"
 
-    # Build path
     filename = sanitize_filename(name)
     path = f"{folder}/{filename}.md"
 
