@@ -13,9 +13,11 @@ Usage:
 import argparse
 import datetime
 import json
+import math
 import pathlib
 import re
 import sys
+import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -187,6 +189,87 @@ def build_observations(notes: list, photos: list, project_type: str) -> tuple[li
 
 
 # ---------------------------------------------------------------------------
+# Building 2D map (download or IGN WMS fallback)
+# ---------------------------------------------------------------------------
+
+def _download_building_2d_map(url: str, building_id: str, output_dir: pathlib.Path) -> pathlib.Path | None:
+    """Download building_2d_map_url to a local PNG. Return local path or None on failure."""
+    dest = output_dir / f"{building_id}_2d_map.png"
+    try:
+        with urllib.request.urlopen(url, timeout=30) as resp:
+            ct = resp.headers.get("Content-Type", "")
+            if "xml" in ct or "text" in ct:
+                print(f"[build_context] Unexpected content-type for 2D map: {ct}", file=sys.stderr)
+                return None
+            dest.write_bytes(resp.read())
+        return dest
+    except Exception as e:
+        print(f"[build_context] Warning: could not download 2D map: {e}", file=sys.stderr)
+        return None
+
+
+def _generate_ign_map(lat: float, lon: float, output_path: pathlib.Path, radius_m: int = 300) -> pathlib.Path | None:
+    """Generate an IGN WMS GetMap PNG from GPS coordinates. Return local path or None on failure."""
+    delta_lat = radius_m / 111320
+    delta_lon = radius_m / (111320 * math.cos(math.radians(lat)))
+    # WMS 1.3.0 + EPSG:4326 bbox order: minLat, minLon, maxLat, maxLon
+    bbox = f"{lat - delta_lat},{lon - delta_lon},{lat + delta_lat},{lon + delta_lon}"
+    params = {
+        "SERVICE": "WMS",
+        "VERSION": "1.3.0",
+        "REQUEST": "GetMap",
+        "LAYERS": "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2",
+        "FORMAT": "image/png",
+        "CRS": "EPSG:4326",
+        "BBOX": bbox,
+        "WIDTH": "800",
+        "HEIGHT": "600",
+        "STYLES": "",
+    }
+    url = "https://data.geopf.fr/wms-r?" + urllib.parse.urlencode(params)
+    try:
+        with urllib.request.urlopen(url, timeout=30) as resp:
+            ct = resp.headers.get("Content-Type", "")
+            if "xml" in ct or "text" in ct:
+                body = resp.read(500).decode("utf-8", errors="replace")
+                print(f"[build_context] IGN WMS error: {body[:200]}", file=sys.stderr)
+                return None
+            output_path.write_bytes(resp.read())
+        return output_path
+    except Exception as e:
+        print(f"[build_context] Warning: IGN WMS fallback failed: {e}", file=sys.stderr)
+        return None
+
+
+def build_building_context(building: dict | None, output_dir: pathlib.Path) -> dict | None:
+    """Build the building context section with local 2D map path.
+
+    Strategy:
+      1. If `building_2d_map_url` is set → download it.
+      2. Else if `latitude` + `longitude` are set → generate via IGN WMS.
+      3. Else → image_2d is None (template block is skipped).
+    """
+    if not building:
+        return None
+    bid = building.get("id") or "building"
+    url = building.get("building_2d_map_url")
+    lat = building.get("latitude")
+    lon = building.get("longitude")
+
+    image_2d: pathlib.Path | None = None
+    if url:
+        image_2d = _download_building_2d_map(url, bid, output_dir)
+    if image_2d is None and lat is not None and lon is not None:
+        print(f"[build_context] building_2d_map_url absent — fallback IGN WMS for {bid}", file=sys.stderr)
+        image_2d = _generate_ign_map(float(lat), float(lon), output_dir / f"{bid}_2d_map_auto.png")
+
+    return {
+        "image_2d": str(image_2d) if image_2d else None,
+        "image_2d_url": url,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Photo download
 # ---------------------------------------------------------------------------
 
@@ -248,8 +331,11 @@ def main() -> None:
 
     header = build_header(project, building, project_type)
     observations, free_notes = build_observations(notes, photos, project_type)
+    building_ctx = build_building_context(building, output_dir)
 
     context = {**header, "observations": observations, "notes": free_notes, "photos": photos}
+    if building_ctx is not None:
+        context["building"] = building_ctx
     context_path = output_dir / "context.json"
     context_path.write_text(json.dumps(context, indent=2, ensure_ascii=False), encoding="utf-8")
 
