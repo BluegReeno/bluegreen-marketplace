@@ -59,7 +59,7 @@ def format_date_french(iso: str) -> str:
 
 
 def _building_block(context: dict, doc: DocxTemplate) -> dict:
-    """Convert building.image_2d path to InlineImage. Returns {} if no usable image."""
+    """Convert building.image_2d path to InlineImage; image_2d is None if path is missing."""
     building = context.get("building") or {}
     image_path = building.get("image_2d")
     if not image_path or not Path(image_path).exists():

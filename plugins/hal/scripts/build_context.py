@@ -259,7 +259,10 @@ def build_building_context(building: dict | None, output_dir: pathlib.Path) -> d
     image_2d: pathlib.Path | None = None
     if url:
         image_2d = _download_building_2d_map(url, bid, output_dir)
-    if image_2d is None and lat is not None and lon is not None:
+        if image_2d is None and lat is not None and lon is not None:
+            print(f"[build_context] Download failed for 2D map, falling back to IGN WMS for {bid}", file=sys.stderr)
+            image_2d = _generate_ign_map(float(lat), float(lon), output_dir / f"{bid}_2d_map_auto.png")
+    elif lat is not None and lon is not None:
         print(f"[build_context] building_2d_map_url absent — fallback IGN WMS for {bid}", file=sys.stderr)
         image_2d = _generate_ign_map(float(lat), float(lon), output_dir / f"{bid}_2d_map_auto.png")
 

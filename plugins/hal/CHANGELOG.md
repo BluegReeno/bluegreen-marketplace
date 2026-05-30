@@ -16,6 +16,19 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.1.1] — 2026-05-30 — IGN 2D map in diagnostic reports (Plan C)
+
+### Added
+- `build_context.py`: `build_building_context()` — attaches 2D map to context.json.
+  Strategy: `building_2d_map_url` → download; lat/lon fallback → IGN WMS PLANIGNV2; else None.
+- `render_diagnostic.py`: `_building_block()` — converts local path to `InlineImage` for docxtpl.
+- `templates/ic-ingenieurs/diagnostic.docx`: `{%p if building.image_2d %}` block — 2D map section.
+
+### Fixed
+- `build_building_context()`: fallback log now correctly distinguishes "URL absent" from "download failed" to simplify debugging when `building_2d_map_url` is set but the download fails (expired signed URL, network error).
+
+---
+
 ## [0.1.0] — 2026-05-28 — HAL plugin : renommage + skill /hal (Obsidian vault)
 
 ### Changed
