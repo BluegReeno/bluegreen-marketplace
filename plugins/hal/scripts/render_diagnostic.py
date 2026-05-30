@@ -58,6 +58,18 @@ def format_date_french(iso: str) -> str:
         return iso or ""
 
 
+def _building_block(context: dict, doc: DocxTemplate) -> dict:
+    """Convert building.image_2d path to InlineImage. Returns {} if no usable image."""
+    building = context.get("building") or {}
+    image_path = building.get("image_2d")
+    if not image_path or not Path(image_path).exists():
+        return {"image_2d": None, "image_2d_url": building.get("image_2d_url")}
+    return {
+        "image_2d": _inline_image_auto_orient(doc, Path(image_path), max_width_cm=15.0, max_height_cm=15.0),
+        "image_2d_url": building.get("image_2d_url"),
+    }
+
+
 def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
     # Accept both Edifice observations[] and IC direct disorders[]
     raw_list = context.get("disorders") or context.get("observations", [])
@@ -120,6 +132,7 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
         "disorders":             disorders,
         "conclusions":           context.get("synthese", ""),
         "recommandations":       context.get("conclusion", ""),
+        "building":              _building_block(context, doc),
     }
 
 
