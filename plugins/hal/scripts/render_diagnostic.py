@@ -71,6 +71,7 @@ def _building_block(context: dict, doc: DocxTemplate) -> dict:
 
 
 def _render_methodo_item(note: dict, photos_dir: str, doc: DocxTemplate) -> dict:
+    """Render a methodo note for the template. Uses note.photo; skips silently if missing or invalid."""
     photo = None
     p = note.get("photo", "")
     if p:
