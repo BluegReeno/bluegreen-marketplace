@@ -5,7 +5,7 @@ description: >
   *.edifice.md file, or asks to "pull an Edifice mission", "generate an
   Edifice report", "create a diagnostic report", "generate a devis", or
   "run edifice".
-version: 0.1.0
+version: 0.1.1
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 

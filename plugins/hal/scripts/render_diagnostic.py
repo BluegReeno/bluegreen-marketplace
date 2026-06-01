@@ -78,8 +78,8 @@ def _render_methodo_item(note: dict, photos_dir: str, doc: DocxTemplate) -> dict
         if path.exists():
             try:
                 photo = _inline_image_auto_orient(doc, path, max_width_cm=10.0, max_height_cm=12.0)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"⚠️  methodo photo skipped: {p} — {e}")
     return {
         "description": note.get("description") or note.get("name") or "",
         "photo": photo,
@@ -129,12 +129,12 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
 
     methodo_visite = [
         _render_methodo_item(n, photos_dir, doc)
-        for n in context.get("notes", [])
+        for n in context.get("notes") or []
         if (n.get("metadata") or {}).get("tag") == "methodo:visite_terrain"
     ]
     methodo_moyens = [
         _render_methodo_item(n, photos_dir, doc)
-        for n in context.get("notes", [])
+        for n in context.get("notes") or []
         if (n.get("metadata") or {}).get("tag") == "methodo:moyens"
     ]
 
