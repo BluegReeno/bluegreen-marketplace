@@ -48,7 +48,7 @@ Plugin code lives directly in this repo. Each plugin is self-contained under `pl
 
 | Plugin | Skills | Status |
 |--------|--------|--------|
-| `hal` | `edifice`, `hal` | v0.1.0 — active |
+| `hal` | `edifice`, `hal` | v0.1.2 — active |
 | `hal-crm` | — | Coming soon |
 
 ```
