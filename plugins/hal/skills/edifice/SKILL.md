@@ -144,6 +144,23 @@ reclassify if needed:
 `/edifice push` will persist the reclassification (`type` field) back to Supabase,
 so future pulls will route correctly automatically.
 
+### Methodo tags — notes de méthodologie (diagnostic uniquement)
+
+Notes dont `metadata.tag` est `methodo:visite_terrain` ou `methodo:moyens` sont rendues
+automatiquement dans la section Méthodologie du rapport diagnostic :
+
+| Tag | Section du rapport |
+|-----|-------------------|
+| `methodo:visite_terrain` | Visites terrain réalisées |
+| `methodo:moyens` | Moyens mis en œuvre |
+
+Ces notes restent dans `notes[]` (pas reclassées en `observations[]`). Une photo par note,
+rendue à taille moyenne. Pour taguer une note depuis `/edifice improve` :
+
+```
+notes[n].metadata.tag = "methodo:visite_terrain"
+```
+
 ### Vocabulaire unifié — observations
 
 Tous les types utilisent les mêmes noms de champs côté `observations[]` :

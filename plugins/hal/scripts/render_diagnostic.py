@@ -70,6 +70,22 @@ def _building_block(context: dict, doc: DocxTemplate) -> dict:
     }
 
 
+def _render_methodo_item(note: dict, photos_dir: str, doc: DocxTemplate) -> dict:
+    photo = None
+    p = note.get("photo", "")
+    if p:
+        path = Path(photos_dir) / str(p)
+        if path.exists():
+            try:
+                photo = _inline_image_auto_orient(doc, path, max_width_cm=10.0, max_height_cm=12.0)
+            except Exception:
+                pass
+    return {
+        "description": note.get("description") or note.get("name") or "",
+        "photo": photo,
+    }
+
+
 def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
     # Accept both Edifice observations[] and IC direct disorders[]
     raw_list = context.get("disorders") or context.get("observations", [])
@@ -111,6 +127,17 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
             "photo4": photos_img[3],
         })
 
+    methodo_visite = [
+        _render_methodo_item(n, photos_dir, doc)
+        for n in context.get("notes", [])
+        if (n.get("metadata") or {}).get("tag") == "methodo:visite_terrain"
+    ]
+    methodo_moyens = [
+        _render_methodo_item(n, photos_dir, doc)
+        for n in context.get("notes", [])
+        if (n.get("metadata") or {}).get("tag") == "methodo:moyens"
+    ]
+
     return {
         "service_type":          context.get("titre_service", ""),
         "client":                context.get("client", ""),
@@ -129,6 +156,8 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
         "utilisation":           context.get("utilisation", ""),
         "detail_visite":         context.get("detail_visite", ""),
         "investigation_methods": context.get("investigation_methods", ""),
+        "methodo_visite":        methodo_visite,
+        "methodo_moyens":        methodo_moyens,
         "disorders":             disorders,
         "conclusions":           context.get("synthese", ""),
         "recommandations":       context.get("conclusion", ""),
