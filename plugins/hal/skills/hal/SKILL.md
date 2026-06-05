@@ -118,6 +118,8 @@ names.
 - **Never auto-create.** Match score < 50 → propose creation, wait for
   confirmation.
 - **Output format**: `✅ [Entité] → [tool]: [valeur]` per successful write.
+- **On MCP failure**: output `❌ [Entité] → [tool]: [error reason]`. Surface
+  the error to the user immediately — do not retry automatically.
 
 ---
 
@@ -127,7 +129,7 @@ names.
 - **Edifice missions** — handled by the `edifice` skill via dedicated tools
   (`read_edifice_mission`, `get_mission_with_assets`, `push_mission_context`).
 - **Tasks and sprints** — server CRUD (`create_task`, `list_tasks`,
-  `update_task`) not yet available. Coming in v0.2 lot 2.
+  `update_task`) not yet available. Coming in a future sprint (lot 2).
 - **Field updates outside `stage`** — companies / contacts / missions cannot
   be edited (server limitation). Mention it when relevant; do not attempt a
   workaround.
