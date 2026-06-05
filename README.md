@@ -17,14 +17,14 @@ In Claude Code or Cowork (one-time):
 Two skills in one plugin:
 
 - **`/edifice`** — Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report
-- **`/hal update`** — Update the Obsidian SecondLife vault from a natural-language instruction
+- **`/hal update`** — Update BG-CRM in Supabase (missions, contacts, interactions) from a natural-language instruction
 
 **Install:**
 ```
 /plugin install hal@bluegreen-marketplace
 ```
 
-**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac), a paired Edifice account (for `/edifice`), and an Obsidian vault at `OBSIDIAN_VAULT_PATH` (for `/hal update`).
+**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/hal update` requires only the **hal-mcp** connector (included in the plugin).
 
 See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions.
 
@@ -48,7 +48,7 @@ Plugin code lives directly in this repo. Each plugin is self-contained under `pl
 
 | Plugin | Skills | Status |
 |--------|--------|--------|
-| `hal` | `edifice`, `hal` | v0.1.2 — active |
+| `hal` | `edifice`, `hal` | v0.2.0 — active |
 | `hal-crm` | — | Coming soon |
 
 ```
@@ -57,10 +57,9 @@ plugins/hal/
 ├── .mcp.json                    # hal-mcp SSE server
 ├── skills/
 │   ├── edifice/SKILL.md         # /edifice — building inspection reports
-│   └── hal/SKILL.md             # /hal update — Obsidian vault writes
+│   └── hal/SKILL.md             # /hal update — Supabase CRM writes via hal-mcp
 ├── scripts/
 │   ├── *.py                     # edifice: build_context, render_*, download_photos
-│   ├── hal_update.py            # NL parser + orchestrator for vault writes
 │   └── obsidian/                # bundled obsidian-crm scripts (source of truth)
 ├── templates/                   # DOCX report templates
 └── organizations/               # client config

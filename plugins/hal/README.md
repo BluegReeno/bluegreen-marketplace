@@ -6,7 +6,7 @@ It ships two skills inside a single plugin:
 | Skill | Command | Purpose |
 |-------|---------|---------|
 | `edifice` | `/edifice pull`, `/edifice improve`, `/edifice report`, `/edifice push` | Pull a building inspection mission from Supabase and render the DOCX report. |
-| `hal` | `/hal update` | Update the Obsidian SecondLife vault (CRM, tasks) from a natural-language instruction. |
+| `hal` | `/hal update` | Update BG-CRM in Supabase (missions, contacts, interactions) from a natural-language instruction via **hal-mcp**. |
 
 ## Prerequisites
 
@@ -61,25 +61,24 @@ the DOCX report. The generated report appears in `mission/rapport.docx` next to 
 
 ## /hal update
 
-Update the Obsidian SecondLife vault from a natural-language instruction. The skill activates on
-explicit triggers (`/hal update`, "mets à jour", "marque comme fait", "RDV prévu", "relance le",
-"pas de contact"…) and proposes the corresponding vault write.
+Update BG-CRM in Supabase from a natural-language instruction. The skill activates on explicit
+triggers (`/hal update`, "mets à jour", "propale envoyée", "perdu", "call avec", "nouveau client"…)
+and calls the **hal-mcp** tools directly — no script, no vault write.
 
 Examples:
 
 ```
-/hal update Stripe — RDV prévu le 2026-06-12
-/hal update relance Bouygues le 14/06
-/hal update tâche "Préparer slides" terminée
-/hal update Datadog — pas de contact, candidature plateforme
+/hal update propale envoyée IC Ingénieurs
+/hal update call avec Laurent : a validé le devis
+/hal update Valorem — perdu, sans suite
+/hal update nouveau client Natural Power
 ```
 
-The script resolves the target note via fuzzy matching, prints the plan, and applies the writes
-through the bundled `obsidian-crm` scripts (`scripts/obsidian/`).
+Claude resolves the target entity via `list_missions` / `list_contacts` / `list_companies` (fuzzy
+match on names, threshold 80/50), confirms if ambiguous, then writes to Supabase.
 
-Run modes:
-- `--dry-run` — print the plan, write nothing
-- `--force` — apply the top match even when the score is ambiguous (50–80)
+Dry-run mode: ask "what would `/hal update …` do?" — Claude prints the planned MCP calls without
+executing them.
 
 ## Manual usage (without Claude)
 
@@ -90,7 +89,6 @@ here are:
   already present in `context.json`
 - `scripts/render_report.py mission/context.json --photos-dir mission/photos --output mission/rapport.docx`
   — generate the DOCX from `context.json`
-- `scripts/hal_update.py --vault <path> --text "<instruction>"` — natural-language vault update
 
 ## Troubleshooting
 
@@ -100,4 +98,4 @@ here are:
 | "This laptop is not paired" | Run `/edifice pair` in Claude Cowork |
 | Auth token refresh fails | Delete `~/.hal/config.json` and re-pair |
 | Template not found | Check `project_type` in `context.json` matches a `.docx` file in `templates/ic-ingenieurs/` |
-| `/hal update` says vault not found | Set `OBSIDIAN_VAULT_PATH=<path>` in your shell |
+| `/hal update` can't find a mission | Check that hal-mcp is connected — `/plugin` → Connectors tab |
