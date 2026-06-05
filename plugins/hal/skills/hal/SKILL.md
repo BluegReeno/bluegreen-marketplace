@@ -1,159 +1,133 @@
 ---
 name: hal
 description: >
-  Update the Obsidian SecondLife vault from a natural-language instruction.
-  Use when the user says /hal update, "note that", "mets à jour",
-  "marque comme fait", "relance le", "RDV prévu", "pas de contact",
-  or any explicit vault write instruction mid-conversation.
-  Also trigger when user says "done", "fait", "c'est bon", "next"
-  after completing a task — propose the corresponding vault write.
-version: 0.1.0
-allowed-tools: "Bash(uv *) Bash(python3 *) Bash(find *) Bash(ls *) Read Write"
+  Update the BlueGreen CRM (Supabase) from a natural-language instruction
+  via the hal-mcp connector. Use when the user says /hal update,
+  "propale envoyée", "stage", "perdu", "gagné", "signé", "refus",
+  "call avec", "RDV fait", "mail envoyé", "nouveau client",
+  "nouveau contact", "nouvelle mission/propale", "pipeline",
+  "où en est", "deals en cours", or any explicit CRM write/read
+  instruction mid-conversation. Also trigger when the user says
+  "done", "fait", "c'est bon", "next" after completing a task —
+  propose the corresponding CRM write.
+version: 0.2.0
 ---
 
-# HAL — Obsidian vault updates (Claude Code)
+# HAL — BlueGreen CRM updates via hal-mcp (Claude Code)
 
-## Path resolution — run at the start of every command
+This skill routes natural-language CRM updates to the `hal-mcp` MCP connector
+(Supabase backend). Zero scripts, zero Bash — pure NL → MCP tool mapping.
 
-```bash
-# Resolve PLUGIN_DIR
-PLUGIN_DIR=$(python3 - <<'PYEOF'
-import os, pathlib, sys, glob as _glob
+**Workspace**: `blue-green` — hard-coded. Every CRM tool call MUST pass
+`workspace_slug: "blue-green"`.
 
-home = pathlib.Path.home()
-
-# 1. env var
-env = os.environ.get('HAL_PLUGIN_DIR', '')
-if env and pathlib.Path(env, 'scripts', 'hal_update.py').exists():
-    print(env); sys.exit(0)
-
-# 2. Claude Code marketplace cache
-for _mkt in ['bluegreen-marketplace']:
-    cache_root = home / '.claude' / 'plugins' / 'cache' / _mkt / 'hal'
-    if cache_root.exists():
-        candidates = sorted(cache_root.glob('*/scripts/hal_update.py'), key=lambda p: p.stat().st_mtime, reverse=True)
-        if candidates:
-            print(str(candidates[0].parent.parent)); sys.exit(0)
-
-# 3. Cowork sandbox
-for pat in ['/sessions/*/mnt/.remote-plugins/*/scripts/hal_update.py']:
-    matches = sorted(_glob.glob(pat), key=lambda p: os.path.getmtime(p), reverse=True)
-    if matches:
-        print(os.path.dirname(os.path.dirname(matches[0]))); sys.exit(0)
-
-# 4. Dev paths
-for dev_path in [
-    home / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'hal',
-]:
-    if dev_path.joinpath('scripts', 'hal_update.py').exists():
-        print(str(dev_path)); sys.exit(0)
-
-print('PLUGIN_DIR_NOT_FOUND')
-PYEOF
-)
-if [ "$PLUGIN_DIR" = "PLUGIN_DIR_NOT_FOUND" ]; then
-  echo "ERROR: HAL plugin dir introuvable. Définis HAL_PLUGIN_DIR=<chemin> dans ton shell."
-  exit 1
-fi
-
-# Resolve VAULT_PATH
-VAULT_PATH=$(python3 - <<'PYEOF'
-import os, pathlib, glob as _glob, sys
-
-# 1. env var
-env = os.environ.get('OBSIDIAN_VAULT_PATH', '')
-if env and pathlib.Path(env).exists():
-    print(env); sys.exit(0)
-
-# 2. Cowork sandbox
-for pat in ['/sessions/*/mnt/SynologyDrive-MyAssistant/SecondLife-vault/SecondLife']:
-    matches = _glob.glob(pat)
-    if matches:
-        print(matches[0]); sys.exit(0)
-
-# 3. Dev path
-dev = pathlib.Path.home() / 'SynologyDrive-MyAssistant' / 'SecondLife-vault' / 'SecondLife'
-if dev.exists():
-    print(str(dev)); sys.exit(0)
-
-print('VAULT_NOT_FOUND')
-PYEOF
-)
-if [ "$VAULT_PATH" = "VAULT_NOT_FOUND" ]; then
-  echo "ERROR: Vault Obsidian introuvable. Définis OBSIDIAN_VAULT_PATH=<chemin>."
-  exit 1
-fi
-```
+**Scope**: BlueGreen CRM only (missions, companies, contacts, interactions).
+Job Search lives in the Obsidian vault and is handled by `obsidian-crm` — never
+write the vault from this skill. Edifice has its own skill — do not touch.
 
 ---
 
 ## /hal update `<texte libre>`
 
-1. Parser le texte utilisateur pour extraire entité + intention + valeur
-2. Appeler `hal_update.py` avec le texte brut
-3. Le script résout les notes, planifie les writes, demande confirmation si ambigu
-4. Afficher le résultat : `✅ [Note] → [field]: [valeur]`
+1. Parse the user's text to detect **intent** (write vs read) and **entity**
+   (mission, contact, company, interaction).
+2. Resolve referenced entities via the appropriate `list_*` tool, always
+   filtering to keep payloads small (see "Entity resolution" below).
+3. If the match is ambiguous → list candidates and ask before writing.
+4. Call the target MCP tool with `workspace_slug: "blue-green"`.
+5. Output result as `✅ [Entité] → [tool]: [valeur]`.
 
-```bash
-uv run \
-  --with "rapidfuzz>=3.0" \
-  python3 $PLUGIN_DIR/scripts/hal_update.py \
-  --vault "$VAULT_PATH" \
-  --text "<texte utilisateur verbatim>"
-```
-
-Options :
-- `--force` : skip la confirmation interactive même si le match est ambigu
-- `--dry-run` : afficher le plan sans rien écrire
+If the user appends `--dry-run`, print the planned MCP calls (tool name +
+arguments) without executing them.
 
 ---
 
-## Vault structure
+## Intent → tool mapping
 
-```
-CRM-BlueGreen/Opportunites/    type: opportunite-bg
-CRM-BlueGreen/Entreprises/     type: entreprise-bg
-CRM-BlueGreen/Contacts/        type: contact-bg
-CRM-BlueGreen/Interactions/    type: interaction-bg
-CRM-JobSearch/Opportunites/    type: opportunite-js
-CRM-JobSearch/Entreprises/     type: entreprise-js
-CRM-JobSearch/Contacts/        type: contact-js
-CRM-JobSearch/Entretiens/      type: entretien
-Taches/                        type: tache
-Projets/                       type: projet
-```
+| User says | MCP tool(s) |
+|-----------|-------------|
+| "propale envoyée [client]", "stage [client] → X" | `list_missions` (filtered) → fuzzy match → `update_mission_stage` |
+| "perdu", "refus", "dead", "sans suite" | `update_mission_stage` → `perdu` |
+| "gagné", "signé", "soldé", "terminé" | `update_mission_stage` → `solde` |
+| "call avec [contact] : [résumé]", "RDV fait", "mail envoyé" | optional `list_contacts` → `log_interaction` |
+| "nouveau client [nom]" | `create_company` |
+| "nouveau contact [nom] chez [client]" | `list_companies` → match → `create_contact` |
+| "nouvelle mission/propale [nom] pour [client]" | `list_companies` → match → `create_mission` |
+| "pipeline", "où en est [client]", "deals en cours" | `list_missions` / `list_companies` (read-only) |
 
-## Field mapping NL → frontmatter
+---
 
-| User dit | Champs mis à jour |
-|----------|------------------|
-| "pas de contact", "candidature plateforme" | `date_relance` (clear) ⚠️ `notes (append)` deferred to v0.1.x |
-| "RDV le [date]", "entretien prévu [date]" | `prochain_rdv` + `statut` → `📞 Entretien prévu` |
-| "relance le [date]" | `date_relance` |
-| "refus", "dead", "pas retenu" | `statut` → `❌ Refus` |
-| "offre reçue" | `statut` → `✅ Offre reçue` |
-| "terminé", "fait", "done" (tâche) | `etat` → `Terminé` |
-| "note: [text]" | `notes` (overwrite) |
-| "ajouter note: [text]" | `notes` (append + timestamp ISO) |
+## Stage mapping (NL → stage value)
 
-## Folder hint (parsing heuristic)
+| User says | Stage |
+|-----------|-------|
+| "nouveau prospect", "premier contact" | `prospect` |
+| "propale à faire", "devis à envoyer", "il veut un devis" | `devis_a_faire` |
+| "gagné", "signé", "soldé", "terminé" | `solde` (terminal) |
+| "perdu", "refus", "dead", "sans suite" | `perdu` (terminal) |
 
-- "candidature", "poste", "entretien" → `CRM-JobSearch/`
-- "client", "propale", "devis", "mission" → `CRM-BlueGreen/`
-- "tâche", "faire", "task" → `Taches/`
-- Pas de hint → recherche dans tout le vault, ranked par relevance
+`update_mission_stage` sets `closed_at` automatically when the target stage is
+terminal. If Renaud adds new stages to `halcrm_workspaces.mission_stages`,
+update this table.
 
-## Fuzzy match thresholds
+---
 
-- Score > 80 : match direct
-- Score 50–80 : afficher les candidats, demander à l'utilisateur de choisir
-- Score < 50 : note introuvable, proposer création (pas d'auto-création)
+## Entity resolution (client-side fuzzy match)
 
-## Source de vérité pour les schemas
+The server has no search endpoint — resolve by listing and fuzzy-matching on
+names.
 
-`scripts/obsidian/references/schemas.md` is the human-readable reference for all 11 note types,
-their folders, and their frontmatter fields.
+**Thresholds**:
 
-`hal_update.py` loads it at startup via `load_schemas()` but does not parse it for dispatch.
-Intent-to-field mapping in `detect_intent()` is hardcoded for the 6 supported v0.1.0 intents.
-To add a new intent: extend `detect_intent()` and optionally `FOLDER_HINTS` in `hal_update.py`.
+- score **> 80** → match direct, proceed with the write
+- score **50–80** → list the candidates, ask the user to pick (never write)
+- score **< 50** → entity not found, propose creation (never auto-create)
+
+**Rules**:
+
+- **Match on mission name, not on company name.** `company_id` can be null
+  (EDF, Engie, Buchan, Lacourt), and a single company often has many missions
+  (IC: 10, Valorem: 3, Greenta: 2).
+- **Ambiguity is the default**: if several active missions share a company
+  (e.g. "Valorem perdu"), list all candidates — unless the conversation context
+  makes one obviously correct, in which case confirm the pick in the output.
+- **Always filter `list_missions` by `stage`** when the intent allows. Without
+  a filter, the response includes the full `description` markdown for every
+  mission (~70k chars for 51 missions — too heavy to be useful for matching).
+
+---
+
+## `log_interaction` rules
+
+- **Required**: `workspace_slug`, `channel` (`call` / `email` / `meeting`),
+  `summary`.
+- **Optional**: `contact_id`, `mission_id`, `occurred_at` (defaults to now).
+- If a contact name is cited → `list_contacts` and try to resolve.
+- If contact match is **< 80** → log the interaction anyway, put the cited name
+  in `summary`. **Never block a log of interaction.**
+- Attach `mission_id` whenever the conversation context makes it clear which
+  mission the interaction refers to.
+
+---
+
+## Guardrails
+
+- **Confirm before any write if ambiguous.** When in doubt, ask.
+- **Dry-run mode**: if the user adds `--dry-run`, print the MCP call plan
+  (tool name + arguments) without executing.
+- **Never auto-create.** Match score < 50 → propose creation, wait for
+  confirmation.
+- **Output format**: `✅ [Entité] → [tool]: [valeur]` per successful write.
+
+---
+
+## Out of scope (do not handle here)
+
+- **Job Search** — handled by `obsidian-crm`. `/hal` never writes the vault.
+- **Edifice missions** — handled by the `edifice` skill via dedicated tools
+  (`read_edifice_mission`, `get_mission_with_assets`, `push_mission_context`).
+- **Tasks and sprints** — server CRUD (`create_task`, `list_tasks`,
+  `update_task`) not yet available. Coming in v0.2 lot 2.
+- **Field updates outside `stage`** — companies / contacts / missions cannot
+  be edited (server limitation). Mention it when relevant; do not attempt a
+  workaround.
