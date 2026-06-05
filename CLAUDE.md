@@ -36,10 +36,9 @@ bluegreen-marketplace/
 │   │   ├── .mcp.json             # hal-mcp SSE server + version
 │   │   ├── skills/
 │   │   │   ├── edifice/SKILL.md  # /edifice — building inspection reports
-│   │   │   └── hal/SKILL.md      # /hal update — Obsidian vault writes
+│   │   │   └── hal/SKILL.md      # /hal update — Supabase CRM writes via hal-mcp
 │   │   ├── scripts/
 │   │   │   ├── *.py              # edifice: build_context, render_*, download_photos
-│   │   │   ├── hal_update.py     # NL parser + orchestrator for vault writes
 │   │   │   └── obsidian/         # bundled obsidian-crm scripts ← source of truth ★
 │   │   │       ├── obsidian_api.py
 │   │   │       ├── note_schemas.py
@@ -116,7 +115,7 @@ git add -A && git commit -m "chore(hal): release vX.Y.Z"
 `plugins/hal/schema-contract.json` will declare which Supabase tables/columns this plugin
 depends on. It is a mirror — the source of truth lives in `edifice/plugins/hal/schema-contract.json`.
 
-> **Status**: not yet created — planned for the Supabase migration sprint (hal v0.2.0).
+> **Status**: not yet created — planned for a future sprint (hal v0.3.0+).
 
 **Rule**: after any plugin sync, verify this file matches the current prod Supabase tables. Any version bump that changes table/column dependencies must update this file too.
 

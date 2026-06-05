@@ -16,6 +16,51 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.2.0] — 2026-06-05 — Skill `/hal` routes BG-CRM writes to Supabase via hal-mcp
+
+### Changed (interface — MINOR bump)
+- **Skill `hal` 0.1.0 → 0.2.0** — full rewrite. `/hal update` no longer writes to the
+  Obsidian vault. Natural-language instructions are routed to the `hal-mcp` MCP
+  connector (Supabase backend) for the BlueGreen CRM workspace (`workspace_slug:
+  "blue-green"`, hard-coded).
+- **Skill is now 100% instructions** — zero scripts, zero Bash. The `allowed-tools`
+  frontmatter field is intentionally removed (validated 2026-06-05). MCP tools come
+  from the user-level connector and are available as soon as the server is connected.
+
+### Removed
+- `scripts/hal_update.py` — replaced by direct MCP tool calls
+  (`list_missions` → `update_mission_stage`, `log_interaction`, `create_company`,
+  `create_contact`, `create_mission`, `list_companies`, `list_contacts`). Git
+  history is the only archive.
+- Vault path resolution (`VAULT_PATH`), plugin path resolution (`PLUGIN_DIR`),
+  vault folder structure reference, and NL→frontmatter field mapping from
+  `SKILL.md` — none of it applies to the Supabase routing.
+
+### Architecture
+- **BlueGreen CRM** (missions / contacts / companies / interactions) lives in
+  Supabase and is reached only through `hal-mcp`. `/hal` is its natural-language
+  front-end.
+- **Job Search** stays in the Obsidian vault, handled by `obsidian-crm`. `/hal`
+  never touches the vault — no routing, no exceptions.
+- Entity resolution is client-side fuzzy matching on `list_*` results (server has
+  no search endpoint): score > 80 → write, 50–80 → propose candidates, < 50 →
+  propose creation (never auto-create). Match on mission name (company can be
+  null and often hosts many missions); always filter `list_missions` by `stage`
+  to keep payloads small.
+
+### Scope (lot 1 only)
+- In: missions, companies, contacts, interactions.
+- Out (lot 2, waiting on server CRUD): tasks and sprints
+  (`create_task` / `list_tasks` / `update_task` not yet on the MCP surface).
+- Out (server limitation): field updates outside `stage` on companies / contacts
+  / missions.
+
+### Plugin
+- Plugin `hal` 0.1.2 → **0.2.0** (interface change in the `hal` skill).
+- Marketplace registry aligned to 0.2.0.
+
+---
+
 ## [0.1.1] — 2026-05-30 — IGN 2D map in diagnostic reports (Plan C)
 
 ### Added
