@@ -1,26 +1,14 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-05-28
+Last updated: 2026-06-05
 
 ## Current Focus
 
-Plugin `hal` v0.1.0 mergé. Étape 2 : supprimer `hal/agents/skills/hal-crm/` dans le repo `hal`.
+hal v0.2.0 mergé — Lot 2 (tâches/sprints) en attente des tools hal-mcp (`create_task`, `list_tasks`, `update_task`)
 
 ## In Progress
 
 _(rien)_
-
-## Next Steps
-
-### Étape 2 — PR `hal` (repo hal)
-
-**Plan** : `hal/.agents/plans/remove-hal-crm-skill.md`
-**Branch** : `chore/remove-hal-crm-skill`
-
-Ce que ça fait :
-- Supprime `hal/agents/skills/hal-crm/` (obsolète — tout passe par Cowork via bluegreen-marketplace)
-- Met à jour `hal/CLAUDE.md` : pointer vers `bluegreen-marketplace/plugins/hal/scripts/obsidian/`
-- `uv run pytest` doit passer
 
 ## Done (current sprint)
 
@@ -37,7 +25,22 @@ Ce que ça fait :
   - Skill `/hal update` v0.1.0 (Obsidian vault) + `hal_update.py`
   - 8 scripts obsidian-crm bundlés dans `scripts/obsidian/`
   - README, CLAUDE.md, marketplace.json, versioning policy mis à jour
+- [x] hal plugin v0.1.1 — PR #4 mergée — 2026-05-28
+  - Carte IGN 2D dans les rapports diagnostic (Plan C plugin natif)
+  - Fix orientation photos portrait + nettoyage adresses BAN
+- [x] hal plugin v0.1.2 — PR #7 mergée — 2026-06-01
+  - Notes taguées `methodo:visite_terrain` / `methodo:moyens` dans section Méthodologie du rapport diagnostic
+  - Issues #8 et #9 créées (warning photos désordres, unit tests)
+- [x] Suppression `hal/agents/skills/hal-crm/` — scripts migrés vers `bluegreen-marketplace/plugins/hal/scripts/obsidian/` — hal PR #13 mergée 2026-05-29
+
+## Done (current sprint)
+
+- [x] hal plugin v0.2.0 — PR #10 mergée — 2026-06-05
+  - Skill `/hal update` réécrit : Obsidian → Supabase via hal-mcp (zéro script Python)
+  - `hal_update.py` supprimé
+  - README + CLAUDE.md nettoyés (refs Obsidian supprimées)
 
 ## Backlog
 
-- [ ] hal-crm v0.2.0 — migration data layer `/hal` : Obsidian → Supabase via hal-mcp CRM tools (après migration Postgres hal)
+- [ ] hal Lot 2 — tâches et sprints : prérequis `create_task` / `list_tasks` / `update_task` côté hal-mcp, puis extension du mapping skill
+- [ ] schema-contract.json — cross-repo sync anchor (hal v0.3.0+)

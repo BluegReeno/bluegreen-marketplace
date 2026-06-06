@@ -104,7 +104,8 @@ Releases are intentional and infrequent (~1-2/month). No GitHub Actions by desig
 ```bash
 # 1. Bump version in each modified component (see Versioning Policy above)
 # 2. Bump plugin version in plugin.json and marketplace.json (must stay identical)
-# 3. Commit and push
+# 3. Add a CHANGELOG.md entry for the new version (required — no push without it)
+# 4. Commit and push
 git add -A && git commit -m "chore(hal): release vX.Y.Z"
 ```
 
