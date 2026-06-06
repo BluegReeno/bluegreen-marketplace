@@ -5,7 +5,7 @@ description: >
   *.edifice.md file, or asks to "pull an Edifice mission", "generate an
   Edifice report", "create a diagnostic report", "generate a devis", or
   "run edifice".
-version: 0.1.1
+version: 0.2.0
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 
@@ -91,8 +91,13 @@ echo "Mission ID: $MISSION_ID"
 ```
 
 **2. Call MCP `get_mission_with_assets`** with `MISSION_ID`.
-Write the raw JSON response to `mission/mcp_response.json` with the Write tool.
-Do not interpret or transform the response — write it verbatim.
+The result has shape `{ download_url, note_count, photo_count, expires_in }`.
+Set `DOWNLOAD_URL` to the `download_url` value. Then:
+```bash
+mkdir -p mission
+curl -s "$DOWNLOAD_URL" > mission/mcp_response.json
+```
+The URL expires in 300 s — run `curl` immediately after the MCP call.
 
 **3. Run build_context.py**
 ```bash
