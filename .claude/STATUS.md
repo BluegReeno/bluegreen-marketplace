@@ -1,10 +1,10 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-05
+Last updated: 2026-06-06
 
 ## Current Focus
 
-hal v0.2.0 mergé — Lot 2 (tâches/sprints) en attente des tools hal-mcp (`create_task`, `list_tasks`, `update_task`)
+hal v0.4.0 released — `/edifice list` added. Lot 2 (tâches/sprints) en attente des tools hal-mcp (`create_task`, `list_tasks`, `update_task`)
 
 ## In Progress
 
@@ -32,13 +32,14 @@ _(rien)_
   - Notes taguées `methodo:visite_terrain` / `methodo:moyens` dans section Méthodologie du rapport diagnostic
   - Issues #8 et #9 créées (warning photos désordres, unit tests)
 - [x] Suppression `hal/agents/skills/hal-crm/` — scripts migrés vers `bluegreen-marketplace/plugins/hal/scripts/obsidian/` — hal PR #13 mergée 2026-05-29
-
-## Done (current sprint)
-
 - [x] hal plugin v0.2.0 — PR #10 mergée — 2026-06-05
   - Skill `/hal update` réécrit : Obsidian → Supabase via hal-mcp (zéro script Python)
   - `hal_update.py` supprimé
   - README + CLAUDE.md nettoyés (refs Obsidian supprimées)
+- [x] hal plugin v0.4.0 — 2026-06-06
+  - Skill `edifice` 0.2.0 → 0.3.0 : commande `/edifice list` (pur MCP, zéro script)
+  - Fix plugin.json + marketplace.json : `0.2.0` → `0.4.0` (gap 0.3.0 comblé)
+  - CHANGELOG entry `[0.4.0]` prependé
 
 ## Backlog
 

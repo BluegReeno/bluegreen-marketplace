@@ -5,7 +5,7 @@ description: >
   *.edifice.md file, or asks to "pull an Edifice mission", "generate an
   Edifice report", "create a diagnostic report", "generate a devis", or
   "run edifice".
-version: 0.2.0
+version: 0.3.0
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 
@@ -68,6 +68,53 @@ echo "Briefing: $BRIEFING"
 # Mission output dir (created by /edifice pull)
 MISSION_DIR="./mission"
 ```
+
+---
+
+## /edifice list
+
+List Edifice missions sorted from newest to oldest. Use this to find the
+`mission_id` before running `/edifice pull`.
+
+### Steps
+
+**1. Call MCP `list_edifice_missions`**
+
+Optional filters the user can provide:
+- `status=<value>` — e.g. `active`, `completed`
+- `limit=N` — max results (default 50)
+
+If the user typed `/edifice list active`, pass `status: "active"`.
+If the user typed `/edifice list` with no arguments, call with no filters.
+
+**2. Format and display**
+
+Format the response as a markdown table. The `building` field may be null —
+show `—` in that case. The `mission_context` field must NOT be displayed.
+
+```
+| Date       | Nom                       | Type           | Statut    | Bâtiment / Adresse              |
+|------------|---------------------------|----------------|-----------|---------------------------------|
+| 2026-05-28 | Diagnostic Varenne        | diagnostic     | active    | 46 Rue de Varenne 75007 Paris   |
+| 2026-05-12 | Suivi chantier Aulnay     | suivi_chantier | completed | Résidence Les Tilleuls          |
+```
+
+Extract the date as `YYYY-MM-DD` from the `created_at` ISO timestamp.
+If `building` is null, show `—` in the Bâtiment column.
+If 0 results are returned, tell the user "Aucune mission trouvée."
+
+**3. Surface the mission_id**
+
+After the table, add:
+
+```
+Pour puller une mission : /edifice pull avec mission_id = <UUID>
+
+Exemple : mission_id de "Diagnostic Varenne" = 2d3138cb-7bdb-4236-a29f-5ea51883b363
+```
+
+If only one result is returned (e.g. `limit=1`), show the UUID inline below the table.
+If multiple results, list all UUIDs at the end or on request.
 
 ---
 
