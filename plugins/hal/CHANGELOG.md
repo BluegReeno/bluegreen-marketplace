@@ -16,6 +16,21 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.4.0] — 2026-06-06 — Skill `/edifice list` + fix plugin.json version gap
+
+### Added
+- **Skill `edifice` 0.2.0 → 0.3.0** — `/edifice list` command: lists Edifice missions
+  sorted newest-first via MCP `list_edifice_missions`. Displays date, name, type,
+  status, building address, and mission UUID. Supports optional `status=<value>` and
+  `limit=N` filters. No scripts — pure MCP tool call, zero cold-start cost.
+
+### Fixed
+- `plugin.json` and `marketplace.json` bumped from `0.2.0` to `0.4.0` to match
+  the CHANGELOG (the `0.3.0` entry was written but the json files were not updated
+  in that session).
+
+---
+
 ## [0.3.0] — 2026-06-06 — Skill `/edifice pull` server-side export via Storage
 
 ### Changed (interface — MINOR bump)
