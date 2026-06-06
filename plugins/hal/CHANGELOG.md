@@ -16,6 +16,16 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.3.0] — 2026-06-06 — Skill `/edifice pull` server-side export via Storage
+
+### Changed (interface — MINOR bump)
+- **Skill `edifice` 0.1.1 → 0.2.0** — `/edifice pull` step 2 changed: `get_mission_with_assets`
+  now returns `{ download_url, note_count, photo_count, expires_in }` instead of the full JSON payload.
+  Skill now runs `curl -s "$DOWNLOAD_URL" > mission/mcp_response.json` immediately after the MCP call.
+  The URL expires in 300 s. No change to `/edifice push`, `/edifice improve`, or `/edifice report`.
+
+---
+
 ## [0.2.0] — 2026-06-05 — Skill `/hal` routes BG-CRM writes to Supabase via hal-mcp
 
 ### Changed (interface — MINOR bump)
