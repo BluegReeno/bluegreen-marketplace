@@ -4,7 +4,7 @@ Last updated: 2026-06-08
 
 ## Current Focus
 
-hal v0.5.0 released — `/hal list` added. Lot 2 (tâches/sprints) en attente des tools hal-mcp (`create_task`, `list_tasks`, `update_task`)
+hal v0.6.0 released — `/hal` et `/edifice` commands enregistrés, MCP pre-flight check. Lot 2 (tâches/sprints) en attente des tools hal-mcp (`create_task`, `list_tasks`, `update_task`)
 
 ## In Progress
 
@@ -44,6 +44,11 @@ _(rien)_
   - Skill `hal` 0.3.0 → 0.4.0 : commande `/hal list [workspace]` (pur MCP, zéro script)
   - plugin.json + marketplace.json : `0.4.0` → `0.5.0`
   - CHANGELOG entry `[0.5.0]` prependé
+- [x] hal plugin v0.6.0 — 2026-06-08
+  - `commands/hal.md` + `commands/edifice.md` : `/hal` et `/edifice` comme slash commands directs
+  - MCP pre-flight check dans skills hal (0.4.1) + edifice (0.3.1)
+  - `docs/skills-mcp-guide.md` : référence skills vs commands, MCP, cross-platform
+  - CLAUDE.md mis à jour : structure + note skills vs commands
 
 ## Backlog
 

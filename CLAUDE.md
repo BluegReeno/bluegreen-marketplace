@@ -49,6 +49,9 @@ bluegreen-marketplace/
 │   │   │       ├── update_frontmatter.py
 │   │   │       ├── sprint_transition.py
 │   │   │       └── references/schemas.md
+│   │   ├── commands/
+│   │   │   ├── hal.md            # /hal slash command (routes to hal skill)
+│   │   │   └── edifice.md        # /edifice slash command (routes to edifice skill)
 │   │   ├── templates/            # *.docx report templates
 │   │   ├── organizations/        # client config
 │   │   ├── requirements.txt
@@ -57,9 +60,27 @@ bluegreen-marketplace/
 │       └── .gitkeep              # placeholder — future sprint
 ├── docs/
 │   ├── brief.md                  # sprint brief and architectural decisions
-│   └── INSTALL.md                # one-liner install instructions
+│   ├── INSTALL.md                # one-liner install instructions
+│   └── skills-mcp-guide.md       # skill vs command architecture, MCP check, cross-platform
 └── README.md                     # public-facing install guide
 ```
+
+### Skills vs Commands — why both exist
+
+Claude Code has two separate invocation systems:
+
+| System | Directory | Invocation |
+|--------|----------|-----------|
+| **Skill** | `skills/<name>/SKILL.md` | Semantic trigger OR `plugin:skill` menu (e.g., `hal:hal`) |
+| **Command** | `commands/<name>.md` | Direct slash syntax: `/hal`, `/edifice` |
+
+Skills are always namespaced (`hal:hal`) — typing `/hal` raw looks for a **command**, not a skill.
+`commands/hal.md` and `commands/edifice.md` register the bare slash commands.
+The command file must be self-contained — the skill body is NOT pre-loaded when a command fires.
+
+See `docs/skills-mcp-guide.md` for the full reference (MCP detection, cross-platform).
+
+---
 
 ### Source of truth — obsidian-crm scripts
 

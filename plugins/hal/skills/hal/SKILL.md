@@ -10,7 +10,7 @@ description: >
   instruction mid-conversation. Also trigger when the user says
   "done", "fait", "c'est bon", "next" after completing a task —
   propose the corresponding CRM write.
-version: 0.4.0
+version: 0.4.1
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -25,6 +25,23 @@ This skill routes natural-language CRM updates to the `hal-mcp` MCP connector
 **Scope**: BlueGreen CRM only (projects, companies, contacts, interactions).
 Job Search lives in the Obsidian vault and is handled by `obsidian-crm` — never
 write the vault from this skill. Edifice has its own skill — do not touch.
+
+---
+
+## Pre-flight : vérifier hal-mcp
+
+Avant toute opération MCP, vérifier que le connecteur est actif :
+
+1. Appeler `list_stages` avec `workspace_slug: "blue-green"`
+2. **Succès** → continuer normalement
+3. **Échec** (outil indisponible / connexion refusée / timeout) :
+
+> ❌ **hal-mcp non connecté.**
+> Reconnexion : **Claude Desktop → Paramètres → Connexions → hal-mcp → Activer**
+> ⚠️ Ne pas lancer de commandes terminal — interface graphique uniquement.
+> Relancer la commande après reconnexion.
+
+`/hal devis` ne nécessite pas MCP — ignorer ce check pour cette commande.
 
 ---
 

@@ -5,7 +5,7 @@ description: >
   *.edifice.md file, or asks to "pull an Edifice mission", "generate an
   Edifice report", "create a diagnostic report", "generate a devis", or
   "run edifice".
-version: 0.3.0
+version: 0.3.1
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 
@@ -68,6 +68,20 @@ echo "Briefing: $BRIEFING"
 # Mission output dir (created by /edifice pull)
 MISSION_DIR="./mission"
 ```
+
+---
+
+## Pre-flight : vérifier hal-mcp
+
+Requis pour `list`, `pull`, et `push`. Pas nécessaire pour `improve` et `report`.
+
+1. Appeler `list_edifice_missions` avec `limit: 1`
+2. **Succès** → continuer normalement
+3. **Échec** (outil indisponible / connexion refusée / timeout) :
+
+> ❌ **hal-mcp non connecté.**
+> Reconnexion : **Claude Desktop → Paramètres → Connexions → hal-mcp → Activer**
+> ⚠️ Ne pas lancer de commandes terminal — interface graphique uniquement.
 
 ---
 
