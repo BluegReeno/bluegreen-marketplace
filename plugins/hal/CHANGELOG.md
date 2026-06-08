@@ -16,6 +16,17 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.5.0] — 2026-06-08 — Skill `/hal list`
+
+### Added
+- **Skill `hal` 0.3.0 → 0.4.0** — `/hal list [workspace]` command: displays the CRM
+  pipeline as a text kanban grouped by stage. Defaults to workspace `blue-green`;
+  accepts an optional workspace slug arg (`ic`, `blue-green`, or any slug).
+  Supports optional `stage=<value>` and `kind=<value>` filters.
+  No scripts — pure MCP tool call via `list_projects`, zero cold-start cost.
+
+---
+
 ## [0.4.0] — 2026-06-06 — Skill `/edifice list` + fix plugin.json version gap
 
 ### Added
