@@ -16,6 +16,24 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.6.0] — 2026-06-08 — Direct `/hal` + `/edifice` commands + MCP pre-flight
+
+### Added
+- **`commands/hal.md`** — registers `/hal` as a first-class slash command. Enables
+  `/hal list`, `/hal update`, `/hal devis` without `hal:hal` prefix or semantic trigger.
+  Self-contained: includes routing table and MCP pre-flight inline.
+- **`commands/edifice.md`** — same for `/edifice`: `list`, `pull`, `improve`, `report`, `push`.
+  MCP check for network-dependent subcommands; `improve` and `report` skip the check.
+- **Skill `hal` 0.4.0 → 0.4.1** — MCP pre-flight check section added: verify hal-mcp via
+  `list_stages` before any CRM operation; surface reconnection instructions (Claude Desktop
+  GUI only, no terminal) if unavailable.
+- **Skill `edifice` 0.3.0 → 0.3.1** — same MCP pre-flight check added (`list_edifice_missions`).
+- **`docs/skills-mcp-guide.md`** — reference: skill vs command architecture, MCP detection
+  pattern, agentskills.io cross-platform spec, version field notes, validation commands.
+- **`CLAUDE.md`** — `commands/` added to repo structure; skills-vs-commands section added.
+
+---
+
 ## [0.5.0] — 2026-06-08 — Skill `/hal list`
 
 ### Added
