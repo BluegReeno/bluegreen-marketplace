@@ -1,10 +1,10 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-06
+Last updated: 2026-06-08
 
 ## Current Focus
 
-hal v0.4.0 released — `/edifice list` added. Lot 2 (tâches/sprints) en attente des tools hal-mcp (`create_task`, `list_tasks`, `update_task`)
+hal v0.5.0 released — `/hal list` added. Lot 2 (tâches/sprints) en attente des tools hal-mcp (`create_task`, `list_tasks`, `update_task`)
 
 ## In Progress
 
@@ -40,6 +40,10 @@ _(rien)_
   - Skill `edifice` 0.2.0 → 0.3.0 : commande `/edifice list` (pur MCP, zéro script)
   - Fix plugin.json + marketplace.json : `0.2.0` → `0.4.0` (gap 0.3.0 comblé)
   - CHANGELOG entry `[0.4.0]` prependé
+- [x] hal plugin v0.5.0 — 2026-06-08
+  - Skill `hal` 0.3.0 → 0.4.0 : commande `/hal list [workspace]` (pur MCP, zéro script)
+  - plugin.json + marketplace.json : `0.4.0` → `0.5.0`
+  - CHANGELOG entry `[0.5.0]` prependé
 
 ## Backlog
 

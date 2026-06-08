@@ -10,7 +10,7 @@ description: >
   instruction mid-conversation. Also trigger when the user says
   "done", "fait", "c'est bon", "next" after completing a task —
   propose the corresponding CRM write.
-version: 0.3.0
+version: 0.4.0
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -25,6 +25,77 @@ This skill routes natural-language CRM updates to the `hal-mcp` MCP connector
 **Scope**: BlueGreen CRM only (projects, companies, contacts, interactions).
 Job Search lives in the Obsidian vault and is handled by `obsidian-crm` — never
 write the vault from this skill. Edifice has its own skill — do not touch.
+
+---
+
+## /hal list `[workspace]`
+
+Show the CRM pipeline as a text kanban — projects grouped by stage.
+Default workspace: `blue-green`.
+
+### Steps
+
+**1. Resolve workspace**
+
+- If the user typed `/hal list ic` or `/hal list ic-ingenieurs-conseils` →
+  use `workspace_slug: "ic-ingenieurs-conseils"`.
+- Any other explicit arg → use as `workspace_slug` directly.
+- No arg → `workspace_slug: "blue-green"`.
+
+**2. Call MCP `list_projects`**
+
+Call with:
+- `workspace_slug` (resolved above)
+- No `stage` filter — retrieve the full pipeline
+- Optional: if the user passed `stage=<value>` or `kind=<value>`, add them as
+  the corresponding filter parameters
+
+To know valid stages for a workspace call `list_stages` first if unsure.
+
+**3. Group and display**
+
+Group results by `stage`. Determine ordering:
+- **Active stages** = stages where at least one project has `closed_at` null
+- **Terminal stages** = stages where all projects have `closed_at` non-null
+- Show active stages first (in pipeline order from the data), terminal stages last
+- Within each stage, keep the server order (`created_at DESC`)
+
+Display format:
+
+```
+### prospect (2)
+- DEV-168 · VESTA SA · 12 000 € · Laval (53)
+- — · Martin SARL · — · —
+
+### devis_a_rediger (1)
+- DEV-045 · IC Ingénieurs Conseils · 8 500 € · Paris (75)
+
+### devis_envoye (3)
+- DEV-121 · Valorem · 45 000 € · Bordeaux (33)
+- DEV-099 · EDF · — · —
+- DEV-088 · Greenta · 3 200 € · Lyon (69)
+
+### ✓ solde (5)
+- DEV-055 · Lacourt · 18 000 € — soldé 2026-05-12
+```
+
+Line format per project:
+`{project_ref or "—"} · {company.name or "—"} · {amount_ht formatted or "—"} · {location or "—"}`
+
+- Format `amount_ht`: space-separated thousands + ` €` (e.g. `12 000 €`). Show `—` if null.
+- For terminal stages: append `— soldé {closed_at[:10]}` or `— perdu {closed_at[:10]}`
+  when `closed_at` is present.
+- Stage header prefix: `✓ ` for terminal stages.
+- Never display the `description` field — too verbose for a kanban overview.
+
+**4. Handle edge cases**
+
+- No projects in workspace → `Aucun projet dans le workspace <slug>.`
+- Stage is empty → skip that stage in the output (don't show empty sections)
+- `description` field received → ignore it entirely
+- `kind` filter passed → show only that kind; add `(kind: <value>)` after the workspace name in the header
+- `stage` filter passed → show only that stage; useful for "show me all prospects"
+- Unknown workspace slug → surface the `list_projects` error verbatim
 
 ---
 
