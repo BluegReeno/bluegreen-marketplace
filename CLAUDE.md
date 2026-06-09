@@ -17,6 +17,12 @@ Clients install plugins via:
 /plugin marketplace add BluegReeno/bluegreen-marketplace
 ```
 
+**Distribution channel**: Renaud uses **Claude Desktop** (Customize → Plugins personnels → Hal).
+Updates appear as a "Mettre à jour" button when the remote version > installed version.
+Claude Desktop reads versions from `marketplace.json` → `plugins[0].version` and compares
+with the cached installed version. **This is why version bumps in every release are mandatory** —
+without a version bump, Claude Desktop won't surface the update and clients stay on the old code.
+
 | Plugin | Status | Skills |
 |--------|--------|--------|
 | `hal` | `plugins/hal/` — developed here | `edifice` + `hal` |
