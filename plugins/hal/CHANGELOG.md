@@ -16,6 +16,34 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.7.0] — 2026-06-10 — Hal Lot 2 — tâches et sprints
+
+### Added
+- **Skill `hal` 0.4.1 → 0.5.0** — Lot 2 tâches :
+  - `/hal tasks [workspace]` — liste les tâches en kanban texte groupé par statut
+    (todo → in_progress → blocked → ✓ done). Filtres : `--mine`, `--project <ref>`,
+    `--status`. Pur MCP, zéro script.
+  - NL task intents dans `/hal update` : créer (`create_task`), mettre à jour
+    (`update_task_status`), assigner à un sprint (`assign_task_to_sprint`).
+  - `create_sprint` — disponible sur tout workspace avec `sprints_enabled = true`.
+  - Workspace resolution via `HAL_DEFAULT_WORKSPACE` env var — plus de hardcode
+    `blue-green`. Chaque client configure son workspace par défaut une seule fois.
+- **`commands/hal.md`** — `tasks` subcommand ajouté au routing.
+
+### Changed
+- `/hal list` — workspace resolution migré de `blue-green` hardcodé vers
+  `HAL_DEFAULT_WORKSPACE` env var (même pattern que `/hal tasks`).
+
+### Removed
+- "Tasks and sprints — not yet available" dans "Out of scope" — replaced by
+  real current limitations (no task field update, no list_sprints, project_id join).
+
+### Prerequisites (hal-mcp changes, must be deployed before this skill release)
+- `update_task_status` accepts `workspace_slug` (PR à faire dans hal repo)
+- `sprints_enabled = true` pour workspace `blue-green` (migration à faire dans hal repo)
+
+---
+
 ## [0.6.0] — 2026-06-08 — Direct `/hal` + `/edifice` commands + MCP pre-flight
 
 ### Added

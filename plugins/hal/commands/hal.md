@@ -1,6 +1,6 @@
 ---
-description: HAL CRM — list pipeline, update projects, log interactions, generate devis
-argument-hint: "list [workspace] | update <texte libre> | devis [--workspace SLUG]"
+description: HAL CRM — list pipeline, list tasks, update CRM/tasks, generate devis
+argument-hint: "list [workspace] | tasks [workspace] [--mine] [--project <ref>] [--status <s>] | update <texte libre> | devis [--workspace SLUG]"
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -23,11 +23,23 @@ Stopper si indisponible. Continuer si le call réussit.
 
 ## Route
 
-### `list [workspace]` (défaut : `blue-green`)
+### Workspace resolution (commun à `list`, `tasks`, `update`)
+
+1. Arg explicite (`ic` → `ic-ingenieurs-conseils`, autre → tel quel) → utiliser ce slug
+2. Pas d'arg → lire `HAL_DEFAULT_WORKSPACE` (env var) :
+   ```bash
+   DEFAULT_WS=$(python3 -c "import os,sys; ws=os.environ.get('HAL_DEFAULT_WORKSPACE',''); print(ws) if ws else sys.exit(1)" 2>/dev/null)
+   ```
+   - Non vide → `workspace_slug = $DEFAULT_WS`
+   - Vide → répondre :
+     > ❌ Workspace par défaut non configuré. Ajoute `export HAL_DEFAULT_WORKSPACE=<ton-slug>` dans ton `~/.zshrc` et relance.
+3. `/hal devis` est l'exception : voir sa section.
+
+### `list [workspace]`
 
 Pipeline CRM en kanban texte groupé par stage.
 
-- Résoudre workspace : `ic` / `ic-ingenieurs-conseils` → `"ic-ingenieurs-conseils"` ; autre arg → tel quel ; sans arg → `"blue-green"`
+- Résoudre workspace (voir au-dessus)
 - Appeler `list_projects` sans filtre de stage (vue complète)
 - Grouper par `stage` : actifs d'abord (projets avec `closed_at` null), terminaux en dernier
 - Ligne : `{project_ref ou "—"} · {company.name ou "—"} · {amount_ht formaté ou "—"} · {location ou "—"}`
@@ -35,6 +47,25 @@ Pipeline CRM en kanban texte groupé par stage.
 - Aucun projet → `Aucun projet dans le workspace <slug>.`
 - Ne jamais afficher le champ `description`
 - Filtres optionnels : `stage=<value>`, `kind=<value>`
+
+### `tasks [workspace] [--mine] [--project <ref>] [--status <status>]`
+
+Tâches en kanban texte groupé par statut.
+
+- Résoudre workspace (voir au-dessus)
+- Résoudre filtres :
+  - `--mine` → `assignee_email` = email user (demander si inconnu)
+  - `--project <ref>` → `list_projects` pour résoudre `project_id`, puis filtrer
+  - `--status <value>` → filtrer (`todo` | `in_progress` | `done` | `blocked`)
+- Appeler `list_tasks` avec `workspace_slug` (+ filtres)
+- Grouper par `status` dans l'ordre fixe : `todo` → `in_progress` → `blocked` → `done`
+- `done` est terminal → préfixer `✓ ` dans le header
+- Ligne : `{⚡ si priority=high}{title} · {assignee short ou "—"} · {due_date ou "—"} {[S] si sprint_id non null}`
+  - `assignee short` = partie locale de `assignee_email` (avant `@`)
+  - `[S]` = marker si `sprint_id` non null
+- Aucune tâche → `Aucune tâche dans le workspace <slug>.`
+- Groupe vide → ne pas afficher la section
+- `list_tasks` retourne `project_id` brut (UUID) — colonne omise sauf si `--project` utilisé
 
 ### `update <texte libre>`
 
@@ -47,8 +78,15 @@ Pipeline CRM en kanban texte groupé par stage.
 | "nouveau client [nom]" | `create_company` |
 | "nouveau contact [nom] chez [client]" | `list_companies` → `create_contact` |
 | "nouvelle mission/propale" | `list_companies` → `create_project` |
+| "ajouter tâche X", "todo : X", "créer une tâche" | `create_task` |
+| "tâche X faite", "X → done", "c'est fait" | `list_tasks` → fuzzy match → `update_task_status` (done) |
+| "X → in progress", "je commence X" | `list_tasks` → fuzzy match → `update_task_status` (in_progress) |
+| "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |
+| "nouveau sprint S<N>" | `create_sprint` |
+| "assigne tâche X au sprint Y" | `list_tasks` → match → `assign_task_to_sprint` |
 
-Toujours `workspace_slug: "blue-green"`. Confirmer avant toute écriture ambiguë.
+Workspace résolu via la règle "Workspace resolution" ci-dessus (arg explicite ou
+`HAL_DEFAULT_WORKSPACE`). Confirmer avant toute écriture ambiguë.
 Output : `✅ [Entité] → [tool]: [valeur]` / `❌ [Entité] → [tool]: [erreur]`
 
 ### `devis [--workspace SLUG]`

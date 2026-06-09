@@ -10,7 +10,7 @@ description: >
   instruction mid-conversation. Also trigger when the user says
   "done", "fait", "c'est bon", "next" after completing a task —
   propose the corresponding CRM write.
-version: 0.4.1
+version: 0.5.0
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -19,12 +19,39 @@ allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir
 This skill routes natural-language CRM updates to the `hal-mcp` MCP connector
 (Supabase backend). Zero scripts, zero Bash — pure NL → MCP tool mapping.
 
-**Workspace**: `blue-green` — hard-coded. Every CRM tool call MUST pass
-`workspace_slug: "blue-green"`.
+**Scope**: BlueGreen CRM and any other workspace served by `hal-mcp` (projects,
+companies, contacts, interactions, tasks, sprints). Job Search lives in the
+Obsidian vault and is handled by `obsidian-crm` — never write the vault from
+this skill. Edifice has its own skill — do not touch.
 
-**Scope**: BlueGreen CRM only (projects, companies, contacts, interactions).
-Job Search lives in the Obsidian vault and is handled by `obsidian-crm` — never
-write the vault from this skill. Edifice has its own skill — do not touch.
+---
+
+## Workspace resolution (applies to every /hal command)
+
+Every CRM tool call MUST pass a `workspace_slug`. Resolve it in this order:
+
+1. **Explicit arg** (`/hal tasks ic`, `/hal list blue-green`) → use that slug
+   directly. Shorthand: `ic` → `ic-ingenieurs-conseils`.
+2. **No arg** → read the `HAL_DEFAULT_WORKSPACE` env var:
+
+   ```bash
+   DEFAULT_WS=$(python3 -c "import os,sys; ws=os.environ.get('HAL_DEFAULT_WORKSPACE',''); print(ws) if ws else sys.exit(1)" 2>/dev/null)
+   if [ $? -ne 0 ]; then
+     echo "HAL_DEFAULT_WORKSPACE not set"
+     exit 1
+   fi
+   echo "Workspace: $DEFAULT_WS"
+   ```
+
+   - Available (non-empty) → use it as `workspace_slug`.
+   - Not set → respond and stop:
+
+     > ❌ Workspace par défaut non configuré.
+     > Ajoute `export HAL_DEFAULT_WORKSPACE=<ton-slug>` dans ton `~/.zshrc` (ou `.env`).
+     > Relance la commande après.
+
+`/hal devis` is the only exception — it accepts `--workspace SLUG` with its own
+defaults (see that section).
 
 ---
 
@@ -48,16 +75,12 @@ Avant toute opération MCP, vérifier que le connecteur est actif :
 ## /hal list `[workspace]`
 
 Show the CRM pipeline as a text kanban — projects grouped by stage.
-Default workspace: `blue-green`.
+Default workspace: resolved from `HAL_DEFAULT_WORKSPACE` env var (see
+"Workspace resolution" at top of this skill).
 
 ### Steps
 
-**1. Resolve workspace**
-
-- If the user typed `/hal list ic` or `/hal list ic-ingenieurs-conseils` →
-  use `workspace_slug: "ic-ingenieurs-conseils"`.
-- Any other explicit arg → use as `workspace_slug` directly.
-- No arg → `workspace_slug: "blue-green"`.
+**1. Resolve workspace** — use the standard workspace resolution pattern.
 
 **2. Call MCP `list_projects`**
 
@@ -116,14 +139,85 @@ Line format per project:
 
 ---
 
+## /hal tasks `[workspace]` `[--mine]` `[--project <ref>]` `[--status <status>]`
+
+Show tasks as a text kanban grouped by status.
+Default workspace: resolved from `HAL_DEFAULT_WORKSPACE` env var (see
+"Workspace resolution" at top of this skill).
+
+### Steps
+
+**1. Resolve workspace** — use the standard workspace resolution pattern.
+
+**2. Resolve filters**
+
+- `--mine` → add `assignee_email: "<user's own email, from conversation context>"`.
+  If email is unknown, ask the user rather than guessing.
+- `--project <ref>` → call `list_projects` to resolve `project_id` by name/ref,
+  then add `project_id` filter to `list_tasks`.
+- `--status <value>` → add `status` filter (`todo` | `in_progress` | `done` | `blocked`).
+- No filters → retrieve all tasks in the workspace (no filter).
+
+**3. Call MCP `list_tasks`**
+
+Call with `workspace_slug` (+ resolved filters).
+
+**4. Group and display**
+
+Group by `status`. Fixed order: `todo` → `in_progress` → `blocked` → `done`.
+`done` is terminal — prefix header with `✓ `.
+
+Display format:
+
+```
+### todo (3)
+- Relancer Valorem pour signature · renaud · 2026-06-15
+- Préparer propale VESTA · — · —
+- Appeler Laurent IC · — · —
+
+### in_progress (1)
+- ⚡ Rédiger rapport Varenne · — · 2026-06-20 [S]
+
+### blocked (1)
+- Accès chantier Aulnay · — · —
+
+### ✓ done (5)
+- Migration Supabase · renaud · 2026-06-05
+```
+
+Line format per task:
+`{⚡ if priority=high }{title} · {assignee short or "—"} · {due_date or "—"} {[S] if sprint_id set}`
+
+- `assignee short`: local part before `@` from `assignee_email` (e.g. `renaud`
+  from `renaud@bluegreen.ai`). Show `—` if null.
+- `[S]` marker if `sprint_id` is non-null (sprint name unknown without extra call).
+- `priority` field: prepend `⚡` if `priority == "high"`. Skip the marker for
+  `normal` / null / other values.
+
+**Note on `project_id`**: `list_tasks` returns a raw UUID. Without a `--project`
+filter that pre-resolved the ref, show nothing in that column — the assignee
+short is shown instead. A future improvement could join on project data — out
+of scope for this release.
+
+**5. Edge cases**
+
+- No tasks → `Aucune tâche dans le workspace <slug>.`
+- Empty status group → skip that group entirely (don't show empty sections)
+- `HAL_DEFAULT_WORKSPACE` not set + no arg → surface setup instructions (see
+  "Workspace resolution" at top of skill)
+- Unknown workspace slug → surface the `list_tasks` error verbatim
+
+---
+
 ## /hal update `<texte libre>`
 
 1. Parse the user's text to detect **intent** (write vs read) and **entity**
-   (mission, contact, company, interaction).
+   (mission, contact, company, interaction, task, sprint).
 2. Resolve referenced entities via the appropriate `list_*` tool, always
    filtering to keep payloads small (see "Entity resolution" below).
 3. If the match is ambiguous → list candidates and ask before writing.
-4. Call the target MCP tool with `workspace_slug: "blue-green"`.
+4. Call the target MCP tool with the resolved `workspace_slug` (see "Workspace
+   resolution" at top of this skill).
 5. Output result as `✅ [Entité] → [tool]: [valeur]`.
 
 If the user appends `--dry-run`, print the planned MCP calls (tool name +
@@ -143,6 +237,14 @@ arguments) without executing them.
 | "nouveau contact [nom] chez [client]" | `list_companies` → match → `create_contact` |
 | "nouvelle mission/propale [nom] pour [client]" | `list_companies` → match → `create_project` |
 | "pipeline", "où en est [client]", "deals en cours" | `list_projects` / `list_companies` (read-only) |
+| "mes tâches", "todo list", "qu'est-ce que j'ai à faire" | `list_tasks` (workspace default) |
+| "ajouter tâche X", "nouvelle tâche Y", "todo : Z", "créer une tâche" | `create_task` |
+| "tâche X faite", "X → done", "X terminé", "c'est fait" | `list_tasks` → fuzzy match → `update_task_status` (done) |
+| "X → in progress", "je commence X", "en cours : X" | `list_tasks` → fuzzy match → `update_task_status` (in_progress) |
+| "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |
+| "X → todo", "remettre X en attente" | `list_tasks` → fuzzy match → `update_task_status` (todo) |
+| "nouveau sprint S<N>", "créer sprint" | `create_sprint` |
+| "assigne tâche X au sprint Y", "tâche X dans sprint Y" | `list_tasks` → match task → `assign_task_to_sprint` |
 
 ---
 
@@ -184,6 +286,26 @@ names.
 - **Always filter `list_projects` by `stage`** when the intent allows. Without
   a filter, the response includes the full `description` markdown for every
   project (~70k chars for 51 projects — too heavy to be useful for matching).
+
+---
+
+## Task resolution (fuzzy match)
+
+Same thresholds as entity resolution (score > 80 / 50–80 / < 50).
+
+- Match on `title`. Call `list_tasks` with **no `status` filter** — "X → done"
+  must match tasks that are currently `todo` or `in_progress`.
+- Ambiguity: multiple tasks at the same score → list candidates, ask to pick.
+- `update_task_status` takes `workspace_slug`, `task_id`, and `status`. Always
+  pass `workspace_slug` — resolved from arg or `HAL_DEFAULT_WORKSPACE`.
+- **Never auto-create a task from an ambiguous match.** Score < 50 → propose
+  creation.
+- "c'est fait" / "done" said after completing a described action → propose the
+  corresponding task write, do not auto-write.
+- **Sprint resolution**: no `list_sprints` MCP tool exists. To filter
+  `list_tasks` by `sprint_id` (e.g. "tâches du sprint actuel"), the user must
+  provide the sprint UUID. If only a number/name is given and no recent
+  `create_sprint` response is in context → ask for the UUID.
 
 ---
 
@@ -270,8 +392,15 @@ generate a Blue Green devis (prefix BG). Other slugs are rejected by the script.
 - **Job Search** — handled by `obsidian-crm`. `/hal` never writes the vault.
 - **Edifice missions** — handled by the `edifice` skill via dedicated tools
   (`read_edifice_mission`, `get_mission_with_assets`, `push_mission_context`).
-- **Tasks and sprints** — server CRUD (`create_task`, `list_tasks`,
-  `update_task`) not yet available. Coming in a future sprint (lot 2).
-- **Field updates outside `stage`** — companies / contacts / missions cannot
-  be edited (server limitation). Mention it when relevant; do not attempt a
-  workaround.
+- **Task field updates** — only `status` can be updated via
+  `update_task_status`. Title, due_date, assignee, description, priority
+  cannot be edited after creation (server limitation — no `update_task` tool).
+- **Sprint listing** — no `list_sprints` MCP tool. Sprint UUIDs must be
+  provided by the user or resolved from a previous `create_sprint` response.
+- **`project_id` join** — `list_tasks` returns a raw `project_id` UUID, not
+  the project ref. A separate `list_projects` call resolves it — done
+  automatically when `--project <ref>` filter is used, otherwise the column
+  is omitted.
+- **Field updates outside `stage` (projects) and `status` (tasks)** —
+  companies / contacts / mission fields cannot be edited (server limitation).
+  Mention it when relevant; do not attempt a workaround.
