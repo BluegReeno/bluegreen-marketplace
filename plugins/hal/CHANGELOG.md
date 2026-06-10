@@ -38,9 +38,9 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 - "Tasks and sprints — not yet available" dans "Out of scope" — replaced by
   real current limitations (no task field update, no list_sprints, project_id join).
 
-### Prerequisites (hal-mcp changes, must be deployed before this skill release)
-- `update_task_status` accepts `workspace_slug` (PR à faire dans hal repo)
-- `sprints_enabled = true` pour workspace `blue-green` (migration à faire dans hal repo)
+### Prerequisites (hal-mcp — deployed v28, PRs #38 #39 — 2026-06-08)
+- `update_task_status` accepts `workspace_slug` ✅
+- `sprints_enabled = true` for `blue-green` workspace ✅
 
 ---
 

@@ -28,11 +28,11 @@ Stopper si indisponible. Continuer si le call réussit.
 1. Arg explicite (`ic` → `ic-ingenieurs-conseils`, autre → tel quel) → utiliser ce slug
 2. Pas d'arg → lire `HAL_DEFAULT_WORKSPACE` (env var) :
    ```bash
-   DEFAULT_WS=$(python3 -c "import os,sys; ws=os.environ.get('HAL_DEFAULT_WORKSPACE',''); print(ws) if ws else sys.exit(1)" 2>/dev/null)
+   python3 -c "import os; print(os.environ.get('HAL_DEFAULT_WORKSPACE', '') or 'UNSET')"
    ```
-   - Non vide → `workspace_slug = $DEFAULT_WS`
-   - Vide → répondre :
-     > ❌ Workspace par défaut non configuré. Ajoute `export HAL_DEFAULT_WORKSPACE=<ton-slug>` dans ton `~/.zshrc` et relance.
+   - Output est un slug non vide → `workspace_slug = <output>`
+   - Output est `UNSET` → répondre :
+     > ❌ Workspace par défaut non configuré. Ajoute `export HAL_DEFAULT_WORKSPACE=<ton-slug>` dans ton `~/.zshrc` (Claude Desktop) ou `.env` (Cowork) et relance.
 3. `/hal devis` est l'exception : voir sa section.
 
 ### `list [workspace]`
@@ -78,10 +78,12 @@ Tâches en kanban texte groupé par statut.
 | "nouveau client [nom]" | `create_company` |
 | "nouveau contact [nom] chez [client]" | `list_companies` → `create_contact` |
 | "nouvelle mission/propale" | `list_companies` → `create_project` |
+| "mes tâches", "todo list", "qu'est-ce que j'ai à faire" | `list_tasks` (workspace default) |
 | "ajouter tâche X", "todo : X", "créer une tâche" | `create_task` |
 | "tâche X faite", "X → done", "c'est fait" | `list_tasks` → fuzzy match → `update_task_status` (done) |
 | "X → in progress", "je commence X" | `list_tasks` → fuzzy match → `update_task_status` (in_progress) |
 | "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |
+| "X → todo", "remettre X en attente" | `list_tasks` → fuzzy match → `update_task_status` (todo) |
 | "nouveau sprint S<N>" | `create_sprint` |
 | "assigne tâche X au sprint Y" | `list_tasks` → match → `assign_task_to_sprint` |
 
