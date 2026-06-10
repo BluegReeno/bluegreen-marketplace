@@ -35,19 +35,15 @@ Every CRM tool call MUST pass a `workspace_slug`. Resolve it in this order:
 2. **No arg** → read the `HAL_DEFAULT_WORKSPACE` env var:
 
    ```bash
-   DEFAULT_WS=$(python3 -c "import os,sys; ws=os.environ.get('HAL_DEFAULT_WORKSPACE',''); print(ws) if ws else sys.exit(1)" 2>/dev/null)
-   if [ $? -ne 0 ]; then
-     echo "HAL_DEFAULT_WORKSPACE not set"
-     exit 1
-   fi
-   echo "Workspace: $DEFAULT_WS"
+   python3 -c "import os; print(os.environ.get('HAL_DEFAULT_WORKSPACE', '') or 'UNSET')"
    ```
 
-   - Available (non-empty) → use it as `workspace_slug`.
-   - Not set → respond and stop:
+   - Output is a non-empty slug → use it as `workspace_slug`.
+   - Output is `UNSET` → respond and stop:
 
      > ❌ Workspace par défaut non configuré.
-     > Ajoute `export HAL_DEFAULT_WORKSPACE=<ton-slug>` dans ton `~/.zshrc` (ou `.env`).
+     > Ajoute `export HAL_DEFAULT_WORKSPACE=<ton-slug>` dans ton `~/.zshrc`.
+     > Sur Claude Desktop : redémarre l'app après modification. Sur Cowork : ajoute la var dans ton `.env`.
      > Relance la commande après.
 
 `/hal devis` is the only exception — it accepts `--workspace SLUG` with its own
@@ -60,6 +56,7 @@ defaults (see that section).
 Avant toute opération MCP, vérifier que le connecteur est actif :
 
 1. Appeler `list_stages` avec `workspace_slug: "blue-green"`
+   *(hardcodé intentionnellement — sonde de connectivité uniquement, doit toujours résoudre vers un slug valide connu)*
 2. **Succès** → continuer normalement
 3. **Échec** (outil indisponible / connexion refusée / timeout) :
 

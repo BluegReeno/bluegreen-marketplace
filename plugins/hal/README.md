@@ -35,7 +35,22 @@ In Claude Cowork:
 /plugin install hal@bluegreen-marketplace
 ```
 
-### 3. Enable auto-update (recommended)
+### 3. Set your default workspace (required)
+
+HAL needs to know which CRM workspace to use by default. Add this to your shell profile (`~/.zshrc`, `~/.bashrc`, or equivalent):
+
+```bash
+export HAL_DEFAULT_WORKSPACE=your-workspace-slug
+```
+
+Replace `your-workspace-slug` with the slug provided by your BlueGreen administrator (e.g. `blue-green`, `ic-ingenieurs-conseils`).
+
+On **Claude Desktop**: add the variable in your shell profile and restart the app.  
+On **Cowork**: add it to your project `.env` or ask your administrator to inject it.
+
+Once set, all `/hal list`, `/hal tasks`, and `/hal update` commands will use this workspace by default. You can always override it per command: `/hal tasks ic` or `/hal list blue-green`.
+
+### 4. Enable auto-update (recommended)
 
 In Cowork: `/plugin` → Marketplaces tab → select `bluegreen-marketplace` → enable auto-update.
 
