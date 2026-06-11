@@ -42,7 +42,7 @@ bluegreen-marketplace/
 │   │   ├── .mcp.json             # hal-mcp SSE server + version
 │   │   ├── skills/
 │   │   │   ├── edifice/SKILL.md  # /edifice — building inspection reports
-│   │   │   └── hal/SKILL.md      # /hal update — Supabase CRM writes via hal-mcp
+│   │   │   └── hal/SKILL.md      # /hal list | tasks | update | devis — Supabase CRM via hal-mcp
 │   │   ├── scripts/
 │   │   │   ├── *.py              # edifice: build_context, render_*, download_photos
 │   │   │   └── obsidian/         # bundled obsidian-crm scripts ← source of truth ★

@@ -6,7 +6,7 @@ It ships two skills inside a single plugin:
 | Skill | Command | Purpose |
 |-------|---------|---------|
 | `edifice` | `/edifice pull`, `/edifice improve`, `/edifice report`, `/edifice push` | Pull a building inspection mission from Supabase and render the DOCX report. |
-| `hal` | `/hal update` | Update BG-CRM in Supabase (missions, contacts, interactions) from a natural-language instruction via **hal-mcp**. |
+| `hal` | `/hal list`, `/hal tasks`, `/hal update`, `/hal devis` | Query and update the BlueGreen CRM (Supabase) from natural language via **hal-mcp**, plus DOCX devis generation. |
 
 ## Prerequisites
 
@@ -35,7 +35,18 @@ In Claude Cowork:
 /plugin install hal@bluegreen-marketplace
 ```
 
-### 3. Enable auto-update (recommended)
+### 3. Workspace access (no client-side config)
+
+HAL resolves your default workspace server-side from your Supabase membership — zero environment variables, zero shell config.
+
+Ask your BlueGreen administrator to:
+
+1. Add your email to the workspace(s) you should access (`workspace_members` table).
+2. If you belong to several workspaces, flag your default one (`is_default = true`).
+
+Once you're a member, all `/hal list`, `/hal tasks`, and `/hal update` commands resolve to your default workspace automatically (via the `whoami` MCP tool). You can always override it per command: `/hal tasks ic` or `/hal list blue-green`.
+
+### 4. Enable auto-update (recommended)
 
 In Cowork: `/plugin` → Marketplaces tab → select `bluegreen-marketplace` → enable auto-update.
 
@@ -59,6 +70,38 @@ The skill activates automatically when it detects a `*.edifice.md` file. It auth
 the stored refresh token, downloads mission data + photos via the **hal-mcp** server, and renders
 the DOCX report. The generated report appears in `mission/rapport.docx` next to the briefing file.
 
+## /hal list
+
+Show the CRM pipeline as a text kanban — projects grouped by stage. Active stages come first;
+terminal stages (`solde`, `perdu`) are listed last with `✓` and the closing date.
+
+Workspace defaults to your `whoami.default_workspace_slug` (set server-side); pass a slug
+explicitly to override.
+
+Examples:
+
+```
+/hal list
+/hal list ic
+/hal list blue-green stage=propale
+```
+
+## /hal tasks
+
+Show tasks as a text kanban grouped by status (`todo → in_progress → blocked → ✓ done`). High-priority
+tasks are prefixed with `⚡`; tasks attached to a sprint are tagged `[S]`.
+
+Filters: `--mine` (uses `whoami.user_email` — never asks), `--project <ref>`, `--status <s>`.
+
+Examples:
+
+```
+/hal tasks
+/hal tasks --mine
+/hal tasks ic --status in_progress
+/hal tasks --project BG-2025-12
+```
+
 ## /hal update
 
 Update BG-CRM in Supabase from a natural-language instruction. The skill activates on explicit
@@ -74,7 +117,7 @@ Examples:
 /hal update nouveau client Natural Power
 ```
 
-Claude resolves the target entity via `list_missions` / `list_contacts` / `list_companies` (fuzzy
+Claude resolves the target entity via `list_projects` / `list_contacts` / `list_companies` (fuzzy
 match on names, threshold 80/50), confirms if ambiguous, then writes to Supabase.
 
 Dry-run mode: ask "what would `/hal update …` do?" — Claude prints the planned MCP calls without
