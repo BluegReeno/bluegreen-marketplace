@@ -185,7 +185,7 @@ Display format:
 ```
 
 Line format per task:
-`{⚡ if priority=high }{title} · {assignee short or "—"} · {due_date or "—"} {[S] if sprint_id set}`
+`{⚡ if priority=high}{title} · {assignee short or "—"} · {due_date or "—"} {[S] if sprint_id set}`
 
 - `assignee short`: local part before `@` from `assignee_email` (e.g. `renaud`
   from `renaud@bluegreen.ai`). Show `—` if null.
@@ -194,9 +194,8 @@ Line format per task:
   `normal` / null / other values.
 
 **Note on `project_id`**: `list_tasks` returns a raw UUID. Without a `--project`
-filter that pre-resolved the ref, show nothing in that column — the assignee
-short is shown instead. A future improvement could join on project data — out
-of scope for this release.
+filter that pre-resolved the ref, omit any project reference from the line.
+A future improvement could join on project data — out of scope for this release.
 
 **5. Edge cases**
 

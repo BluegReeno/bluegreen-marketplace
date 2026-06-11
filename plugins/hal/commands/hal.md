@@ -19,8 +19,11 @@ Si l'outil échoue ou est indisponible :
 > ❌ **hal-mcp non connecté.**
 > Reconnexion : **Claude Desktop → Paramètres → Connexions → hal-mcp → Activer**
 > ⚠️ Ne pas lancer de commandes terminal — interface graphique uniquement.
+> Relancer la commande après reconnexion.
 
 Stopper si indisponible. Continuer si le call réussit.
+
+`/hal devis` ne nécessite pas MCP — ignorer ce check pour cette commande.
 
 ---
 

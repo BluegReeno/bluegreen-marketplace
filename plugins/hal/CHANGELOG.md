@@ -50,8 +50,9 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 - **Workspace env var (config client)** — supprimée intégralement (fix-forward,
   pas de shim de compat). Migration : l'admin renseigne `is_default` dans
   Supabase `workspace_members` ; aucune action côté utilisateur.
-- "Tasks and sprints — not yet available" dans "Out of scope" — replaced by
-  real current limitations (no task field update, no list_sprints, project_id join).
+- Mention "Tasks and sprints — not yet available" dans la section "Out of scope" —
+  remplacée par les limitations actuelles réelles (pas d'update de champ tâche,
+  pas de `list_sprints`, pas de jointure sur `project_id`).
 
 ### Prerequisites
 - **hal-mcp v29+ (PR #41 — déployé prod 2026-06-11)** — outil `whoami` exposé
