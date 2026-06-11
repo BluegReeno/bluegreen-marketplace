@@ -26,38 +26,15 @@ this skill. Edifice has its own skill — do not touch.
 
 ---
 
-## Workspace resolution (applies to every /hal command)
-
-Every CRM tool call MUST pass a `workspace_slug`. Resolve it in this order:
-
-1. **Explicit arg** (`/hal tasks ic`, `/hal list blue-green`) → use that slug
-   directly. Shorthand: `ic` → `ic-ingenieurs-conseils`.
-2. **No arg** → read the `HAL_DEFAULT_WORKSPACE` env var:
-
-   ```bash
-   python3 -c "import os; print(os.environ.get('HAL_DEFAULT_WORKSPACE', '') or 'UNSET')"
-   ```
-
-   - Output is a non-empty slug → use it as `workspace_slug`.
-   - Output is `UNSET` → respond and stop:
-
-     > ❌ Workspace par défaut non configuré.
-     > Ajoute `export HAL_DEFAULT_WORKSPACE=<ton-slug>` dans ton `~/.zshrc`.
-     > Sur Claude Desktop : redémarre l'app après modification. Sur Cowork : ajoute la var dans ton `.env`.
-     > Relance la commande après.
-
-`/hal devis` is the only exception — it accepts `--workspace SLUG` with its own
-defaults (see that section).
-
----
-
 ## Pre-flight : vérifier hal-mcp
 
-Avant toute opération MCP, vérifier que le connecteur est actif :
+Avant toute opération MCP, vérifier que le connecteur est actif via `whoami` :
 
-1. Appeler `list_stages` avec `workspace_slug: "blue-green"`
-   *(hardcodé intentionnellement — sonde de connectivité uniquement, doit toujours résoudre vers un slug valide connu)*
-2. **Succès** → continuer normalement
+1. Appeler `whoami` (aucun argument).
+2. **Succès** → connecteur opérationnel. Mettre en cache pour la commande en cours :
+   - `default_workspace_slug` — utilisé par la résolution de workspace
+   - `workspaces` — liste des memberships, sert pour les messages d'erreur
+   - `user_email` — utilisé par `/hal tasks --mine`
 3. **Échec** (outil indisponible / connexion refusée / timeout) :
 
 > ❌ **hal-mcp non connecté.**
@@ -69,10 +46,35 @@ Avant toute opération MCP, vérifier que le connecteur est actif :
 
 ---
 
+## Workspace resolution (applies to every /hal command)
+
+Every CRM tool call MUST pass a `workspace_slug`. The pre-flight above already
+cached the `whoami` payload (`default_workspace_slug`, `workspaces`,
+`user_email`). Resolve `workspace_slug` in this order:
+
+1. **Explicit arg** (`/hal tasks ic`, `/hal list blue-green`) → use that slug
+   directly. Shorthand: `ic` → `ic-ingenieurs-conseils`. RLS validates
+   membership server-side; if the user is not a member, the MCP tool returns a
+   natural error — surface it verbatim.
+2. **No arg** → use `default_workspace_slug` from the cached `whoami` payload.
+   - Non-null → use it as `workspace_slug`.
+   - `null` and `workspaces` is non-empty (several memberships, no default
+     flagged) → list the available slugs and ask which to use. Do NOT fall back
+     to a hardcoded slug.
+   - `null` and `workspaces` is empty → respond and stop:
+
+     > ❌ Aucun workspace assigné à ton compte.
+     > Demande à ton administrateur BlueGreen d'ajouter ton email aux workspaces concernés dans Supabase.
+
+`/hal devis` is the only exception — it accepts `--workspace SLUG` with its own
+defaults (see that section).
+
+---
+
 ## /hal list `[workspace]`
 
 Show the CRM pipeline as a text kanban — projects grouped by stage.
-Default workspace: resolved from `HAL_DEFAULT_WORKSPACE` env var (see
+Default workspace: resolved from `whoami.default_workspace_slug` (see
 "Workspace resolution" at top of this skill).
 
 ### Steps
@@ -139,7 +141,7 @@ Line format per project:
 ## /hal tasks `[workspace]` `[--mine]` `[--project <ref>]` `[--status <status>]`
 
 Show tasks as a text kanban grouped by status.
-Default workspace: resolved from `HAL_DEFAULT_WORKSPACE` env var (see
+Default workspace: resolved from `whoami.default_workspace_slug` (see
 "Workspace resolution" at top of this skill).
 
 ### Steps
@@ -148,8 +150,8 @@ Default workspace: resolved from `HAL_DEFAULT_WORKSPACE` env var (see
 
 **2. Resolve filters**
 
-- `--mine` → add `assignee_email: "<user's own email, from conversation context>"`.
-  If email is unknown, ask the user rather than guessing.
+- `--mine` → add `assignee_email: <user_email from the cached whoami payload>`.
+  Never ask — the pre-flight already resolved it.
 - `--project <ref>` → call `list_projects` to resolve `project_id` by name/ref,
   then add `project_id` filter to `list_tasks`.
 - `--status <value>` → add `status` filter (`todo` | `in_progress` | `done` | `blocked`).
@@ -200,8 +202,9 @@ of scope for this release.
 
 - No tasks → `Aucune tâche dans le workspace <slug>.`
 - Empty status group → skip that group entirely (don't show empty sections)
-- `HAL_DEFAULT_WORKSPACE` not set + no arg → surface setup instructions (see
-  "Workspace resolution" at top of skill)
+- `default_workspace_slug` null + no arg → surface the prompt from "Workspace
+  resolution" at top of skill (ask which workspace, or tell user to contact
+  admin if `workspaces` is empty)
 - Unknown workspace slug → surface the `list_tasks` error verbatim
 
 ---
@@ -294,7 +297,7 @@ Same thresholds as entity resolution (score > 80 / 50–80 / < 50).
   must match tasks that are currently `todo` or `in_progress`.
 - Ambiguity: multiple tasks at the same score → list candidates, ask to pick.
 - `update_task_status` takes `workspace_slug`, `task_id`, and `status`. Always
-  pass `workspace_slug` — resolved from arg or `HAL_DEFAULT_WORKSPACE`.
+  pass `workspace_slug` — resolved from arg or `whoami.default_workspace_slug`.
 - **Never auto-create a task from an ambiguous match.** Score < 50 → propose
   creation.
 - "c'est fait" / "done" said after completing a described action → propose the

@@ -10,7 +10,10 @@ HAL CRM — Argument reçu : `$ARGUMENTS`
 
 ## 0. Pre-flight : vérifier hal-mcp
 
-Appeler `list_stages` avec `workspace_slug: "blue-green"` avant toute action.
+Appeler `whoami` (aucun argument) avant toute action. Mettre en cache la réponse pour la commande en cours :
+- `default_workspace_slug` (résolution de workspace)
+- `workspaces` (memberships, pour les messages d'erreur)
+- `user_email` (utilisé par `tasks --mine`)
 
 Si l'outil échoue ou est indisponible :
 > ❌ **hal-mcp non connecté.**
@@ -25,14 +28,13 @@ Stopper si indisponible. Continuer si le call réussit.
 
 ### Workspace resolution (commun à `list`, `tasks`, `update`)
 
-1. Arg explicite (`ic` → `ic-ingenieurs-conseils`, autre → tel quel) → utiliser ce slug
-2. Pas d'arg → lire `HAL_DEFAULT_WORKSPACE` (env var) :
-   ```bash
-   python3 -c "import os; print(os.environ.get('HAL_DEFAULT_WORKSPACE', '') or 'UNSET')"
-   ```
-   - Output est un slug non vide → `workspace_slug = <output>`
-   - Output est `UNSET` → répondre :
-     > ❌ Workspace par défaut non configuré. Ajoute `export HAL_DEFAULT_WORKSPACE=<ton-slug>` dans ton `~/.zshrc` (Claude Desktop) ou `.env` (Cowork) et relance.
+1. Arg explicite (`ic` → `ic-ingenieurs-conseils`, autre → tel quel) → utiliser ce slug.
+   RLS valide la membership côté serveur ; si non-membre, l'outil MCP renvoie une erreur — l'afficher telle quelle.
+2. Pas d'arg → utiliser `default_workspace_slug` depuis la réponse `whoami` cachée par le pre-flight.
+   - Non-null → l'utiliser comme `workspace_slug`.
+   - Null avec `workspaces` non vide → lister les slugs dispos et demander à l'utilisateur de choisir. Pas de fallback hardcodé.
+   - Null avec `workspaces` vide → répondre :
+     > ❌ Aucun workspace assigné à ton compte. Demande à ton administrateur BlueGreen d'ajouter ton email aux workspaces concernés dans Supabase.
 3. `/hal devis` est l'exception : voir sa section.
 
 ### `list [workspace]`
@@ -54,7 +56,7 @@ Tâches en kanban texte groupé par statut.
 
 - Résoudre workspace (voir au-dessus)
 - Résoudre filtres :
-  - `--mine` → `assignee_email` = email user (demander si inconnu)
+  - `--mine` → `assignee_email` = `user_email` depuis la réponse `whoami` cachée (ne jamais demander)
   - `--project <ref>` → `list_projects` pour résoudre `project_id`, puis filtrer
   - `--status <value>` → filtrer (`todo` | `in_progress` | `done` | `blocked`)
 - Appeler `list_tasks` avec `workspace_slug` (+ filtres)
@@ -88,7 +90,7 @@ Tâches en kanban texte groupé par statut.
 | "assigne tâche X au sprint Y" | `list_tasks` → match → `assign_task_to_sprint` |
 
 Workspace résolu via la règle "Workspace resolution" ci-dessus (arg explicite ou
-`HAL_DEFAULT_WORKSPACE`). Confirmer avant toute écriture ambiguë.
+`whoami.default_workspace_slug`). Confirmer avant toute écriture ambiguë.
 Output : `✅ [Entité] → [tool]: [valeur]` / `❌ [Entité] → [tool]: [erreur]`
 
 ### `devis [--workspace SLUG]`
