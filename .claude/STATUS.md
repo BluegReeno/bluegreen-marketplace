@@ -1,14 +1,14 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-08
+Last updated: 2026-06-09
 
 ## Current Focus
 
-hal v0.6.0 released — `/hal` et `/edifice` commands enregistrés, MCP pre-flight check. Lot 2 (tâches/sprints) en attente des tools hal-mcp (`create_task`, `list_tasks`, `update_task`)
+Archon roadmap — whoami chain. **Run 1 livré + déployé prod (2026-06-11)** : `whoami` tool + `workspace_members.is_default` (repo hal, PR #41). Default workspace résolu server-side. Prochaine étape : **Run 2** (repo marketplace) — réécrit la résolution workspace du skill `/hal` pour consommer `whoami`, **drop l'approche env-var** de PR #11, garde `/hal tasks`, sort en **v0.7.0**. Brief : `docs/brief-hal-whoami-skill-migration.md`. Tracker : `.claude/plans/archon-roadmap.md`.
 
 ## In Progress
 
-_(rien)_
+- [ ] hal Lot 2 — `/hal tasks` + NL task intents dans `/hal update` — plan à `.claude/plans/hal-tasks-skill.md`
 
 ## Done (current sprint)
 
@@ -52,5 +52,4 @@ _(rien)_
 
 ## Backlog
 
-- [ ] hal Lot 2 — tâches et sprints : prérequis `create_task` / `list_tasks` / `update_task` côté hal-mcp, puis extension du mapping skill
 - [ ] schema-contract.json — cross-repo sync anchor (hal v0.3.0+)
