@@ -35,20 +35,16 @@ In Claude Cowork:
 /plugin install hal@bluegreen-marketplace
 ```
 
-### 3. Set your default workspace (required)
+### 3. Workspace access (no client-side config)
 
-HAL needs to know which CRM workspace to use by default. Add this to your shell profile (`~/.zshrc`, `~/.bashrc`, or equivalent):
+HAL resolves your default workspace server-side from your Supabase membership — zero environment variables, zero shell config.
 
-```bash
-export HAL_DEFAULT_WORKSPACE=your-workspace-slug
-```
+Ask your BlueGreen administrator to:
 
-Replace `your-workspace-slug` with the slug provided by your BlueGreen administrator (e.g. `blue-green`, `ic-ingenieurs-conseils`).
+1. Add your email to the workspace(s) you should access (`workspace_members` table).
+2. If you belong to several workspaces, flag your default one (`is_default = true`).
 
-On **Claude Desktop**: add the variable in your shell profile and restart the app.  
-On **Cowork**: add it to your project `.env` or ask your administrator to inject it.
-
-Once set, all `/hal list`, `/hal tasks`, and `/hal update` commands will use this workspace by default. You can always override it per command: `/hal tasks ic` or `/hal list blue-green`.
+Once you're a member, all `/hal list`, `/hal tasks`, and `/hal update` commands resolve to your default workspace automatically (via the `whoami` MCP tool). You can always override it per command: `/hal tasks ic` or `/hal list blue-green`.
 
 ### 4. Enable auto-update (recommended)
 

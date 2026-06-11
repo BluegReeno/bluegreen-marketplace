@@ -16,7 +16,7 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
-## [0.7.0] — 2026-06-10 — Hal Lot 2 — tâches et sprints
+## [0.7.0] — 2026-06-11 — Hal Lot 2 — tâches et sprints + workspace résolution server-side
 
 ### Added
 - **Skill `hal` 0.4.1 → 0.5.0** — Lot 2 tâches :
@@ -26,21 +26,41 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
   - NL task intents dans `/hal update` : créer (`create_task`), mettre à jour
     (`update_task_status`), assigner à un sprint (`assign_task_to_sprint`).
   - `create_sprint` — disponible sur tout workspace avec `sprints_enabled = true`.
-  - Workspace resolution via `HAL_DEFAULT_WORKSPACE` env var — plus de hardcode
-    `blue-green`. Chaque client configure son workspace par défaut une seule fois.
 - **`commands/hal.md`** — `tasks` subcommand ajouté au routing.
 
-### Changed
-- `/hal list` — workspace resolution migré de `blue-green` hardcodé vers
-  `HAL_DEFAULT_WORKSPACE` env var (même pattern que `/hal tasks`).
+### Changed (interface — MINOR bump)
+- **Workspace resolution server-side via `whoami`** — le pré-flight appelle
+  désormais l'outil MCP `whoami` (au lieu de `list_stages(blue-green)`). Le
+  workspace par défaut vient de `whoami.default_workspace_slug` (résolu côté
+  Supabase depuis `workspace_members.is_default`). Plus aucun hardcode
+  `blue-green` côté skill, plus aucune config client (env var supprimée).
+  Si l'utilisateur appartient à plusieurs workspaces sans flag par défaut, le
+  skill demande lequel utiliser ; s'il n'en a aucun, il invite à contacter
+  l'admin — jamais de fallback vers un slug hardcodé.
+- `/hal list` — workspace résolu via `whoami.default_workspace_slug` (même
+  pattern que `/hal tasks`).
+- `/hal tasks --mine` — `assignee_email` vient de `whoami.user_email`,
+  l'utilisateur n'est plus interrogé.
+- `README.md` — section "Set your default workspace" supprimée ; nouvelle
+  procédure d'onboarding : l'admin ajoute l'utilisateur dans
+  `workspace_members` et flag son défaut (`is_default = true`). Zero
+  client-side config.
 
 ### Removed
+- **Workspace env var (config client)** — supprimée intégralement (fix-forward,
+  pas de shim de compat). Migration : l'admin renseigne `is_default` dans
+  Supabase `workspace_members` ; aucune action côté utilisateur.
 - "Tasks and sprints — not yet available" dans "Out of scope" — replaced by
   real current limitations (no task field update, no list_sprints, project_id join).
 
-### Prerequisites (hal-mcp — deployed v28, PRs #38 #39 — 2026-06-08)
-- `update_task_status` accepts `workspace_slug` ✅
-- `sprints_enabled = true` for `blue-green` workspace ✅
+### Prerequisites
+- **hal-mcp v29+ (PR #41 — déployé prod 2026-06-11)** — outil `whoami` exposé
+  par le serveur MCP. Le skill ne fonctionne pas sans cette version.
+- **Migration Supabase `workspace_members.is_default`** (hal repo,
+  `20260611000000_workspace_members_is_default.sql`) — colonne lue par
+  `whoami` pour servir le workspace par défaut.
+- hal-mcp v28 (PRs #38 #39, 2026-06-08) — `update_task_status` accepte
+  `workspace_slug` ✅, `sprints_enabled = true` sur `blue-green` ✅.
 
 ---
 
