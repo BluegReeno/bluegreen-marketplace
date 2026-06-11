@@ -4,18 +4,23 @@ Last updated: 2026-06-11
 
 ## Current Focus
 
-**LastDev — Loop 2** (le DERNIER loop dans ce repo). hal-mcp **gelé v38** (Loop 1 / hal PR #42 mergée). Reprise : [`RESUME-LOOP2.md`](../RESUME-LOOP2.md) · brief [`docs/loop-2-hal-tasks-skill.md`](../docs/loop-2-hal-tasks-skill.md) · master `../hal/docs/lastdev-plan.md`.
+**Loop 2 mergé (v0.7.0) — la chaîne LastDev QUITTE ce repo.** hal-mcp reste **gelé v38**. Plus aucun loop prévu ici.
 
-Loop 2 = `/hal tasks` daily-usable en **v0.7.0** : merger **PR #12** (résolution workspace via `whoami`), fermer **PR #11** (approche env-var supersédée), défaut = sprint courant (`list_sprints(status="actuel")`), couvre `blue-green` + `renaud`.
-
-**➡️ Prochaine étape après Loop 2 : Loop 3 dans `renaud-marketplace`** (skill `morning-briefing` — agrège les 2 workspaces + Obsidian jobsearch + 3 calendriers Google). La chaîne LastDev **quitte ce repo** après Loop 2 (Loops 3-4 = `renaud-marketplace`, deadline dim. 2026-06-14).
+**➡️ Prochaine étape : Loop 3 dans `renaud-marketplace`** (skill `morning-briefing` — agrège les 2 workspaces hal `blue-green` + `renaud` + Obsidian jobsearch + 3 calendriers Google, en un dashboard pro+perso). C'est là que les 2 workspaces sont enfin agrégés (la vue cross-workspace que `/hal tasks` ne fait délibérément pas). Brief : `../hal/docs/features/loop-3-morning-briefing.md` (à relocaliser dans `renaud-marketplace`). Master plan : `../hal/docs/lastdev-plan.md`. Deadline Loops 3-4 : dim. 2026-06-14.
 
 ## In Progress
 
-- [ ] hal Lot 2 — `/hal tasks` + NL task intents dans `/hal update` — plan à `.claude/plans/hal-tasks-skill.md`
+- (rien — repo au repos après Loop 2)
 
 ## Done (current sprint)
 
+- [x] **Loop 2 — `/hal tasks` daily-usable v0.7.0** — PR #12 mergée (b83f75c), PR #11 fermée — 2026-06-11
+  - Résolution workspace via `whoami` (défaut `blue-green`, plus de config client)
+  - `/hal tasks` défaut = **sprint courant** (`list_sprints(status="actuel")`) ; aucun sprint → message explicite + fallback tâches ouvertes (jamais de board vide)
+  - Couvre `blue-green` (business) + `renaud` (perso) ; flags `--status` / `--project` / `--all` / `--mine`
+  - NL edit `update_task` (attributs) + 3 writers à responsabilité unique (status / sprint / attributs) ; corrige les claims stale "no `list_sprints` / `update_task`"
+  - Skill `hal` 0.5.0 → 0.7.0 ; plugin = marketplace = 0.7.0
+  - 5/5 critères d'acceptation validés live contre sprints seedés
 - [x] Embed hal-mcp in plugin via `.mcp.json` — removes custom connector friction at onboarding — 2026-05-27 ✅ tested & validated (Steeve onboarding)
 - [x] Bump plugin to v0.6.3 (plugin.json + SKILL.md + marketplace.json) — 2026-05-27
 - [x] Fix CLAUDE.md — source repo updated, release process corrected — 2026-05-27
