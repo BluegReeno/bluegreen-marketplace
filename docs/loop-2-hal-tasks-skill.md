@@ -1,5 +1,13 @@
 # Loop 2 — `/hal tasks` finalized (default = current sprint)
 
+> ✅ **DONE — 2026-06-11.** Shipped in **v0.7.0** (plugin = marketplace = 0.7.0, skill `hal`
+> 0.5.0 → 0.7.0). PR #12 merged (`b83f75c`), PR #11 closed. All 5 acceptance criteria validated
+> live against seeded sprints (criteria 1–4 executed, 5 by logic). The whoami-foundation PR #12
+> did **not** by itself implement the current-sprint default or the `update_task` edit intent, and
+> it still carried stale "no `list_sprints` / no `update_task`" claims — those were completed and
+> corrected in commit `853460f` before merge. **The LastDev chain now leaves this repo → Loop 3 in
+> `renaud-marketplace`.**
+
 > **Repo**: `bluegreen-marketplace` · **Target**: `plugins/hal/` (skill `hal`, `commands/hal.md`)
 > **Depends on**: Loop 1 (`list_sprints`, `update_task`, `external_ref`). **Confirm the exact
 > tool names/params from the merged Loop 1 PR before launching — do not assume.**
@@ -41,10 +49,10 @@ sprint's tasks**, working for both the `blue-green` (business) and `renaud` (per
 - No `domain` concept.
 - No sprint create/close UX beyond the existing `create_sprint` / `assign_task_to_sprint` intents.
 
-## Acceptance criteria
+## Acceptance criteria — all met (2026-06-11)
 
-1. `/hal tasks` (no args) → kanban of the **current sprint** in `blue-green`.
-2. `/hal tasks renaud` → current-sprint kanban for the perso workspace.
-3. `/hal tasks --status blocked` → only blocked tasks.
-4. An NL edit ("repousse la relance Greenta à lundi") → calls `update_task` with the new `due_date`.
-5. No current sprint → explicit message + fallback to open tasks, never a silent empty board.
+1. ✅ `/hal tasks` (no args) → kanban of the **current sprint** in `blue-green` (Sprint 24, 7 tasks).
+2. ✅ `/hal tasks renaud` → current-sprint kanban for the perso workspace (Perso sprint resolves).
+3. ✅ `/hal tasks --status blocked` → only blocked tasks (returned `[]`, surfaced "aucune tâche").
+4. ✅ NL edit ("repousse la relance Greenta à lundi") → `update_task(due_date="2026-06-15")`, status/sprint untouched.
+5. ✅ No current sprint → explicit message + fallback to open tasks, never a silent empty board (by logic).
