@@ -17,14 +17,17 @@ In Claude Code or Cowork (one-time):
 Two skills in one plugin:
 
 - **`/edifice`** — Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report
-- **`/hal update`** — Update BG-CRM in Supabase (missions, contacts, interactions) from a natural-language instruction
+- **`/hal list`** — Show the BlueGreen CRM pipeline as a text kanban grouped by stage
+- **`/hal tasks`** — Show tasks as a text kanban grouped by status (filters: `--mine`, `--project`, `--status`)
+- **`/hal update`** — Update BG-CRM in Supabase (projects, contacts, interactions, tasks, sprints) from a natural-language instruction
+- **`/hal devis`** — Generate a DOCX devis (IC Ingénieurs Conseils or Blue Green)
 
 **Install:**
 ```
 /plugin install hal@bluegreen-marketplace
 ```
 
-**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/hal update` requires only the **hal-mcp** connector (included in the plugin).
+**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/hal list`, `/hal tasks`, and `/hal update` require only the **hal-mcp** connector (included in the plugin); `/hal devis` runs locally with no MCP.
 
 See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions.
 
@@ -48,7 +51,7 @@ Plugin code lives directly in this repo. Each plugin is self-contained under `pl
 
 | Plugin | Skills | Status |
 |--------|--------|--------|
-| `hal` | `edifice`, `hal` | v0.2.0 — active |
+| `hal` | `edifice`, `hal` | v0.7.0 — active |
 | `hal-crm` | — | Coming soon |
 
 ```
