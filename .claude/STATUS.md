@@ -1,10 +1,14 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-09
+Last updated: 2026-06-11
 
 ## Current Focus
 
-Archon roadmap — whoami chain. **Run 1 livré + déployé prod (2026-06-11)** : `whoami` tool + `workspace_members.is_default` (repo hal, PR #41). Default workspace résolu server-side. Prochaine étape : **Run 2** (repo marketplace) — réécrit la résolution workspace du skill `/hal` pour consommer `whoami`, **drop l'approche env-var** de PR #11, garde `/hal tasks`, sort en **v0.7.0**. Brief : `docs/brief-hal-whoami-skill-migration.md`. Tracker : `.claude/plans/archon-roadmap.md`.
+**LastDev — Loop 2** (le DERNIER loop dans ce repo). hal-mcp **gelé v38** (Loop 1 / hal PR #42 mergée). Reprise : [`RESUME-LOOP2.md`](../RESUME-LOOP2.md) · brief [`docs/loop-2-hal-tasks-skill.md`](../docs/loop-2-hal-tasks-skill.md) · master `../hal/docs/lastdev-plan.md`.
+
+Loop 2 = `/hal tasks` daily-usable en **v0.7.0** : merger **PR #12** (résolution workspace via `whoami`), fermer **PR #11** (approche env-var supersédée), défaut = sprint courant (`list_sprints(status="actuel")`), couvre `blue-green` + `renaud`.
+
+**➡️ Prochaine étape après Loop 2 : Loop 3 dans `renaud-marketplace`** (skill `morning-briefing` — agrège les 2 workspaces + Obsidian jobsearch + 3 calendriers Google). La chaîne LastDev **quitte ce repo** après Loop 2 (Loops 3-4 = `renaud-marketplace`, deadline dim. 2026-06-14).
 
 ## In Progress
 
