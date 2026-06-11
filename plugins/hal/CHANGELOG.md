@@ -19,14 +19,23 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 ## [0.7.0] — 2026-06-11 — Hal Lot 2 — tâches et sprints + workspace résolution server-side
 
 ### Added
-- **Skill `hal` 0.4.1 → 0.5.0** — Lot 2 tâches :
-  - `/hal tasks [workspace]` — liste les tâches en kanban texte groupé par statut
-    (todo → in_progress → blocked → ✓ done). Filtres : `--mine`, `--project <ref>`,
-    `--status`. Pur MCP, zéro script.
-  - NL task intents dans `/hal update` : créer (`create_task`), mettre à jour
-    (`update_task_status`), assigner à un sprint (`assign_task_to_sprint`).
+- **Skill `hal` 0.4.1 → 0.7.0** — Lot 2 tâches :
+  - `/hal tasks [workspace]` — kanban texte groupé par statut
+    (todo → in_progress → blocked → ✓ done). **Scope par défaut : le sprint
+    actuel**, résolu via `list_sprints(workspace_slug, status="actuel")`. Aucun
+    sprint actuel → message explicite + fallback sur les tâches ouvertes du
+    workspace (jamais de board vide silencieux). Filtres : `--mine`,
+    `--project <ref>`, `--status`, `--all` (échappe au scope sprint). Pur MCP,
+    zéro script.
+  - NL task intents dans `/hal update` — trois writers à responsabilité unique :
+    créer (`create_task`), éditer les attributs (`update_task` — `title`,
+    `description`, `due_date`, `project_id`, `assignee_email`, `priority`,
+    `external_ref`), changer le statut (`update_task_status`), assigner à un
+    sprint (`assign_task_to_sprint`). `update_task` ne touche **ni** au statut
+    **ni** au sprint.
   - `create_sprint` — disponible sur tout workspace avec `sprints_enabled = true`.
-- **`commands/hal.md`** — `tasks` subcommand ajouté au routing.
+- **`commands/hal.md`** — `tasks` subcommand (scope sprint par défaut) + intent
+  `update_task` ajoutés au routing.
 
 ### Changed (interface — MINOR bump)
 - **Workspace resolution server-side via `whoami`** — le pré-flight appelle
@@ -51,8 +60,9 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
   pas de shim de compat). Migration : l'admin renseigne `is_default` dans
   Supabase `workspace_members` ; aucune action côté utilisateur.
 - Mention "Tasks and sprints — not yet available" dans la section "Out of scope" —
-  remplacée par les limitations actuelles réelles (pas d'update de champ tâche,
-  pas de `list_sprints`, pas de jointure sur `project_id`).
+  remplacée par les limitations réelles : pas d'édition des champs
+  company/contact/projet (hors `stage`), pas de jointure sur `project_id`. Les
+  champs de tâche, eux, sont éditables via `update_task`.
 
 ### Prerequisites
 - **hal-mcp v29+ (PR #41 — déployé prod 2026-06-11)** — outil `whoami` exposé

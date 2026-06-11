@@ -1,6 +1,6 @@
 ---
 description: HAL CRM — list pipeline, list tasks, update CRM/tasks, generate devis
-argument-hint: "list [workspace] | tasks [workspace] [--mine] [--project <ref>] [--status <s>] | update <texte libre> | devis [--workspace SLUG]"
+argument-hint: "list [workspace] | tasks [workspace] [--mine] [--project <ref>] [--status <s>] [--all] | update <texte libre> | devis [--workspace SLUG]"
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -53,22 +53,30 @@ Pipeline CRM en kanban texte groupé par stage.
 - Ne jamais afficher le champ `description`
 - Filtres optionnels : `stage=<value>`, `kind=<value>`
 
-### `tasks [workspace] [--mine] [--project <ref>] [--status <status>]`
+### `tasks [workspace] [--mine] [--project <ref>] [--status <status>] [--all]`
 
-Tâches en kanban texte groupé par statut.
+Tâches en kanban texte groupé par statut. **Scope par défaut : le sprint actuel.**
 
 - Résoudre workspace (voir au-dessus)
-- Résoudre filtres :
-  - `--mine` → `assignee_email` = `user_email` depuis la réponse `whoami` cachée (ne jamais demander)
-  - `--project <ref>` → `list_projects` pour résoudre `project_id`, puis filtrer
-  - `--status <value>` → filtrer (`todo` | `in_progress` | `done` | `blocked`)
-- Appeler `list_tasks` avec `workspace_slug` (+ filtres)
+- **Résoudre le scope** :
+  - **Mode requête explicite** (si `--status`, `--project` ou `--all`) → pas de
+    scoping sprint, on interroge le workspace directement :
+    - `--status <value>` → filtrer (`todo` | `in_progress` | `done` | `blocked`)
+    - `--project <ref>` → `list_projects` pour résoudre `project_id`, puis filtrer
+    - `--all` → aucun filtre, toutes les tâches du workspace
+  - **Mode sprint actuel** (défaut, aucun de ces flags) :
+    1. `list_sprints(workspace_slug, status="actuel")`
+    2. Sprint actuel trouvé → filtrer `list_tasks` par son `sprint_id` ; retenir son `name` pour le header
+    3. Aucun sprint actuel → afficher `⚠️ Aucun sprint actuel dans <slug>. Affichage des tâches ouvertes du workspace.` puis `list_tasks` sans filtre sprint, en retirant le groupe `done` (ouvert = todo/in_progress/blocked). **Jamais de board vide silencieux.**
+  - `--mine` est un filtre (pas un flag de scope) : s'applique dans les deux modes → `assignee_email` = `user_email` depuis `whoami` caché (ne jamais demander)
+- Appeler `list_tasks` avec `workspace_slug` (+ filtres résolus)
+- Ligne de scope en tête : `**<nom sprint>** · workspace <slug>` (ou `**Toutes les tâches**`, `**Statut : <s>**`, ou le ⚠️ du fallback)
 - Grouper par `status` dans l'ordre fixe : `todo` → `in_progress` → `blocked` → `done`
-- `done` est terminal → préfixer `✓ ` dans le header
+- `done` est terminal → préfixer `✓ ` (omis dans le fallback sans sprint)
 - Ligne : `{⚡ si priority=high}{title} · {assignee short ou "—"} · {due_date ou "—"} {[S] si sprint_id non null}`
   - `assignee short` = partie locale de `assignee_email` (avant `@`)
   - `[S]` = marker si `sprint_id` non null
-- Aucune tâche → `Aucune tâche dans le workspace <slug>.`
+- Aucune tâche → `Aucune tâche dans le workspace <slug>.` ; sprint actuel vide → `Aucune tâche dans le sprint « <nom> ».`
 - Groupe vide → ne pas afficher la section
 - `list_tasks` retourne `project_id` brut (UUID) — colonne omise sauf si `--project` utilisé
 
@@ -85,6 +93,7 @@ Tâches en kanban texte groupé par statut.
 | "nouvelle mission/propale" | `list_companies` → `create_project` |
 | "mes tâches", "todo list", "qu'est-ce que j'ai à faire" | `list_tasks` (workspace default) |
 | "ajouter tâche X", "todo : X", "créer une tâche" | `create_task` |
+| "repousse X à lundi", "change l'échéance de X", "renomme X", "réassigne X", "X priorité haute" | `list_tasks` → fuzzy match → `update_task` (attributs : `title`, `description`, `due_date`, `project_id`, `assignee_email`, `priority`, `external_ref` — **pas** `status`/`sprint`) |
 | "tâche X faite", "X → done", "c'est fait" | `list_tasks` → fuzzy match → `update_task_status` (done) |
 | "X → in progress", "je commence X" | `list_tasks` → fuzzy match → `update_task_status` (in_progress) |
 | "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |

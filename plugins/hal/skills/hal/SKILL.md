@@ -10,7 +10,7 @@ description: >
   instruction mid-conversation. Also trigger when the user says
   "done", "fait", "c'est bon", "next" after completing a task —
   propose the corresponding CRM write.
-version: 0.5.0
+version: 0.7.0
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -138,33 +138,60 @@ Line format per project:
 
 ---
 
-## /hal tasks `[workspace]` `[--mine]` `[--project <ref>]` `[--status <status>]`
+## /hal tasks `[workspace]` `[--mine]` `[--project <ref>]` `[--status <status>]` `[--all]`
 
 Show tasks as a text kanban grouped by status.
 Default workspace: resolved from `whoami.default_workspace_slug` (see
 "Workspace resolution" at top of this skill).
+**Default scope: the current sprint** — `/hal tasks` with no scoping flag shows
+the kanban of the workspace's active sprint, not the whole backlog.
 
 ### Steps
 
 **1. Resolve workspace** — use the standard workspace resolution pattern.
 
-**2. Resolve filters**
+**2. Resolve scope (current sprint by default)**
 
-- `--mine` → add `assignee_email: <user_email from the cached whoami payload>`.
-  Never ask — the pre-flight already resolved it.
-- `--project <ref>` → call `list_projects` to resolve `project_id` by name/ref,
-  then add `project_id` filter to `list_tasks`.
-- `--status <value>` → add `status` filter (`todo` | `in_progress` | `done` | `blocked`).
-- No filters → retrieve all tasks in the workspace (no filter).
+Two modes, decided by the flags present:
+
+- **Explicit-query mode** — triggered by any of `--status`, `--project`, or
+  `--all`. Skip sprint scoping entirely; query the workspace directly:
+  - `--status <value>` → `status` filter (`todo` | `in_progress` | `done` | `blocked`).
+  - `--project <ref>` → call `list_projects` to resolve `project_id` by name/ref,
+    then add `project_id` filter.
+  - `--all` → no filter; list every task in the workspace.
+- **Current-sprint mode** — the default, when none of the above flags is present:
+  1. Call `list_sprints(workspace_slug, status="actuel")`.
+  2. **A current sprint exists** → take its `id`; add `sprint_id` filter to
+     `list_tasks`. Remember its `name` for the display header.
+  3. **No current sprint** (empty list) → never show a silent empty board.
+     Print the notice, then fall back to the workspace's **open** tasks:
+
+     > ⚠️ Aucun sprint actuel dans `<slug>`. Affichage des tâches ouvertes du workspace.
+
+     Call `list_tasks` with no `sprint_id` filter and drop the `done` group from
+     the display (open = `todo` / `in_progress` / `blocked`).
+
+`--mine` is a filter, not a scoping flag: it applies in **either** mode, adding
+`assignee_email: <user_email from the cached whoami payload>` (never ask — the
+pre-flight already resolved it). So `/hal tasks --mine` = my tasks in the current
+sprint; `/hal tasks --all --mine` = all my tasks in the workspace.
 
 **3. Call MCP `list_tasks`**
 
-Call with `workspace_slug` (+ resolved filters).
+Call with `workspace_slug` (+ the filters resolved above).
 
 **4. Group and display**
 
+Lead with a scope line so the user knows what they're looking at:
+- Current-sprint mode → `**<sprint name>** · workspace <slug>`
+- `--all` → `**Toutes les tâches** · workspace <slug>`
+- A `--status` / `--project` filter → name it, e.g. `**Statut : blocked** · workspace <slug>`
+- Fallback (no current sprint) → the ⚠️ notice from step 2 stands in for the scope line.
+
 Group by `status`. Fixed order: `todo` → `in_progress` → `blocked` → `done`.
-`done` is terminal — prefix header with `✓ `.
+`done` is terminal — prefix header with `✓ ` (omitted in the no-sprint fallback,
+which drops `done` entirely).
 
 Display format:
 
@@ -199,7 +226,9 @@ A future improvement could join on project data — out of scope for this releas
 
 **5. Edge cases**
 
-- No tasks → `Aucune tâche dans le workspace <slug>.`
+- No tasks at all → `Aucune tâche dans le workspace <slug>.`
+- Current sprint exists but is empty → keep the scope header, then
+  `Aucune tâche dans le sprint « <sprint name> ».`
 - Empty status group → skip that group entirely (don't show empty sections)
 - `default_workspace_slug` null + no arg → surface the prompt from "Workspace
   resolution" at top of skill (ask which workspace, or tell user to contact
@@ -238,6 +267,7 @@ arguments) without executing them.
 | "pipeline", "où en est [client]", "deals en cours" | `list_projects` / `list_companies` (read-only) |
 | "mes tâches", "todo list", "qu'est-ce que j'ai à faire" | `list_tasks` (workspace default) |
 | "ajouter tâche X", "nouvelle tâche Y", "todo : Z", "créer une tâche" | `create_task` |
+| "repousse X à lundi", "change l'échéance de X", "renomme X en Y", "réassigne X à [email]", "X priorité haute" | `list_tasks` → fuzzy match → `update_task` (attributs uniquement) |
 | "tâche X faite", "X → done", "X terminé", "c'est fait" | `list_tasks` → fuzzy match → `update_task_status` (done) |
 | "X → in progress", "je commence X", "en cours : X" | `list_tasks` → fuzzy match → `update_task_status` (in_progress) |
 | "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |
@@ -295,16 +325,27 @@ Same thresholds as entity resolution (score > 80 / 50–80 / < 50).
 - Match on `title`. Call `list_tasks` with **no `status` filter** — "X → done"
   must match tasks that are currently `todo` or `in_progress`.
 - Ambiguity: multiple tasks at the same score → list candidates, ask to pick.
-- `update_task_status` takes `workspace_slug`, `task_id`, and `status`. Always
-  pass `workspace_slug` — resolved from arg or `whoami.default_workspace_slug`.
+- **Three single-responsibility writers — pick the right one** (a task write
+  never mixes them):
+  - **status** → `update_task_status` (`workspace_slug`, `task_id`, `status` ∈
+    `todo`/`in_progress`/`done`/`blocked`).
+  - **sprint** → `assign_task_to_sprint` (`workspace_slug`, `task_id`,
+    `sprint_id`) — also how you carry a task over to the next sprint.
+  - **everything else** → `update_task`, which accepts **attributes only**:
+    `title`, `description`, `due_date`, `project_id`, `assignee_email`,
+    `priority`, `external_ref`. It does **not** take `status` or `sprint` —
+    don't try. e.g. "repousse la relance Greenta à lundi" → resolve the task,
+    then `update_task(due_date="2026-06-15")`.
+  - Always pass `workspace_slug` — resolved from arg or
+    `whoami.default_workspace_slug`. Send only the attribute(s) the user named.
 - **Never auto-create a task from an ambiguous match.** Score < 50 → propose
   creation.
 - "c'est fait" / "done" said after completing a described action → propose the
   corresponding task write, do not auto-write.
-- **Sprint resolution**: no `list_sprints` MCP tool exists. To filter
-  `list_tasks` by `sprint_id` (e.g. "tâches du sprint actuel"), the user must
-  provide the sprint UUID. If only a number/name is given and no recent
-  `create_sprint` response is in context → ask for the UUID.
+- **Sprint resolution**: to act on "le sprint actuel", call
+  `list_sprints(workspace_slug, status="actuel")` and use the returned `id` — do
+  not ask the user for a UUID. Other sprints: `list_sprints` with the matching
+  status filter (`passes` / `dernier` / `suivant` / `a_venir`).
 
 ---
 
@@ -391,15 +432,12 @@ generate a Blue Green devis (prefix BG). Other slugs are rejected by the script.
 - **Job Search** — handled by `obsidian-crm`. `/hal` never writes the vault.
 - **Edifice missions** — handled by the `edifice` skill via dedicated tools
   (`read_edifice_mission`, `get_mission_with_assets`, `push_mission_context`).
-- **Task field updates** — only `status` can be updated via
-  `update_task_status`. Title, due_date, assignee, description, priority
-  cannot be edited after creation (server limitation — no `update_task` tool).
-- **Sprint listing** — no `list_sprints` MCP tool. Sprint UUIDs must be
-  provided by the user or resolved from a previous `create_sprint` response.
 - **`project_id` join** — `list_tasks` returns a raw `project_id` UUID, not
   the project ref. A separate `list_projects` call resolves it — done
   automatically when `--project <ref>` filter is used, otherwise the column
   is omitted.
-- **Field updates outside `stage` (projects) and `status` (tasks)** —
-  companies / contacts / mission fields cannot be edited (server limitation).
-  Mention it when relevant; do not attempt a workaround.
+- **Company / contact / project field edits** — only a project's `stage`
+  (`update_project_stage`) can be changed; company, contact, and other project
+  fields cannot be edited (server limitation). Tasks are the exception — their
+  attributes are editable via `update_task` (see Task resolution). Mention the
+  limitation when relevant; do not attempt a workaround.
