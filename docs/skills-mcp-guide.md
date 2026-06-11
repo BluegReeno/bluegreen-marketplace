@@ -57,8 +57,9 @@ Add a pre-flight check at the top of every skill section and command body that
 requires MCP tools.
 
 ```
-1. Call list_stages (hal skill) or list_edifice_missions (edifice skill) with workspace_slug: "blue-green"
-2. Success → proceed normally
+1. Call whoami (hal skill — no args) or list_edifice_missions (edifice skill) with workspace_slug: "blue-green"
+2. Success → proceed normally. For the hal skill, cache the whoami payload
+   (default_workspace_slug, workspaces, user_email) for the current command.
 3. Failure (tool not found / connection refused / timeout) → show reconnection message, stop
 ```
 
@@ -78,8 +79,9 @@ not by the user's shell.
 
 | Command | MCP needed | Check tool |
 |---------|-----------|-----------|
-| `/hal list` | ✅ | `list_stages` |
-| `/hal update` | ✅ | `list_stages` |
+| `/hal list` | ✅ | `whoami` |
+| `/hal tasks` | ✅ | `whoami` |
+| `/hal update` | ✅ | `whoami` |
 | `/hal devis` | ❌ (script only) | skip |
 | `/edifice list` | ✅ | `list_edifice_missions` |
 | `/edifice pull` | ✅ | `list_edifice_missions` |
