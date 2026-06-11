@@ -38,10 +38,16 @@ Launch each run from a **fresh session** in the indicated repo.
 
 ### Phase 1 — Workspace resolution chain (closes dangling PR #11)
 
-- [ ] **Run 1 · archon · repo `hal`** — brief `docs/brief-hal-whoami-workspace-resolution.md`
-      → PR → merge → **deploy hal-mcp**. Foundation; must land first.
+- [x] **Run 1 · archon · repo `hal`** — brief `docs/brief-hal-whoami-workspace-resolution.md`
+      → PR #41 merged → **deployed to prod** (migration via MCP `apply_migration`,
+      `supabase functions deploy hal-mcp`). Foundation landed. — 2026-06-11
       - Adds `is_default` on `workspace_members` + `whoami` tool (identity from
         `verifyAuth` `userClaims` — one-line `authInfo.extra` change, no RPC).
+      - Live smoke validated: `whoami` returns `default_workspace_slug: blue-green`
+        with both memberships + correct roles. `userClaims` forwarding confirmed end-to-end.
+      - Process learned + documented (hal `CLAUDE.md` + `hal/hal/CLAUDE.md`; edifice
+        `supabase/CLAUDE.md` correction handed to Renaud): shared prod DB → `apply_migration`
+        only, **never `db push`** from a partial repo; CLI auth = `renaud@bluegreen.ai` token.
 - [ ] **Run 2 · archon · repo `bluegreen-marketplace`** — brief
       `docs/brief-hal-whoami-skill-migration.md` → PR. Reworks PR #11 (drop env var, keep
       `/hal tasks`), merge as **v0.7.0**. **Depends on Run 1 deployed to prod.**
