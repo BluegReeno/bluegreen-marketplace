@@ -27,15 +27,11 @@ Two skills in one plugin:
 /plugin install hal@bluegreen-marketplace
 ```
 
-**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/hal list`, `/hal tasks`, and `/hal update` require only the **hal-mcp** connector (included in the plugin); `/hal devis` runs locally with no MCP.
+**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/hal list`, `/hal tasks`, and `/hal update` require only the **hal-mcp** connector (included in the plugin, authenticated via OAuth); `/hal devis` runs locally with no MCP.
+
+The connector targets **hal-mcp v38** (frozen tool surface) on Supabase `zgkvbjqlvebttbnkklpo`.
 
 See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions.
-
----
-
-### `hal-crm` *(coming soon)*
-
-Interact with client projects, quotes, and tasks via natural language — backed by Supabase CRM.
 
 ---
 
@@ -52,12 +48,11 @@ Plugin code lives directly in this repo. Each plugin is self-contained under `pl
 | Plugin | Skills | Status |
 |--------|--------|--------|
 | `hal` | `edifice`, `hal` | v0.7.0 — active |
-| `hal-crm` | — | Coming soon |
 
 ```
 plugins/hal/
 ├── .claude-plugin/plugin.json
-├── .mcp.json                    # hal-mcp SSE server
+├── .mcp.json                    # hal-mcp HTTP server (OAuth)
 ├── skills/
 │   ├── edifice/SKILL.md         # /edifice — building inspection reports
 │   └── hal/SKILL.md             # /hal update — Supabase CRM writes via hal-mcp
