@@ -1,12 +1,12 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-11
+Last updated: 2026-06-12
 
 ## Current Focus
 
-**Loop 2 mergé (v0.7.0) — la chaîne LastDev QUITTE ce repo.** hal-mcp reste **gelé v38**. Plus aucun loop prévu ici.
+**Loop 2 mergé (v0.7.0) — la chaîne LastDev a QUITTÉ ce repo, et est désormais TERMINÉE.** hal-mcp reste **gelé v38**. Plus aucun loop prévu ici, repo au repos.
 
-**➡️ Prochaine étape : Loop 3 dans `renaud-marketplace`** (skill `morning-briefing` — agrège les 2 workspaces hal `blue-green` + `renaud` + Obsidian jobsearch + 3 calendriers Google, en un dashboard pro+perso). C'est là que les 2 workspaces sont enfin agrégés (la vue cross-workspace que `/hal tasks` ne fait délibérément pas). Brief : `../hal/docs/features/loop-3-morning-briefing.md` (à relocaliser dans `renaud-marketplace`). Master plan : `../hal/docs/lastdev-plan.md`. Deadline Loops 3-4 : dim. 2026-06-14.
+**Chaîne LastDev complète (2026-06-12)** : Loop 3 (`briefing` v0.1.0) et Loop 4 (`jobsearch` v0.3.0 — `log-application` + `interview-prep`, AC1-3 smoke-testés live) livrés dans `renaud-marketplace`. La vue cross-workspace pro+perso vit désormais dans le skill `morning-briefing`. **Dev stoppé** — règle d'arrêt : entretien ou revenu BG. Master plan : `../hal/docs/lastdev-plan.md`.
 
 ## In Progress
 
