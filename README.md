@@ -35,6 +35,25 @@ See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions
 
 ---
 
+## Connecting from Claude, Gemini, or OpenAI
+
+The `hal-mcp` **connector** (the MCP server) works on all three providers; the `/edifice` and
+`/hal` **skills** only run on the agent/CLI surfaces (Claude Code, Gemini CLI, OpenAI Codex).
+
+| Provider | One-line path |
+|----------|---------------|
+| **Claude Code** (full skills + connector) | `/plugin install hal@bluegreen-marketplace` |
+| **Claude Desktop / claude.ai** | Settings → Connectors → Add custom connector → paste the URL (OAuth, automatic) |
+| **Gemini Enterprise** | Data stores → Custom MCP Server → paste URL + **manual** OAuth endpoints (see guide) |
+| **ChatGPT** | Settings → Apps & Connectors → Developer mode → Add connector → OAuth |
+
+MCP server URL: `https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp`
+
+**Full step-by-step for every provider** — including the Gemini OAuth gotchas —
+is in [`docs/connectors-and-skills.md`](docs/connectors-and-skills.md).
+
+---
+
 ## Enable auto-updates
 
 `/plugin` → Marketplaces tab → `bluegreen-marketplace` → enable auto-update.
