@@ -125,8 +125,10 @@ the URL. Edit `~/.gemini/settings.json`:
 }
 ```
 
-Then authorize once with `/mcp auth hal-mcp` (opens the browser flow). Note: a PR is
-consolidating `httpUrl` → `url`, so the key may change in newer CLI versions.
+Then authorize once with `/mcp auth hal-mcp` (opens the browser flow).
+
+> ⚠️ **Key rename in progress.** A PR is consolidating `httpUrl` → `url`. If your CLI version
+> is recent and `httpUrl` has no effect, replace it with `url` in `settings.json`.
 
 Gemini CLI also reads the `SKILL.md` standard — skills live in `~/.gemini/skills/`
 (alias `~/.agents/skills/`), so the §4 symlinks expose `/edifice` and `/hal` here too.
@@ -155,6 +157,23 @@ custom connectors).
 > ChatGPT has no Agent Skills in the chat app. The `/edifice` / `/hal` *skills* run in **Codex**
 > (which adopted `SKILL.md`) via `.agents/skills/` — see §4. The chat app only calls tools.
 
+### 3b. OpenAI Codex — connector + skills
+
+Codex reads the [agentskills.io](https://agentskills.io/specification) standard and picks up
+skills from `.agents/skills/` (same as Gemini CLI — see §4 for the symlink setup).
+
+For the MCP connector, add it to your Codex MCP config (path varies by install):
+
+```json
+"hal-mcp": {
+  "url": "https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp",
+  "auth": { "type": "oauth" }
+}
+```
+
+Codex discovers the auth server automatically (no endpoints to paste) and opens the browser
+consent flow on first use.
+
 ---
 
 ## 4. Skills cross-client (Claude Code / Gemini CLI / Codex)
@@ -164,6 +183,7 @@ standard. To expose them to Gemini CLI and OpenAI Codex (which both read `.agent
 symlink them at the repo root:
 
 ```bash
+# run from the repo root
 mkdir -p .agents/skills
 ln -sf "$(pwd)/plugins/hal/skills/hal"     .agents/skills/hal
 ln -sf "$(pwd)/plugins/hal/skills/edifice" .agents/skills/edifice
@@ -197,13 +217,14 @@ curl https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp/.well-known/o
 curl https://zgkvbjqlvebttbnkklpo.supabase.co/auth/v1/.well-known/oauth-authorization-server
 
 # Tool list over the apikey header (Claude Code path)
+# Never share <HAL_API_KEY> — treat it like a password
 npx @modelcontextprotocol/inspector \
   --header "apikey: <HAL_API_KEY>" \
   https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp
 ```
 
-See [`mcp-server-supabase-edge.md`](../../renaud-marketplace/docs/mcp-server-supabase-edge.md)
-(in the renaud-marketplace repo) for the server-side OAuth / Edge Function implementation reference.
+For the server-side OAuth and Edge Function implementation details, see the `renaud-marketplace`
+repo (`docs/mcp-server-supabase-edge.md`).
 
 ---
 
