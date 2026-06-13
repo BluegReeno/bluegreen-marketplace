@@ -47,7 +47,7 @@ Pipeline CRM en kanban texte groupé par stage.
 - Résoudre workspace (voir au-dessus)
 - Appeler `list_projects` sans filtre de stage (vue complète)
 - Grouper par `stage` : actifs d'abord (projets avec `closed_at` null), terminaux en dernier
-- Ligne : `{project_ref ou "—"} · {company.name ou "—"} · {amount_ht formaté ou "—"} · {location ou "—"}`
+- Ligne : `{project_ref ou "—"} · {company.name ou "—"} · {amount_ht formaté ou "—"} · {location ou "—"} {#tag1 #tag2 si tags non vide}`
 - Stages terminaux : préfixer `✓ `, ajouter `— soldé/perdu {closed_at[:10]}`
 - Aucun projet → `Aucun projet dans le workspace <slug>.`
 - Ne jamais afficher le champ `description`
@@ -60,18 +60,21 @@ Tâches en kanban texte groupé par statut. **Scope par défaut : le sprint actu
 - Résoudre workspace (voir au-dessus)
 - **Résoudre le scope** :
   - **Mode requête explicite** (si `--status`, `--project`, `--all` ou `--tag`) → pas de
-    scoping sprint, on interroge le workspace directement :
+    scoping sprint, on interroge le workspace directement. Les flags combinent en AND
+    (tous appliqués simultanément), sauf `--all` ignoré si un autre filtre est présent :
     - `--status <value>` → filtrer (`todo` | `in_progress` | `done` | `blocked`)
     - `--project <ref>` → `list_projects` pour résoudre `project_id`, puis filtrer
-    - `--all` → aucun filtre, toutes les tâches du workspace
-    - `--tag <value>` → passer `tags=[value]` à `list_tasks`
+    - `--all` → aucun filtre, toutes les tâches du workspace (ignoré si `--status`,
+      `--project` ou `--tag` est présent)
+    - `--tag <value>` → passer `tags=["<value>"]` à `list_tasks`
   - **Mode sprint actuel** (défaut, aucun de ces flags) :
     1. `list_sprints(workspace_slug, status="actuel")`
     2. Sprint actuel trouvé → filtrer `list_tasks` par son `sprint_id` ; retenir son `name` pour le header
     3. Aucun sprint actuel → afficher `⚠️ Aucun sprint actuel dans <slug>. Affichage des tâches ouvertes du workspace.` puis `list_tasks` sans filtre sprint, en retirant le groupe `done` (ouvert = todo/in_progress/blocked). **Jamais de board vide silencieux.**
   - `--mine` est un filtre (pas un flag de scope) : s'applique dans les deux modes → `assignee_email` = `user_email` depuis `whoami` caché (ne jamais demander)
 - Appeler `list_tasks` avec `workspace_slug` (+ filtres résolus)
-- Ligne de scope en tête : `**<nom sprint>** · workspace <slug>` (ou `**Toutes les tâches**`, `**Statut : <s>**`, ou le ⚠️ du fallback)
+- Ligne de scope en tête : `**<nom sprint>** · workspace <slug>`
+  (ou `**Toutes les tâches**`, `**Statut : <s>**`, `**Tag : <valeur>**`, ou le ⚠️ du fallback)
 - Grouper par `status` dans l'ordre fixe : `todo` → `in_progress` → `blocked` → `done`
 - `done` est terminal → préfixer `✓ ` (omis dans le fallback sans sprint)
 - Ligne : `{⚡ si priority=high}{title} · {assignee short ou "—"} · {due_date ou "—"} {[S] si sprint_id non null} {#tag1 #tag2 si tags non vide}`

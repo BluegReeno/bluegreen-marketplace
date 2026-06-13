@@ -157,12 +157,15 @@ the kanban of the workspace's active sprint, not the whole backlog.
 Two modes, decided by the flags present:
 
 - **Explicit-query mode** — triggered by any of `--status`, `--project`, `--all`,
-  or `--tag`. Skip sprint scoping entirely; query the workspace directly:
+  or `--tag`. Skip sprint scoping entirely; query the workspace directly.
+  Multiple flags combine with AND (all filters applied simultaneously), except
+  `--all` which is ignored when any other filter is present:
   - `--status <value>` → `status` filter (`todo` | `in_progress` | `done` | `blocked`).
   - `--project <ref>` → call `list_projects` to resolve `project_id` by name/ref,
     then add `project_id` filter.
-  - `--all` → no filter; list every task in the workspace.
-  - `--tag <value>` → `tags` filter; pass `tags=[value]` to `list_tasks`.
+  - `--all` → no filter; list every task in the workspace. Ignored if `--status`,
+    `--project`, or `--tag` is also present.
+  - `--tag <value>` → `tags` filter; pass `tags=["<value>"]` to `list_tasks`.
 - **Current-sprint mode** — the default, when none of the above flags is present:
   1. Call `list_sprints(workspace_slug, status="actuel")`.
   2. **A current sprint exists** → take its `id`; add `sprint_id` filter to

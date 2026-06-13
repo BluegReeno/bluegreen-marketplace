@@ -31,7 +31,7 @@ Two skills in one plugin:
 
 The connector targets **hal-mcp v39** on Supabase `zgkvbjqlvebttbnkklpo`.
 
-**Task and project tags** use a unified vocabulary: `commercial`, `client`, `marketing`, `product`, `operations`, `hr`, `finance`, `legal`, `other`. See the [tag vocabulary reference](https://github.com/BluegReeno/hal/blob/main/docs/tag-vocabulary.md).
+**Task and project tags** use a unified vocabulary: `commercial`, `client`, `marketing`, `product`, `operations`, `hr`, `finance`, `legal`, `other`.
 
 See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions.
 

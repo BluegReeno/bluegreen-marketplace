@@ -91,7 +91,9 @@ Examples:
 Show tasks as a text kanban grouped by status (`todo → in_progress → blocked → ✓ done`). High-priority
 tasks are prefixed with `⚡`; tasks attached to a sprint are tagged `[S]`.
 
-Filters: `--mine` (uses `whoami.user_email` — never asks), `--project <ref>`, `--status <s>`.
+Filters: `--mine` (uses `whoami.user_email` — never asks), `--project <ref>`, `--status <s>`,
+`--tag <value>`. Tags use the unified vocabulary: `commercial`, `client`, `marketing`, `product`,
+`operations`, `hr`, `finance`, `legal`, `other`.
 
 Examples:
 
@@ -100,6 +102,8 @@ Examples:
 /hal tasks --mine
 /hal tasks ic --status in_progress
 /hal tasks --project BG-2025-12
+/hal tasks --tag commercial
+/hal tasks --tag commercial --mine
 ```
 
 ## /hal update
