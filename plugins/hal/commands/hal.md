@@ -1,6 +1,6 @@
 ---
 description: HAL CRM — list pipeline, list tasks, update CRM/tasks, generate devis
-argument-hint: "list [workspace] | tasks [workspace] [--mine] [--project <ref>] [--status <s>] [--all] | update <texte libre> | devis [--workspace SLUG]"
+argument-hint: "list [workspace] | tasks [workspace] [--mine] [--project <ref>] [--status <s>] [--all] [--tag <tag>] | update <texte libre> | devis [--workspace SLUG]"
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -53,17 +53,18 @@ Pipeline CRM en kanban texte groupé par stage.
 - Ne jamais afficher le champ `description`
 - Filtres optionnels : `stage=<value>`, `kind=<value>`
 
-### `tasks [workspace] [--mine] [--project <ref>] [--status <status>] [--all]`
+### `tasks [workspace] [--mine] [--project <ref>] [--status <status>] [--all] [--tag <tag>]`
 
 Tâches en kanban texte groupé par statut. **Scope par défaut : le sprint actuel.**
 
 - Résoudre workspace (voir au-dessus)
 - **Résoudre le scope** :
-  - **Mode requête explicite** (si `--status`, `--project` ou `--all`) → pas de
+  - **Mode requête explicite** (si `--status`, `--project`, `--all` ou `--tag`) → pas de
     scoping sprint, on interroge le workspace directement :
     - `--status <value>` → filtrer (`todo` | `in_progress` | `done` | `blocked`)
     - `--project <ref>` → `list_projects` pour résoudre `project_id`, puis filtrer
     - `--all` → aucun filtre, toutes les tâches du workspace
+    - `--tag <value>` → passer `tags=[value]` à `list_tasks`
   - **Mode sprint actuel** (défaut, aucun de ces flags) :
     1. `list_sprints(workspace_slug, status="actuel")`
     2. Sprint actuel trouvé → filtrer `list_tasks` par son `sprint_id` ; retenir son `name` pour le header
@@ -73,7 +74,7 @@ Tâches en kanban texte groupé par statut. **Scope par défaut : le sprint actu
 - Ligne de scope en tête : `**<nom sprint>** · workspace <slug>` (ou `**Toutes les tâches**`, `**Statut : <s>**`, ou le ⚠️ du fallback)
 - Grouper par `status` dans l'ordre fixe : `todo` → `in_progress` → `blocked` → `done`
 - `done` est terminal → préfixer `✓ ` (omis dans le fallback sans sprint)
-- Ligne : `{⚡ si priority=high}{title} · {assignee short ou "—"} · {due_date ou "—"} {[S] si sprint_id non null}`
+- Ligne : `{⚡ si priority=high}{title} · {assignee short ou "—"} · {due_date ou "—"} {[S] si sprint_id non null} {#tag1 #tag2 si tags non vide}`
   - `assignee short` = partie locale de `assignee_email` (avant `@`)
   - `[S]` = marker si `sprint_id` non null
 - Aucune tâche → `Aucune tâche dans le workspace <slug>.` ; sprint actuel vide → `Aucune tâche dans le sprint « <nom> ».`
