@@ -1,18 +1,18 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-12
+Last updated: 2026-06-14
 
 ## Current Focus
 
-**Loop 2 mergé (v0.7.0) — la chaîne LastDev a QUITTÉ ce repo, et est désormais TERMINÉE.** hal-mcp reste **gelé v38**. Plus aucun loop prévu ici, repo au repos.
-
-**Chaîne LastDev complète (2026-06-12)** : Loop 3 (`briefing` v0.1.0) et Loop 4 (`jobsearch` v0.3.0 — `log-application` + `interview-prep`, AC1-3 smoke-testés live) livrés dans `renaud-marketplace`. La vue cross-workspace pro+perso vit désormais dans le skill `morning-briefing`. **Dev stoppé** — règle d'arrêt : entretien ou revenu BG. Master plan : `../hal/docs/lastdev-plan.md`.
+**WP-C mergé (PR #15) — `/hal tasks --tag` + tags dans output (v0.7.1).** hal-mcp v39 requis (déployé 2026-06-13). Repo au repos.
 
 ## In Progress
 
-- (rien — repo au repos après Loop 2)
+- (rien)
 
 ## Done (current sprint)
+
+- [x] **WP-C — `/hal tasks --tag <value>` + tags dans output (PR #15 · v0.7.1)** — flag `--tag` entre en explicit-query mode, passe `tags=[value]` à `list_tasks` v39, affiche `#tag1 #tag2` sur chaque ligne task/project, vocabulary unifié documenté dans README + `plugins/hal/README.md`. Review : 1 HIGH + 3 MEDIUM + 2 LOW fixés, 0 blocker — 2026-06-14
 
 - [x] **Loop 2 — `/hal tasks` daily-usable v0.7.0** — PR #12 mergée (b83f75c), PR #11 fermée — 2026-06-11
   - Résolution workspace via `whoami` (défaut `blue-green`, plus de config client)
