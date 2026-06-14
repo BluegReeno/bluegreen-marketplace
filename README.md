@@ -18,7 +18,7 @@ Two skills in one plugin:
 
 - **`/edifice`** — Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report
 - **`/hal list`** — Show the BlueGreen CRM pipeline as a text kanban grouped by stage
-- **`/hal tasks`** — Show tasks as a text kanban grouped by status (filters: `--mine`, `--project`, `--status`)
+- **`/hal tasks`** — Show tasks as a text kanban grouped by status (filters: `--mine`, `--project`, `--status`, `--tag`)
 - **`/hal update`** — Update BG-CRM in Supabase (projects, contacts, interactions, tasks, sprints) from a natural-language instruction
 - **`/hal devis`** — Generate a DOCX devis (IC Ingénieurs Conseils or Blue Green)
 
@@ -29,7 +29,9 @@ Two skills in one plugin:
 
 **Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/hal list`, `/hal tasks`, and `/hal update` require only the **hal-mcp** connector (included in the plugin, authenticated via OAuth); `/hal devis` runs locally with no MCP.
 
-The connector targets **hal-mcp v38** (frozen tool surface) on Supabase `zgkvbjqlvebttbnkklpo`.
+The connector targets **hal-mcp v39** on Supabase `zgkvbjqlvebttbnkklpo`.
+
+**Task and project tags** use a unified vocabulary: `commercial`, `client`, `marketing`, `product`, `operations`, `hr`, `finance`, `legal`, `other`.
 
 See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions.
 
@@ -66,7 +68,7 @@ Plugin code lives directly in this repo. Each plugin is self-contained under `pl
 
 | Plugin | Skills | Status |
 |--------|--------|--------|
-| `hal` | `edifice`, `hal` | v0.7.0 — active |
+| `hal` | `edifice`, `hal` | v0.7.1 — active |
 
 ```
 plugins/hal/

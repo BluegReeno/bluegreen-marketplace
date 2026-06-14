@@ -10,7 +10,7 @@ description: >
   instruction mid-conversation. Also trigger when the user says
   "done", "fait", "c'est bon", "next" after completing a task —
   propose the corresponding CRM write.
-version: 0.7.0
+version: 0.7.1
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -119,9 +119,11 @@ Display format:
 ```
 
 Line format per project:
-`{project_ref or "—"} · {company.name or "—"} · {amount_ht formatted or "—"} · {location or "—"}`
+`{project_ref or "—"} · {company.name or "—"} · {amount_ht formatted or "—"} · {location or "—"} {#tag1 #tag2 if tags non-empty}`
 
 - Format `amount_ht`: space-separated thousands + ` €` (e.g. `12 000 €`). Show `—` if null.
+- `tags` field: if `list_projects` returns a non-empty `tags` array, append each
+  value prefixed with `#`, space-separated. Skip if null, absent, or empty.
 - For terminal stages: append `— soldé {closed_at[:10]}` or `— perdu {closed_at[:10]}`
   when `closed_at` is present.
 - Stage header prefix: `✓ ` for terminal stages.
@@ -138,7 +140,7 @@ Line format per project:
 
 ---
 
-## /hal tasks `[workspace]` `[--mine]` `[--project <ref>]` `[--status <status>]` `[--all]`
+## /hal tasks `[workspace]` `[--mine]` `[--project <ref>]` `[--status <status>]` `[--all]` `[--tag <tag>]`
 
 Show tasks as a text kanban grouped by status.
 Default workspace: resolved from `whoami.default_workspace_slug` (see
@@ -154,12 +156,16 @@ the kanban of the workspace's active sprint, not the whole backlog.
 
 Two modes, decided by the flags present:
 
-- **Explicit-query mode** — triggered by any of `--status`, `--project`, or
-  `--all`. Skip sprint scoping entirely; query the workspace directly:
+- **Explicit-query mode** — triggered by any of `--status`, `--project`, `--all`,
+  or `--tag`. Skip sprint scoping entirely; query the workspace directly.
+  Multiple flags combine with AND (all filters applied simultaneously), except
+  `--all` which is ignored when any other filter is present:
   - `--status <value>` → `status` filter (`todo` | `in_progress` | `done` | `blocked`).
   - `--project <ref>` → call `list_projects` to resolve `project_id` by name/ref,
     then add `project_id` filter.
-  - `--all` → no filter; list every task in the workspace.
+  - `--all` → no filter; list every task in the workspace. Ignored if `--status`,
+    `--project`, or `--tag` is also present.
+  - `--tag <value>` → `tags` filter; pass `tags=["<value>"]` to `list_tasks`.
 - **Current-sprint mode** — the default, when none of the above flags is present:
   1. Call `list_sprints(workspace_slug, status="actuel")`.
   2. **A current sprint exists** → take its `id`; add `sprint_id` filter to
@@ -187,6 +193,7 @@ Lead with a scope line so the user knows what they're looking at:
 - Current-sprint mode → `**<sprint name>** · workspace <slug>`
 - `--all` → `**Toutes les tâches** · workspace <slug>`
 - A `--status` / `--project` filter → name it, e.g. `**Statut : blocked** · workspace <slug>`
+- A `--tag` filter → `**Tag : <value>** · workspace <slug>`
 - Fallback (no current sprint) → the ⚠️ notice from step 2 stands in for the scope line.
 
 Group by `status`. Fixed order: `todo` → `in_progress` → `blocked` → `done`.
@@ -212,13 +219,15 @@ Display format:
 ```
 
 Line format per task:
-`{⚡ if priority=high}{title} · {assignee short or "—"} · {due_date or "—"} {[S] if sprint_id set}`
+`{⚡ if priority=high}{title} · {assignee short or "—"} · {due_date or "—"} {[S] if sprint_id set} {#tag1 #tag2 if tags non-empty}`
 
 - `assignee short`: local part before `@` from `assignee_email` (e.g. `renaud`
   from `renaud@bluegreen.ai`). Show `—` if null.
 - `[S]` marker if `sprint_id` is non-null (sprint name unknown without extra call).
 - `priority` field: prepend `⚡` if `priority == "high"`. Skip the marker for
   `normal` / null / other values.
+- `tags` field: if `tags` is a non-empty array, append each value prefixed with `#`,
+  space-separated. Skip entirely if null or empty array.
 
 **Note on `project_id`**: `list_tasks` returns a raw UUID. Without a `--project`
 filter that pre-resolved the ref, omit any project reference from the line.

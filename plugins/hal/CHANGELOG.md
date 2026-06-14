@@ -16,6 +16,23 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.7.1] — 2026-06-13 — PM tags: --tag filter + tags in output
+
+### Added
+- **Skill `hal` 0.7.0 → 0.7.1** — tags support:
+  - `/hal tasks --tag <value>` — filter tasks by tag; passes `tags=[value]` to
+    `list_tasks` (hal-mcp v39). Enters explicit-query mode (skips sprint scope).
+    Combinable with `--mine`. Scope header: `**Tag : <value>** · workspace <slug>`.
+  - Task line format extended: `#tag1 #tag2` appended when `tags` is non-empty.
+  - `/hal list` — project line format extended: `#tag1 #tag2` appended when
+    project `tags` is non-empty.
+- **`commands/hal.md`** — `--tag <tag>` added to argument-hint and tasks routing.
+- **`README.md`** — unified tag vocabulary documented (commercial, client,
+  marketing, product, operations, hr, finance, legal, other) with link to
+  `hal/docs/tag-vocabulary.md`; hal-mcp version updated to v39.
+
+---
+
 ## [0.7.0] — 2026-06-11 — Hal Lot 2 — tâches et sprints + workspace résolution server-side
 
 ### Added
