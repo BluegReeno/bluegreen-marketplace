@@ -4,13 +4,15 @@ Last updated: 2026-06-14
 
 ## Current Focus
 
-**WP-C mergé (PR #15) — `/hal tasks --tag` + tags dans output (v0.7.1).** hal-mcp v39 requis (déployé 2026-06-13). Repo au repos.
+**PR #14 mergée — guide multi-provider connector & skills (docs-only, pas de version bump).** Repo au repos.
 
 ## In Progress
 
 - (rien)
 
 ## Done (current sprint)
+
+- [x] **PR #14 — guide multi-provider connector & skills (`docs/connectors-and-skills.md`)** — Claude / Gemini / OpenAI install guide, matrice provider, gotchas OAuth Gemini Enterprise, §3b Codex ajouté, lien mort corrigé, warnings sécurité — 2026-06-14
 
 - [x] **WP-C — `/hal tasks --tag <value>` + tags dans output (PR #15 · v0.7.1)** — flag `--tag` entre en explicit-query mode, passe `tags=[value]` à `list_tasks` v39, affiche `#tag1 #tag2` sur chaque ligne task/project, vocabulary unifié documenté dans README + `plugins/hal/README.md`. Review : 1 HIGH + 3 MEDIUM + 2 LOW fixés, 0 blocker — 2026-06-14
 
