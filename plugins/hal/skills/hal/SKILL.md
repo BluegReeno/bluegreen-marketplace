@@ -10,7 +10,7 @@ description: >
   instruction mid-conversation. Also trigger when the user says
   "done", "fait", "c'est bon", "next" after completing a task —
   propose the corresponding CRM write.
-version: 0.7.1
+version: 0.7.2
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -282,6 +282,7 @@ arguments) without executing them.
 | "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |
 | "X → todo", "remettre X en attente" | `list_tasks` → fuzzy match → `update_task_status` (todo) |
 | "nouveau sprint S<N>", "créer sprint" | `create_sprint` |
+| "renomme le sprint", "change le statut du sprint en X", "le sprint est actuel", "corrige le statut du sprint" | `list_sprints` → match sprint → `update_sprint` |
 | "assigne tâche X au sprint Y", "tâche X dans sprint Y" | `list_tasks` → match task → `assign_task_to_sprint` |
 
 ---
@@ -355,6 +356,9 @@ Same thresholds as entity resolution (score > 80 / 50–80 / < 50).
   `list_sprints(workspace_slug, status="actuel")` and use the returned `id` — do
   not ask the user for a UUID. Other sprints: `list_sprints` with the matching
   status filter (`passes` / `dernier` / `suivant` / `a_venir`).
+- **Sprint update**: `update_sprint(workspace_slug, sprint_id, ...)` accepts `name`,
+  `status`, `starts_at`, `ends_at`. Use to correct a sprint status, rename, or adjust
+  dates. Valid status values: `passes` / `dernier` / `actuel` / `suivant` / `a_venir`.
 
 ---
 
