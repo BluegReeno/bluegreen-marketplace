@@ -1,16 +1,18 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-14
+Last updated: 2026-06-15
 
 ## Current Focus
 
-**PR #14 mergée — guide multi-provider connector & skills (docs-only, pas de version bump).** Repo au repos.
+**hal v0.7.2 — update_sprint wiré.** Routing table NL→MCP + sprint resolution mis à jour. .mcp.json version hal-mcp 0.1.0 → 0.2.1.
 
 ## In Progress
 
 - (rien)
 
 ## Done (current sprint)
+
+- [x] **update_sprint wiring — hal v0.7.2** — `update_sprint` ajouté dans la table de routage NL→MCP ("renomme le sprint", "change le statut du sprint en X"…). Section "Sprint resolution" complétée : params + valeurs de statut valides. `.mcp.json` bumped 0.1.0 → 0.2.1. 3-field version sync : hal 0.7.1 → 0.7.2. — 2026-06-15
 
 - [x] **PR #14 — guide multi-provider connector & skills (`docs/connectors-and-skills.md`)** — Claude / Gemini / OpenAI install guide, matrice provider, gotchas OAuth Gemini Enterprise, §3b Codex ajouté, lien mort corrigé, warnings sécurité — 2026-06-14
 
