@@ -107,7 +107,8 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
             if path.exists():
                 try:
                     photos_img.append(_inline_image_auto_orient(doc, path, max_width_cm=7.5, max_height_cm=10.0))
-                except Exception:
+                except Exception as e:
+                    print(f"⚠️  disorder photo skipped: {p} — {e}")
                     photos_img.append(None)
             else:
                 photos_img.append(None)
