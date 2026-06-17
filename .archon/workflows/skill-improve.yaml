@@ -1,0 +1,76 @@
+name: skill-improve
+description: |
+  Fix a skill improvement issue from renaud-marketplace or bluegreen-marketplace.
+  Wraps archon-fix-github-issue-experimental with skill-specific context:
+  version bump verification (plugin.json / SKILL.md frontmatter / marketplace.json).
+
+  Use when: "fix this skill issue", "improve skill", "implement skill improvement #n"
+  Input: GitHub issue number (e.g. "#42" or "42")
+
+  Suggested invocation:
+    archon workflow run skill-improve "#42"
+
+provider: claude
+model: sonnet
+
+nodes:
+  # ───────────────────────────────────────────────────────────────
+  # Node 1 — read skill conventions before delegating to the fix
+  # ───────────────────────────────────────────────────────────────
+  - id: read-skill-context
+    context: fresh
+    denied_tools: [Write, Edit, Bash]
+    prompt: |
+      Read skill-specific conventions before the fix runs.
+
+      Issue: $ARGUMENTS
+
+      Read these files:
+      1. `CLAUDE.md` — versioning rules (the three-file sync rule is critical)
+      2. `.claude-plugin/marketplace.json` — current plugin versions
+      3. `plugins/` directory listing — know what plugins exist
+
+      Output the following in your response (will be captured as node output):
+      - The three-file version sync rule (verbatim from CLAUDE.md)
+      - Current plugin versions from marketplace.json
+      - List of existing plugins and their skills
+
+  # ───────────────────────────────────────────────────────────────
+  # Node 2 — run the full fix pipeline (loads
+  # `.archon/commands/archon-fix-github-issue-experimental.md`)
+  # ───────────────────────────────────────────────────────────────
+  - id: fix
+    command: archon-fix-github-issue-experimental
+    depends_on: [read-skill-context]
+    context: fresh
+    additional_context: |
+      Skill conventions to apply during this fix:
+      $read-skill-context.output
+
+  # ───────────────────────────────────────────────────────────────
+  # Node 3 — verify version bump (the most common mistake in this repo)
+  # ───────────────────────────────────────────────────────────────
+  - id: verify-version-bump
+    depends_on: [fix]
+    context: fresh
+    prompt: |
+      Verify the three-file version sync rule after the fix.
+
+      Skill context: $read-skill-context.output
+
+      The rule (from CLAUDE.md):
+      On every commit that changes plugin behaviour, these three must be identical:
+      1. `plugins/<plugin>/.claude-plugin/plugin.json` → `version`
+      2. `plugins/<plugin>/skills/<skill>/SKILL.md` → frontmatter `version:`
+      3. `.claude-plugin/marketplace.json` → plugin entry `version`
+
+      Steps:
+      1. Identify which plugin was modified (from the fix diff: `git diff origin/main...HEAD -- plugins/`)
+      2. Read the three version values for that plugin
+      3. If all three match → output "✅ Version sync OK: <version>"
+      4. If any mismatch → fix the diverging files to match the highest version,
+         commit: `chore(<plugin>): sync version to <version>`
+      5. Output the final version and confirmation
+
+      PATCH bump (0.x.Y+1): for bug fixes, wording, template changes
+      MINOR bump (0.X+1.0): for new flow, new tool, new skill
