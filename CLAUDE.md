@@ -25,7 +25,7 @@ without a version bump, Claude Desktop won't surface the update and clients stay
 
 | Plugin | Status | Skills |
 |--------|--------|--------|
-| `hal` | `plugins/hal/` — developed here | `edifice` + `hal` |
+| `hal` | `plugins/hal/` — developed here | `edifice` + `pm` |
 | `hal-crm` | placeholder — future sprint | — |
 
 ---
@@ -42,7 +42,7 @@ bluegreen-marketplace/
 │   │   ├── .mcp.json             # hal-mcp SSE server + version
 │   │   ├── skills/
 │   │   │   ├── edifice/SKILL.md  # /edifice — building inspection reports
-│   │   │   └── hal/SKILL.md      # /hal list | tasks | update | devis — Supabase CRM via hal-mcp
+│   │   │   └── pm/SKILL.md       # /pm list | tasks | new | task | log | doc | sprint | update — project management via hal-mcp
 │   │   ├── scripts/
 │   │   │   ├── *.py              # edifice: build_context, render_*, download_photos
 │   │   │   └── obsidian/         # bundled obsidian-crm scripts ← source of truth ★
@@ -56,7 +56,7 @@ bluegreen-marketplace/
 │   │   │       ├── sprint_transition.py
 │   │   │       └── references/schemas.md
 │   │   ├── commands/
-│   │   │   ├── hal.md            # /hal slash command (routes to hal skill)
+│   │   │   ├── pm.md             # /pm slash command (routes to pm skill)
 │   │   │   └── edifice.md        # /edifice slash command (routes to edifice skill)
 │   │   ├── templates/            # *.docx report templates
 │   │   ├── organizations/        # client config
@@ -77,11 +77,11 @@ Claude Code has two separate invocation systems:
 
 | System | Directory | Invocation |
 |--------|----------|-----------|
-| **Skill** | `skills/<name>/SKILL.md` | Semantic trigger OR `plugin:skill` menu (e.g., `hal:hal`) |
-| **Command** | `commands/<name>.md` | Direct slash syntax: `/hal`, `/edifice` |
+| **Skill** | `skills/<name>/SKILL.md` | Semantic trigger OR `plugin:skill` menu (e.g., `hal:pm`) |
+| **Command** | `commands/<name>.md` | Direct slash syntax: `/pm`, `/edifice` |
 
-Skills are always namespaced (`hal:hal`) — typing `/hal` raw looks for a **command**, not a skill.
-`commands/hal.md` and `commands/edifice.md` register the bare slash commands.
+Skills are always namespaced (`hal:pm`) — typing `/pm` raw looks for a **command**, not a skill.
+`commands/pm.md` and `commands/edifice.md` register the bare slash commands.
 The command file must be self-contained — the skill body is NOT pre-loaded when a command fires.
 
 See `docs/skills-mcp-guide.md` for the full reference (MCP detection, cross-platform).
@@ -102,7 +102,7 @@ Each component tracks its own version independently.
 |-----------|--------------|------|
 | Plugin `hal` | `"version"` | `plugins/hal/.claude-plugin/plugin.json` |
 | Skill `edifice` | `version:` frontmatter | `plugins/hal/skills/edifice/SKILL.md` |
-| Skill `hal` | `version:` frontmatter | `plugins/hal/skills/hal/SKILL.md` |
+| Skill `pm` | `version:` frontmatter | `plugins/hal/skills/pm/SKILL.md` |
 | MCP `hal-mcp` | `"version"` | `plugins/hal/.mcp.json` |
 | Marketplace | `"version"` | `.claude-plugin/marketplace.json` |
 
@@ -115,12 +115,12 @@ Each component tracks its own version independently.
 
 **Example:**
 
-| Release | What changed | `edifice` | `hal` skill | `hal-mcp` | plugin |
+| Release | What changed | `edifice` | `pm` skill | `hal-mcp` | plugin |
 |---------|-------------|:---------:|:-----------:|:---------:|:------:|
 | v0.1.0 (initial) | — | 0.1.0 | 0.1.0 | 0.1.0 | **0.1.0** |
 | next — edifice only | edifice bugfix | **0.1.1** | 0.1.0 | 0.1.0 | **0.1.1** |
-| next — hal skill | new vault field | 0.1.1 | **0.1.1** | 0.1.0 | **0.1.2** |
-| next — Supabase migration | hal skill interface | 0.1.1 | **0.2.0** | **0.2.0** | **0.2.0** |
+| next — pm skill | new vault field | 0.1.1 | **0.1.1** | 0.1.0 | **0.1.2** |
+| next — Supabase migration | pm skill interface | 0.1.1 | **0.2.0** | **0.2.0** | **0.2.0** |
 
 ---
 
