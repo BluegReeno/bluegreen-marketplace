@@ -10,9 +10,10 @@
       "source": "./plugins/hal",
       "skills": [
         "./plugins/hal/skills/edifice",
-        "./plugins/hal/skills/pm"
+        "./plugins/hal/skills/pm",
+        "./plugins/hal/skills/crm"
       ],
-      "version": "0.8.0",
+      "version": "0.9.0",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
