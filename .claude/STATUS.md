@@ -4,26 +4,30 @@ Last updated: 2026-06-17
 
 ## Current Focus
 
-**Refonte skill architecture** — `/hal` → `/pm` ✅ + nouveau skill `/crm` en cours (Archon #20 lancé).
+**Refonte skill architecture** — ✅ terminée. `/pm` + `/crm` + `/edifice` opérationnels. Plugin à **v0.9.0**.
 
 ## In Progress
 
-- [ ] **#20 — Créer skill `/crm`** — Archon `skill-improve "20"` re-lancé (~16h00).
-  Log : `tail -f /tmp/archon-20b.log`
-  Après completion : vérifier la PR créée, vérifier déclencheurs BANT + format CR, merger.
+_(rien — sprint terminé)_
 
 ## Done (current sprint)
+
+- [x] **#20 — Créer skill `/crm`** — PR #25 mergée — 2026-06-17
+  - Skill `/crm` créé (`plugins/hal/skills/crm/SKILL.md`) + `commands/crm.md`
+  - Commandes : `list`, `new`, `qualify` (BANT), `log` (CR), `update`, `contact new/update`, `doc`
+  - BANT stocké dans `description` jusqu'à colonne Supabase dédiée
+  - `contact update` câblé sur `update_contact` MCP (graceful degradation si outil absent)
+  - Version bumpée 0.8.0 → **0.9.0** (plugin.json + marketplace.json)
+  - Issue #20 close automatiquement, issue #22 fermée manuellement
+
+- [x] **#22 — `update_contact`** — Issue fermée — 2026-06-17
+  - Intégré dans `/crm contact update` (PR #25)
+  - PR #23 (scope /pm) fermée sans merge — contacts hors scope /pm
 
 - [x] **#19 — Rename `/hal` → `/pm`** — PR #24 mergée — 2026-06-17
   - Skill `/pm` créé (`plugins/hal/skills/pm/SKILL.md`), `/hal` supprimé
   - `commands/pm.md` remplace `commands/hal.md`
   - Version bumpée 0.7.2 → **0.8.0** (plugin.json + marketplace.json + SKILL.md)
-  - CHANGELOG 0.8.0 entry ajoutée
-
-- [x] **#22 — `update_contact`** — PR #23 fermée (scope mismatch) — 2026-06-17
-  - Contacts sont désormais hors scope `/pm` (→ `/crm`)
-  - `update_contact` sera intégré dans le skill `/crm` (issue #20)
-  - hal-mcp server-side implem est prête, sera câblée dans /crm
 
 - [x] **Issues #8, #5, #9 — fix + tests edifice** — commit `0b24009` — 2026-06-17
   - #8 : warning print pour disorder photo failures (render_diagnostic.py:110)
@@ -39,12 +43,6 @@ Last updated: 2026-06-17
 - [x] **PR #14 — guide multi-provider connector & skills** — 2026-06-14
 - [x] **WP-C — `/hal tasks --tag` (PR #15 · v0.7.1)** — 2026-06-14
 - [x] **Loop 2 — `/hal tasks` daily-usable v0.7.0** — PR #12 mergée — 2026-06-11
-
-## À faire après Archon #20
-
-1. **Merger PR /crm** (skill /crm) — vérifier déclencheurs BANT + format CR + update_contact intégré
-2. **Bumper CHANGELOG.md** pour la release 0.9.0 qui regroupe /crm + update_contact
-3. **Issue #21** — lier projets internes ↔ opportunités — nécessite migration Supabase (`parent_project_id` FK) + discussion Option A/B/C
 
 ## Backlog
 
