@@ -230,7 +230,8 @@ repo (`docs/mcp-server-supabase-edge.md`).
 
 ## Sources
 
-- Claude — connectors & MCP: <https://support.claude.com/en/articles/11503834-build-custom-connectors-via-remote-mcp-servers>, <https://code.claude.com/docs/en/mcp>, <https://code.claude.com/docs/en/plugin-marketplaces>
+- Claude — connectors & MCP: <https://claude.com/docs/connectors/building>, <https://claude.com/docs/connectors/building/authentication>, <https://claude.com/docs/mcp>, <https://claude.com/docs/plugin-marketplaces>
+- Claude — `mcp-server-dev` skill (Anthropic official): <https://github.com/anthropics/claude-plugins-official/tree/main/plugins/mcp-server-dev>
 - Gemini Enterprise custom MCP: <https://docs.cloud.google.com/gemini/enterprise/docs/connectors/custom-mcp-server/set-up-custom-mcp-server>
 - Gemini Workspace admin: <https://support.google.com/a/answer/15293691>
 - OpenAI developer mode / connectors: <https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta>
