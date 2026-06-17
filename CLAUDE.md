@@ -182,6 +182,35 @@ See `docs/brief.md` → "Plugin skill constraints" for full rationale and decisi
 
 ---
 
+## Archon Workflows — Correct invocation from Claude Code
+
+Archon works fine inside Claude Code sessions. The `CLAUDECODE` warning is cosmetic —
+Archon already strips that env var before spawning any Claude subprocess.
+
+**Two rules to avoid silent failures:**
+
+1. **Never pipe `archon workflow run` output** — `| head`, `| tee`, etc. send SIGPIPE and kill
+   Archon before any workflow node executes. Worktrees get created but stay empty.
+
+2. **Launch workflows sequentially** — Archon uses SQLite; simultaneous launches race on the
+   db lock and all but one will fail with `database is locked`.
+
+```bash
+# Correct: redirect output to a log file, one at a time
+ARCHON_SUPPRESS_NESTED_CLAUDE_WARNING=1 archon workflow run skill-improve "19" > /tmp/archon-19.log 2>&1 &
+
+# Monitor:
+archon workflow status
+tail -f /tmp/archon-19.log
+
+# Launch the next one only after the first is running (status: running confirmed):
+ARCHON_SUPPRESS_NESTED_CLAUDE_WARNING=1 archon workflow run skill-improve "20" > /tmp/archon-20.log 2>&1 &
+```
+
+For `ai-improvable`-labeled issues: `archon workflow run skill-improve "<issue_number>"`.
+
+---
+
 ## Session Management
 
 - Use `/handoff` before ending long sessions
