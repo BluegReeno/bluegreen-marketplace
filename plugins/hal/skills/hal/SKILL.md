@@ -10,7 +10,7 @@ description: >
   instruction mid-conversation. Also trigger when the user says
   "done", "fait", "c'est bon", "next" after completing a task —
   propose the corresponding CRM write.
-version: 0.7.2
+version: 0.8.0
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -272,6 +272,7 @@ arguments) without executing them.
 | "call avec [contact] : [résumé]", "RDV fait", "mail envoyé" | optional `list_contacts` → `log_interaction` |
 | "nouveau client [nom]" | `create_company` |
 | "nouveau contact [nom] chez [client]" | `list_companies` → match → `create_contact` |
+| "modifie [contact]", "change l'email / téléphone / rôle de [contact]", "met à jour le contact" | `list_contacts` → fuzzy match → `update_contact` |
 | "nouvelle mission/propale [nom] pour [client]" | `list_companies` → match → `create_project` |
 | "pipeline", "où en est [client]", "deals en cours" | `list_projects` / `list_companies` (read-only) |
 | "mes tâches", "todo list", "qu'est-ce que j'ai à faire" | `list_tasks` (workspace default) |
@@ -362,6 +363,20 @@ Same thresholds as entity resolution (score > 80 / 50–80 / < 50).
 
 ---
 
+## Contact resolution (fuzzy match)
+
+Same thresholds as entity resolution (score > 80 / 50–80 / < 50).
+
+- Match on `name`. Call `list_contacts` (no filter) to retrieve candidates.
+- Ambiguity: multiple contacts at the same score → list candidates, ask to pick.
+- `update_contact` accepts **partial patch** — only the fields provided are changed.
+  Accepted fields: `name`, `email`, `phone`, `role`, `linkedin`, `notes`, `tags`, `tone`.
+- Required: `workspace_slug`, `contact_id`.
+- Send only the field(s) the user named — never overwrite fields that were not mentioned.
+- Output: `✅ Contact [name] → update_contact: [field=value, ...]`.
+
+---
+
 ## `log_interaction` rules
 
 - **Required**: `workspace_slug`, `channel` (`call` / `email` / `meeting`),
@@ -449,8 +464,9 @@ generate a Blue Green devis (prefix BG). Other slugs are rejected by the script.
   the project ref. A separate `list_projects` call resolves it — done
   automatically when `--project <ref>` filter is used, otherwise the column
   is omitted.
-- **Company / contact / project field edits** — only a project's `stage`
-  (`update_project_stage`) can be changed; company, contact, and other project
-  fields cannot be edited (server limitation). Tasks are the exception — their
-  attributes are editable via `update_task` (see Task resolution). Mention the
-  limitation when relevant; do not attempt a workaround.
+- **Company / project field edits** — only a project's `stage`
+  (`update_project_stage`) can be changed; company fields and other project
+  fields cannot be edited (server limitation). Tasks and contacts are the
+  exceptions — tasks via `update_task` (see Task resolution), contacts via
+  `update_contact` (see Contact resolution). Mention the limitation when
+  relevant; do not attempt a workaround.

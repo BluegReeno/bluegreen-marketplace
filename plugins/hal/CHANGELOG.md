@@ -16,6 +16,24 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.8.0] — 2026-06-17 — update_contact: patch partiel pour les contacts CRM
+
+### Added
+- **Skill `hal` 0.7.2 → 0.8.0** — `update_contact` support:
+  - Intent → tool mapping: "modifie [contact]", "change l'email / téléphone / rôle
+    de [contact]" routes to `list_contacts` → fuzzy match → `update_contact`.
+  - New **Contact resolution** section: same fuzzy thresholds as entity resolution
+    (>80 / 50–80 / <50). Partial patch — only provided fields are sent.
+    Accepted fields: `name`, `email`, `phone`, `role`, `linkedin`, `notes`,
+    `tags`, `tone`.
+  - **Out of scope** section updated: contact fields are now editable via
+    `update_contact`; company and other project fields remain server-limited.
+
+> ⚠️ Requires `update_contact` in hal-mcp (server-side, private `hal` repo).
+> Same pattern as `update_task`: `workspace_slug` + `contact_id` + partial fields.
+
+---
+
 ## [0.7.1] — 2026-06-13 — PM tags: --tag filter + tags in output
 
 ### Added
