@@ -16,6 +16,29 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.8.0] — 2026-06-17 — Rename /hal → /pm; PM scope extracted
+
+### Changed
+- **Skill `hal` → `pm` (0.7.2 → 0.8.0)** — renamed and refocused on internal
+  project management only:
+  - Removed CRM-commercial scope (pipeline kanban, stage updates, company/contact
+    creation, `log_interaction` for prospects, devis generation) — these will live
+    in the upcoming `/crm` skill (issue #20).
+  - Kept: `tasks`, `list` (projects), `update` (tasks + sprints), workspace
+    resolution, pre-flight `whoami`, fuzzy match engine.
+  - Added new PM-specific subcommands: `new <projet>`, `task <titre>`,
+    `log <note>`, `doc <url>`, `sprint`.
+- **`commands/hal.md` → `commands/pm.md`** — `/hal` replaced by `/pm`.
+- **`marketplace.json` + `plugin.json`** — updated skill path and version to 0.8.0.
+- **`CLAUDE.md`** — all references updated from `hal` skill to `pm` skill.
+
+### Migration
+Users running `/hal` will need to switch to `/pm`. The CRM scope
+(`/hal list`, `/hal update` for prospects/stages, `/hal devis`) is temporarily
+unavailable until `/crm` ships (issue #20).
+
+---
+
 ## [0.7.1] — 2026-06-13 — PM tags: --tag filter + tags in output
 
 ### Added
