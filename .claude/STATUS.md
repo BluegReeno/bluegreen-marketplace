@@ -1,16 +1,18 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-15
+Last updated: 2026-06-17
 
 ## Current Focus
 
-**hal v0.7.2 — update_sprint wiré.** Routing table NL→MCP + sprint resolution mis à jour. .mcp.json version hal-mcp 0.1.0 → 0.2.1.
+**hal v0.7.2 — stable.** Prochaine étape : hal-crm ou nouveau sprint à définir.
 
 ## In Progress
 
 - (rien)
 
 ## Done (current sprint)
+
+- [x] **docs: refs Claude connector mises à jour** — `connectors-and-skills.md` : anciens liens `support.claude.com` / `code.claude.com` remplacés par `claude.com/docs/connectors/building` + `/authentication` ; skill `mcp-server-dev` Anthropic ajouté en référence — 2026-06-17
 
 - [x] **update_sprint wiring — hal v0.7.2** — `update_sprint` ajouté dans la table de routage NL→MCP ("renomme le sprint", "change le statut du sprint en X"…). Section "Sprint resolution" complétée : params + valeurs de statut valides. `.mcp.json` bumped 0.1.0 → 0.2.1. 3-field version sync : hal 0.7.1 → 0.7.2. — 2026-06-15
 
