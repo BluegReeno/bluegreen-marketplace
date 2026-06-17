@@ -4,67 +4,57 @@ Last updated: 2026-06-17
 
 ## Current Focus
 
-**hal v0.7.2 — stable.** Prochaine étape : hal-crm ou nouveau sprint à définir.
+**Refonte skill architecture** — `/hal` → `/pm` + nouveau skill `/crm`. Issues #19/#20/#22 traitées via Archon. PRs à merger puis push.
 
 ## In Progress
 
-- (rien)
+- [ ] **#19 — Rename `/hal` → `/pm`** — Archon `skill-improve "19"` en cours (lancé ~14h30).
+  Monitorer : `archon workflow status` + `tail -f /tmp/archon-19b.log`
+  Après completion : vérifier la PR créée, merger, puis lancer #20.
+
+- [ ] **#20 — Créer skill `/crm`** — auto-lancé par le script monitor dès que #19 termine.
+  Log : `/tmp/archon-20b.log`
 
 ## Done (current sprint)
 
-- [x] **docs: refs Claude connector mises à jour** — `connectors-and-skills.md` : anciens liens `support.claude.com` / `code.claude.com` remplacés par `claude.com/docs/connectors/building` + `/authentication` ; skill `mcp-server-dev` Anthropic ajouté en référence — 2026-06-17
+- [x] **Issues #8, #5, #9 — fix + tests edifice** — commit `0b24009` — 2026-06-17
+  - #8 : warning print pour disorder photo failures (render_diagnostic.py:110)
+  - #5 : suite pytest `tests/test_build_context.py` (8 tests, build_building_context + _download_building_2d_map)
+  - #9 : suite pytest `tests/test_render_diagnostic.py` (11 tests, _render_methodo_item + tag filtering + _building_block)
+  - 19/19 tests passent
 
-- [x] **update_sprint wiring — hal v0.7.2** — `update_sprint` ajouté dans la table de routage NL→MCP ("renomme le sprint", "change le statut du sprint en X"…). Section "Sprint resolution" complétée : params + valeurs de statut valides. `.mcp.json` bumped 0.1.0 → 0.2.1. 3-field version sync : hal 0.7.1 → 0.7.2. — 2026-06-15
+- [x] **#16 — Label `ai-improvable` créé** — issue fermée — 2026-06-17
 
-- [x] **PR #14 — guide multi-provider connector & skills (`docs/connectors-and-skills.md`)** — Claude / Gemini / OpenAI install guide, matrice provider, gotchas OAuth Gemini Enterprise, §3b Codex ajouté, lien mort corrigé, warnings sécurité — 2026-06-14
+- [x] **#22 — `update_contact` dans skill hal** — PR #23 ouverte — 2026-06-17
+  - Archon `skill-improve "22"` a tourné et ouvert PR #23 `feat(skill:hal): add update_contact`
+  - Version bumpée 0.7.2 → **0.8.0** (plugin.json + marketplace.json)
+  - ⚠️ PR #23 modifie `plugins/hal/skills/hal/SKILL.md` — merger APRÈS #19 pour éviter conflit
 
-- [x] **WP-C — `/hal tasks --tag <value>` + tags dans output (PR #15 · v0.7.1)** — flag `--tag` entre en explicit-query mode, passe `tags=[value]` à `list_tasks` v39, affiche `#tag1 #tag2` sur chaque ligne task/project, vocabulary unifié documenté dans README + `plugins/hal/README.md`. Review : 1 HIGH + 3 MEDIUM + 2 LOW fixés, 0 blocker — 2026-06-14
+- [x] **Fix workflow Archon `skill-improve`** — commit `522c4d1` — 2026-06-17
+  - `command: archon-fix-github-issue-experimental` → `.md` introuvable (c'est un YAML workflow)
+  - Remplacé par `prompt:` inline avec les étapes complètes fetch/implement/PR
+  - Deux bugs documentés dans CLAUDE.md : pipe SIGPIPE + SQLite lock concurrent
 
-- [x] **Loop 2 — `/hal tasks` daily-usable v0.7.0** — PR #12 mergée (b83f75c), PR #11 fermée — 2026-06-11
-  - Résolution workspace via `whoami` (défaut `blue-green`, plus de config client)
-  - `/hal tasks` défaut = **sprint courant** (`list_sprints(status="actuel")`) ; aucun sprint → message explicite + fallback tâches ouvertes (jamais de board vide)
-  - Couvre `blue-green` (business) + `renaud` (perso) ; flags `--status` / `--project` / `--all` / `--mine`
-  - NL edit `update_task` (attributs) + 3 writers à responsabilité unique (status / sprint / attributs) ; corrige les claims stale "no `list_sprints` / `update_task`"
-  - Skill `hal` 0.5.0 → 0.7.0 ; plugin = marketplace = 0.7.0
-  - 5/5 critères d'acceptation validés live contre sprints seedés
-- [x] Embed hal-mcp in plugin via `.mcp.json` — removes custom connector friction at onboarding — 2026-05-27 ✅ tested & validated (Steeve onboarding)
-- [x] Bump plugin to v0.6.3 (plugin.json + SKILL.md + marketplace.json) — 2026-05-27
-- [x] Fix CLAUDE.md — source repo updated, release process corrected — 2026-05-27
-- [x] Architecture hal plugin : décisions prises + 2 plans rédigés — 2026-05-28
-  - Un plugin `hal`, deux skills (`/edifice` + `/hal`), un MCP `hal-mcp`
-  - Versioning par composant (3 chiffres, PATCH par release, MINOR pour interface)
-  - `plugins/hal/scripts/obsidian/` = source de vérité unique pour scripts vault I/O
-  - `/hal` v0.1.0 → Obsidian ; v0.2.0 → Supabase (après migration)
-- [x] hal plugin v0.1.0 — PR #3 mergée — 2026-05-28
-  - `plugins/edifice-mission-report/` → `plugins/hal/`
-  - Skill `/hal update` v0.1.0 (Obsidian vault) + `hal_update.py`
-  - 8 scripts obsidian-crm bundlés dans `scripts/obsidian/`
-  - README, CLAUDE.md, marketplace.json, versioning policy mis à jour
-- [x] hal plugin v0.1.1 — PR #4 mergée — 2026-05-28
-  - Carte IGN 2D dans les rapports diagnostic (Plan C plugin natif)
-  - Fix orientation photos portrait + nettoyage adresses BAN
-- [x] hal plugin v0.1.2 — PR #7 mergée — 2026-06-01
-  - Notes taguées `methodo:visite_terrain` / `methodo:moyens` dans section Méthodologie du rapport diagnostic
-  - Issues #8 et #9 créées (warning photos désordres, unit tests)
-- [x] Suppression `hal/agents/skills/hal-crm/` — scripts migrés vers `bluegreen-marketplace/plugins/hal/scripts/obsidian/` — hal PR #13 mergée 2026-05-29
-- [x] hal plugin v0.2.0 — PR #10 mergée — 2026-06-05
-  - Skill `/hal update` réécrit : Obsidian → Supabase via hal-mcp (zéro script Python)
-  - `hal_update.py` supprimé
-  - README + CLAUDE.md nettoyés (refs Obsidian supprimées)
-- [x] hal plugin v0.4.0 — 2026-06-06
-  - Skill `edifice` 0.2.0 → 0.3.0 : commande `/edifice list` (pur MCP, zéro script)
-  - Fix plugin.json + marketplace.json : `0.2.0` → `0.4.0` (gap 0.3.0 comblé)
-  - CHANGELOG entry `[0.4.0]` prependé
-- [x] hal plugin v0.5.0 — 2026-06-08
-  - Skill `hal` 0.3.0 → 0.4.0 : commande `/hal list [workspace]` (pur MCP, zéro script)
-  - plugin.json + marketplace.json : `0.4.0` → `0.5.0`
-  - CHANGELOG entry `[0.5.0]` prependé
-- [x] hal plugin v0.6.0 — 2026-06-08
-  - `commands/hal.md` + `commands/edifice.md` : `/hal` et `/edifice` comme slash commands directs
-  - MCP pre-flight check dans skills hal (0.4.1) + edifice (0.3.1)
-  - `docs/skills-mcp-guide.md` : référence skills vs commands, MCP, cross-platform
-  - CLAUDE.md mis à jour : structure + note skills vs commands
+- [x] **docs(claude): règles Archon correctes** — commit `bf404fb` — 2026-06-17
+  - Ne jamais piper `archon workflow run` (SIGPIPE tue le process)
+  - Lancer séquentiellement (SQLite single-writer)
+
+- [x] **docs: refs Claude connector mises à jour** — 2026-06-17
+- [x] **update_sprint wiring — hal v0.7.2** — 2026-06-15
+- [x] **PR #14 — guide multi-provider connector & skills** — 2026-06-14
+- [x] **WP-C — `/hal tasks --tag` (PR #15 · v0.7.1)** — 2026-06-14
+- [x] **Loop 2 — `/hal tasks` daily-usable v0.7.0** — PR #12 mergée — 2026-06-11
+
+## À faire après que les Archon terminent
+
+1. **Merger PR #19** (rename /hal → /pm) — vérifier que le skill s'appelle bien `/pm`
+2. **Merger PR #20** (skill /crm) — vérifier les déclencheurs BANT + format CR
+3. **Merger PR #23** (update_contact) — après #19 pour éviter conflit SKILL.md
+4. **Bumper CHANGELOG.md** pour la release qui regroupe #19 + #20 + #22 (MINOR — nouvelle interface)
+5. **Issue #21** — lier projets internes ↔ opportunités — nécessite migration Supabase (`parent_project_id` FK dans `projects`) + discussion choix Option A/B/C
 
 ## Backlog
 
+- [ ] **#21** — lien projets internes ↔ opportunités (migration Supabase Option A recommandée)
+- [ ] **#13** — Connexion Gemini Enterprise (console steps manuels — voir issue)
 - [ ] schema-contract.json — cross-repo sync anchor (hal v0.3.0+)
