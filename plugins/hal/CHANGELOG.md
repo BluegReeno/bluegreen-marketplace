@@ -16,6 +16,26 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.9.0] — 2026-06-17 — New skill /crm — commercial pipeline with BANT
+
+### Added
+- **Skill `crm` (0.1.0)** — new skill covering the full commercial cycle:
+  - `/crm list` — pipeline kanban by stage (opportunities = projects with `kind: "opportunity"`)
+  - `/crm new <nom>` — create opportunity at stage Prospect
+  - `/crm qualify <nom>` — BANT extraction from conversation context, stored in project description
+  - `/crm log <note ou CR>` — log structured meeting CR via `log_interaction`, with automatic BANT extraction
+  - `/crm update <texte>` — update stage (`update_project_stage`), amount, name; routes to qualify for BANT updates
+  - `/crm contact new/update` — manage contacts and companies
+  - `/crm doc <url>` — attach document to opportunity via `save_document`
+- **`commands/crm.md`** — bare `/crm` slash command (self-contained routing logic)
+- **`marketplace.json`** — added `./plugins/hal/skills/crm` to skill list; version bumped to 0.9.0
+
+### Notes
+- BANT fields stored in `description` of projects until a dedicated Supabase column ships
+- Supersedes issues #17 (BANT) and #18 (CR ingestion), closes #20
+
+---
+
 ## [0.8.0] — 2026-06-17 — Rename /hal → /pm; PM scope extracted
 
 ### Changed
