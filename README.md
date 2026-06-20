@@ -1,3 +1,5 @@
+> **bluegreen-marketplace** is the Claude Code plugin distribution layer for [hal](https://github.com/BluegReeno/hal) — the AI-native company layer for field-work SMEs. Install a plugin to wire CRM, project management, and building-inspection workflows directly into your Claude client.
+
 # BlueGreen Marketplace
 
 Public distribution registry for [Blue Green AI](https://bluegreen.ai) Claude Code plugins.
@@ -29,7 +31,7 @@ Two skills in one plugin:
 
 **Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/hal list`, `/hal tasks`, and `/hal update` require only the **hal-mcp** connector (included in the plugin, authenticated via OAuth); `/hal devis` runs locally with no MCP.
 
-The connector targets **hal-mcp v39** on Supabase `zgkvbjqlvebttbnkklpo`.
+The connector targets **hal-mcp v39** on Supabase `zgkvbjqlvebttbnkklpo`. Powered by [hal-mcp](https://github.com/BluegReeno/hal).
 
 **Task and project tags** use a unified vocabulary: `commercial`, `client`, `marketing`, `product`, `operations`, `hr`, `finance`, `legal`, `other`.
 
