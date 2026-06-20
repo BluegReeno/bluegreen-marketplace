@@ -70,7 +70,7 @@ Plugin code lives directly in this repo. Each plugin is self-contained under `pl
 
 | Plugin | Skills | Status |
 |--------|--------|--------|
-| `hal` | `edifice`, `hal` | v0.7.1 — active |
+| `hal` | `edifice`, `pm`, `crm` | v0.9.0 — active |
 
 ```
 plugins/hal/
