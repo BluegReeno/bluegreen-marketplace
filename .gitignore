@@ -11,6 +11,10 @@ config.json
 # Session handoff (ephemeral, not versioned)
 /HANDOFF.md
 
+# Internal planning files — never commit
+.claude/plans/
+.agents/plans/
+
 # OS files
 .DS_Store
 .DS_Store?
