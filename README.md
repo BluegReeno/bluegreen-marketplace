@@ -31,7 +31,7 @@ Two skills in one plugin:
 
 **Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/hal list`, `/hal tasks`, and `/hal update` require only the **hal-mcp** connector (included in the plugin, authenticated via OAuth); `/hal devis` runs locally with no MCP.
 
-The connector targets **hal-mcp v39** on Supabase `zgkvbjqlvebttbnkklpo`. Powered by [hal-mcp](https://github.com/BluegReeno/hal).
+The connector targets **hal-mcp v39** on Supabase `zgkvbjqlvebttbnkklpo`. Powered by [hal](https://github.com/BluegReeno/hal).
 
 **Task and project tags** use a unified vocabulary: `commercial`, `client`, `marketing`, `product`, `operations`, `hr`, `finance`, `legal`, `other`.
 
