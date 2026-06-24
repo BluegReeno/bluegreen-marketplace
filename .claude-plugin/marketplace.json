@@ -1,5 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "version": "0.9.0",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — field work, building inspections, CRM",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
