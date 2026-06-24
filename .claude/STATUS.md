@@ -1,16 +1,21 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-17
+Last updated: 2026-06-24
 
 ## Current Focus
 
-**Refonte skill architecture** — ✅ terminée. `/pm` + `/crm` + `/edifice` opérationnels. Plugin à **v0.9.0**.
+**GitHub portfolio cleanup** — ✅ terminée. Vieux plans supprimés, README mis à jour, `.gitignore` renforcé.
 
 ## In Progress
 
 _(rien — sprint terminé)_
 
 ## Done (current sprint)
+
+- [x] **GitHub portfolio cleanup** — PR #26 mergée — 2026-06-24
+  - 10 vieux fichiers de plans supprimés (`.agents/plans/`, `.claude/plans/`) — 4100 lignes
+  - `.gitignore` renforcé (patterns plans + artifacts)
+  - `README.md` mis à jour : version v0.9.0, skills `pm` + `crm` + `edifice`
 
 - [x] **#20 — Créer skill `/crm`** — PR #25 mergée — 2026-06-17
   - Skill `/crm` créé (`plugins/hal/skills/crm/SKILL.md`) + `commands/crm.md`
