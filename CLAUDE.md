@@ -104,12 +104,14 @@ Each component tracks its own version independently.
 | Skill `edifice` | `version:` frontmatter | `plugins/hal/skills/edifice/SKILL.md` |
 | Skill `pm` | `version:` frontmatter | `plugins/hal/skills/pm/SKILL.md` |
 | MCP `hal-mcp` | `"version"` | `plugins/hal/.mcp.json` |
-| Marketplace | `"version"` | `.claude-plugin/marketplace.json` |
+| Marketplace plugin entry | `plugins[name].version` | `.claude-plugin/marketplace.json` |
+| Marketplace top-level | `version` | `.claude-plugin/marketplace.json` |
 
 **Bump rule per release:**
 - Each modified component → PATCH+1 on that component
 - Plugin → always PATCH+1 once per release (regardless of how many components changed)
-- Marketplace version = plugin version (always in sync)
+- Marketplace plugin entry (`plugins[name].version`) = plugin version (always in sync)
+- Marketplace top-level `version` → monotonic PATCH+1 on every release, independent of plugin version numbers
 - `MINOR` (`0.x.0`) for interface changes (new command, new required field)
 - `PATCH` (`0.0.x`) for bugfix and internal improvements
 
@@ -174,7 +176,7 @@ See `docs/brief.md` → "Plugin skill constraints" for full rationale and decisi
 
 ## Common Gotchas
 
-- `marketplace.json` version must match `plugin.json` version — always in sync
+- `marketplace.json` **plugin entry** (`plugins[name].version`) must match `plugin.json` version — always in sync. The **top-level** `version` is a separate monotonic counter, incremented by one PATCH on every release.
 - Component skill versions (SKILL.md) are independent — they only bump when that skill changes
 - `hal` plugin is developed directly in this repo (`plugins/hal/`)
 - `plugins/hal/scripts/obsidian/` is the source of truth for vault I/O — do not edit scripts elsewhere
