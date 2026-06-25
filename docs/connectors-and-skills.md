@@ -185,8 +185,10 @@ symlink them at the repo root:
 ```bash
 # run from the repo root
 mkdir -p .agents/skills
-ln -sf "$(pwd)/plugins/hal/skills/hal"     .agents/skills/hal
-ln -sf "$(pwd)/plugins/hal/skills/edifice" .agents/skills/edifice
+ln -sf "$(pwd)/plugins/hal/skills/edifice"  .agents/skills/edifice
+ln -sf "$(pwd)/plugins/hal/skills/pm"       .agents/skills/pm
+ln -sf "$(pwd)/plugins/hal/skills/crm"      .agents/skills/crm
+ln -sf "$(pwd)/plugins/hal/skills/linkedin" .agents/skills/linkedin
 ```
 
 No frontmatter change needed. The chat apps (claude.ai, ChatGPT, Gemini Enterprise) ignore

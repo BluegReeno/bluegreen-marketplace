@@ -213,6 +213,7 @@ Marquer un post comme publié et enregistrer une trace dans hal.
    - `channel: "note"`
    - `summary` : `"Post LinkedIn publié : <titre>\n<note ou lien>"`
    - `occurred_at`
+   *(Note: `project_id` est nullable dans `halcrm_interactions` — l'omettre est intentionnel pour les posts LinkedIn qui ne sont pas liés à un projet CRM.)*
 7. Output : `✅ Post publié : <titre>`
 
 **Règle** : ne jamais bloquer le log. Si la tâche est introuvable (score < 50 et pas
@@ -239,7 +240,7 @@ de confirmation), logger quand même via `log_interaction` en incluant le titre 
 - **Ne jamais auto-créer une tâche.** Proposer `/linkedin idea` si l'idée n'existe pas.
 - **`trend` ne touche pas hal-mcp.** Aucun appel `whoami` ni workspace résolution.
 - **Draft = document hal, pas une tâche.** Utiliser `save_document`, pas `create_task`.
-- **Format de sortie** : `✅ [Entité] → [tool]: [valeur]` par écriture réussie.
+- **Format de sortie** : voir la section `Output :` de chaque commande.
 - **Erreur MCP** : `❌ [Entité] → [tool]: [raison d'erreur]`. Afficher immédiatement.
 
 ---

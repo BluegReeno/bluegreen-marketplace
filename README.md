@@ -16,20 +16,19 @@ In Claude Code or Cowork (one-time):
 
 ### `hal` — Second brain and mission workflow
 
-Two skills in one plugin:
+Four skills in one plugin:
 
 - **`/edifice`** — Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report
-- **`/hal list`** — Show the BlueGreen CRM pipeline as a text kanban grouped by stage
-- **`/hal tasks`** — Show tasks as a text kanban grouped by status (filters: `--mine`, `--project`, `--status`, `--tag`)
-- **`/hal update`** — Update BG-CRM in Supabase (projects, contacts, interactions, tasks, sprints) from a natural-language instruction
-- **`/hal devis`** — Generate a DOCX devis (IC Ingénieurs Conseils or Blue Green)
+- **`/pm`** — Project management: tasks, sprints, projects via hal-mcp (`list`, `tasks`, `new`, `task`, `log`, `doc`, `sprint`, `update`)
+- **`/crm`** — Commercial pipeline: opportunities, contacts, BANT qualification, interaction log (`list`, `new`, `qualify`, `log`, `update`, `contact`, `doc`)
+- **`/linkedin`** — LinkedIn editorial pipeline: idea capture, backlog, trend research, draft, publish log (`idea`, `backlog`, `trend`, `draft`, `log`)
 
 **Install:**
 ```
 /plugin install hal@bluegreen-marketplace
 ```
 
-**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/hal list`, `/hal tasks`, and `/hal update` require only the **hal-mcp** connector (included in the plugin, authenticated via OAuth); `/hal devis` runs locally with no MCP.
+**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account (for `/edifice`). `/pm`, `/crm`, and `/linkedin` require only the **hal-mcp** connector (included in the plugin, authenticated via OAuth); `/linkedin trend` also uses the Bright Data connector.
 
 The connector targets **hal-mcp v39** on Supabase `zgkvbjqlvebttbnkklpo`. Powered by [hal](https://github.com/BluegReeno/hal).
 
@@ -41,8 +40,7 @@ See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions
 
 ## Connecting from Claude, Gemini, or OpenAI
 
-The `hal-mcp` **connector** (the MCP server) works on all three providers; the `/edifice` and
-`/hal` **skills** only run on the agent/CLI surfaces (Claude Code, Gemini CLI, OpenAI Codex).
+The `hal-mcp` **connector** (the MCP server) works on all three providers; the `/edifice`, `/pm`, `/crm`, and `/linkedin` **skills** only run on the agent/CLI surfaces (Claude Code, Gemini CLI, OpenAI Codex).
 
 | Provider | One-line path |
 |----------|---------------|
@@ -70,7 +68,7 @@ Plugin code lives directly in this repo. Each plugin is self-contained under `pl
 
 | Plugin | Skills | Status |
 |--------|--------|--------|
-| `hal` | `edifice`, `pm`, `crm` | v0.9.0 — active |
+| `hal` | `edifice`, `pm`, `crm`, `linkedin` | v0.10.0 — active |
 
 ```
 plugins/hal/
@@ -78,7 +76,9 @@ plugins/hal/
 ├── .mcp.json                    # hal-mcp HTTP server (OAuth)
 ├── skills/
 │   ├── edifice/SKILL.md         # /edifice — building inspection reports
-│   └── hal/SKILL.md             # /hal update — Supabase CRM writes via hal-mcp
+│   ├── pm/SKILL.md              # /pm — project management via hal-mcp
+│   ├── crm/SKILL.md             # /crm — commercial pipeline via hal-mcp
+│   └── linkedin/SKILL.md        # /linkedin — editorial content pipeline
 ├── scripts/
 │   ├── *.py                     # edifice: build_context, render_*, download_photos
 │   └── obsidian/                # bundled obsidian-crm scripts (source of truth)
