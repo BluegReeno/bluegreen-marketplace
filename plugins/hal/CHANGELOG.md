@@ -16,6 +16,26 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.10.0] — 2026-06-25 — New skill /linkedin — editorial content pipeline
+
+### Added
+- **Skill `linkedin` (0.1.0)** — new skill covering the full LinkedIn content cycle:
+  - `/linkedin idea <titre>` — capture content idea as hal task tagged `linkedin`
+  - `/linkedin backlog [workspace]` — view editorial pipeline grouped by status
+  - `/linkedin trend [sujet]` — research trending topics via Bright Data (`search_engine` + `web_data_linkedin_posts`)
+  - `/linkedin draft <titre>` — write and save a post draft via `save_document`, marks task in_progress
+  - `/linkedin log <titre>` — mark post as published (`update_task_status` done + `log_interaction`)
+- **`commands/linkedin.md`** — bare `/linkedin` slash command (self-contained routing logic)
+- **`marketplace.json`** — added `./plugins/hal/skills/linkedin` to skill list; version bumped to 0.10.0
+
+### Notes
+- LinkedIn ideas stored as hal tasks with tag `linkedin` — no new Supabase table
+- `trend` command uses Bright Data MCP tools only (no hal-mcp pre-flight required)
+- V2 backend (dedicated table, hal-mcp tools for posts) tracked as separate issue
+- Closes #28 (MVP)
+
+---
+
 ## [0.9.0] — 2026-06-17 — New skill /crm — commercial pipeline with BANT
 
 ### Added

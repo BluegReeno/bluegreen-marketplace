@@ -25,7 +25,7 @@ without a version bump, Claude Desktop won't surface the update and clients stay
 
 | Plugin | Status | Skills |
 |--------|--------|--------|
-| `hal` | `plugins/hal/` — developed here | `edifice` + `pm` |
+| `hal` | `plugins/hal/` — developed here | `edifice` + `pm` + `crm` + `linkedin` |
 | `hal-crm` | placeholder — future sprint | — |
 
 ---
@@ -42,7 +42,9 @@ bluegreen-marketplace/
 │   │   ├── .mcp.json             # hal-mcp SSE server + version
 │   │   ├── skills/
 │   │   │   ├── edifice/SKILL.md  # /edifice — building inspection reports
-│   │   │   └── pm/SKILL.md       # /pm list | tasks | new | task | log | doc | sprint | update — project management via hal-mcp
+│   │   │   ├── pm/SKILL.md       # /pm list | tasks | new | task | log | doc | sprint | update — project management via hal-mcp
+│   │   │   ├── crm/SKILL.md      # /crm list | new | qualify | log | update | contact | doc — commercial pipeline via hal-mcp
+│   │   │   └── linkedin/SKILL.md # /linkedin idea | backlog | trend | draft | log — editorial content pipeline
 │   │   ├── scripts/
 │   │   │   ├── *.py              # edifice: build_context, render_*, download_photos
 │   │   │   └── obsidian/         # bundled obsidian-crm scripts ← source of truth ★
@@ -57,7 +59,9 @@ bluegreen-marketplace/
 │   │   │       └── references/schemas.md
 │   │   ├── commands/
 │   │   │   ├── pm.md             # /pm slash command (routes to pm skill)
-│   │   │   └── edifice.md        # /edifice slash command (routes to edifice skill)
+│   │   │   ├── edifice.md        # /edifice slash command (routes to edifice skill)
+│   │   │   ├── crm.md            # /crm slash command (routes to crm skill)
+│   │   │   └── linkedin.md       # /linkedin slash command (routes to linkedin skill)
 │   │   ├── templates/            # *.docx report templates
 │   │   ├── organizations/        # client config
 │   │   ├── requirements.txt
@@ -103,6 +107,8 @@ Each component tracks its own version independently.
 | Plugin `hal` | `"version"` | `plugins/hal/.claude-plugin/plugin.json` |
 | Skill `edifice` | `version:` frontmatter | `plugins/hal/skills/edifice/SKILL.md` |
 | Skill `pm` | `version:` frontmatter | `plugins/hal/skills/pm/SKILL.md` |
+| Skill `crm` | `version:` frontmatter | `plugins/hal/skills/crm/SKILL.md` |
+| Skill `linkedin` | `version:` frontmatter | `plugins/hal/skills/linkedin/SKILL.md` |
 | MCP `hal-mcp` | `"version"` | `plugins/hal/.mcp.json` |
 | Marketplace plugin entry | `plugins[name].version` | `.claude-plugin/marketplace.json` |
 | Marketplace top-level | `version` | `.claude-plugin/marketplace.json` |
