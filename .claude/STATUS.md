@@ -1,16 +1,24 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-24
+Last updated: 2026-06-25
 
 ## Current Focus
 
-**GitHub portfolio cleanup** — ✅ terminée. Vieux plans supprimés, README mis à jour, `.gitignore` renforcé.
+**skill `/linkedin`** — ✅ PR #29 mergée. Pipeline éditorial LinkedIn : backlog, tendances Bright Data, rédaction, publication.
 
 ## In Progress
 
 _(rien — sprint terminé)_
 
 ## Done (current sprint)
+
+- [x] **#28 — Créer skill `/linkedin`** — PR #29 mergée — 2026-06-25
+  - Skill `/linkedin` créé (`plugins/hal/skills/linkedin/SKILL.md`) + `commands/linkedin.md`
+  - Commandes : `idea`, `backlog`, `trend` (Bright Data), `draft`, `log`
+  - Zéro backend nouveau — backlog = tasks taguées `linkedin`, drafts = `save_document`
+  - `project_id` vérifié nullable dans `halcrm_interactions` — aucun risque
+  - README + CLAUDE.md mis à jour (dette docs PR #19/#25 soldée)
+  - Version bumpée 0.9.0 → **0.10.0** (plugin.json + marketplace.json)
 
 - [x] **GitHub portfolio cleanup** — PR #26 mergée — 2026-06-24
   - 10 vieux fichiers de plans supprimés (`.agents/plans/`, `.claude/plans/`) — 4100 lignes
