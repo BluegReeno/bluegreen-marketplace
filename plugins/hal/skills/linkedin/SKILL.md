@@ -47,7 +47,7 @@ Requis pour `idea`, `backlog`, `draft`, `log`. Pas nécessaire pour `trend`
 
 ---
 
-## Workspace resolution (s'applique à toutes les commandes hal-mcp)
+## Workspace resolution (s'applique à toutes les commandes /linkedin)
 
 Chaque appel hal-mcp doit passer un `workspace_slug`. Le pre-flight a déjà mis en
 cache la réponse `whoami`. Résoudre dans cet ordre :
@@ -133,8 +133,7 @@ Rechercher les tendances LinkedIn sur un sujet pour informer la rédaction.
    - Si `sujet` fourni → `"LinkedIn trending posts [sujet] 2026"`
    - Si pas de sujet → `"LinkedIn trending posts BlueGreen intelligence artificielle ingénierie 2026"`
 2. Appeler `search_engine` avec la requête construite.
-3. Appeler `web_data_linkedin_posts` pour récupérer des exemples de posts engageants.
-   - Passer le sujet comme query parameter.
+3. Appeler `web_data_linkedin_posts` (sujet en query parameter) pour des exemples de posts engageants.
 4. Analyser les résultats et afficher :
    - 3–5 thèmes tendance identifiés (avec exemples de titres)
    - 2–3 posts LinkedIn avec format, angle, accroche remarquables
