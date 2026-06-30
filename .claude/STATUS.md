@@ -1,14 +1,19 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-25
+Last updated: 2026-06-30
 
 ## Current Focus
 
-**skill `/linkedin`** — ✅ PR #29 mergée. Pipeline éditorial LinkedIn : backlog, tendances Bright Data, rédaction, publication.
+Issue triage — `update_interaction` (#27 dual-PR hal+skill), puis Gemini Enterprise (#13 manuel) et projet↔opportunité (#21 migration).
 
 ## In Progress
 
-_(rien — sprint terminé)_
+- [ ] **D1 — #27 `update_interaction`** — deux PRs séquentielles :
+  1. **hal repo d'abord** : ajouter tool MCP `update_interaction(interaction_id, ...champs partiels)` dans `hal-mcp/index.ts`, sur le modèle de `update_task`/`update_sprint`. Deploy Edge Function après merge.
+  2. **Ce repo ensuite** : documenter dans `plugins/hal/skills/crm/SKILL.md` le chemin lookup-par-contact+date → `update_interaction`. Lancer via Archon après deploy hal :
+     ```bash
+     archon workflow run skill-improve "27"
+     ```
 
 ## Done (current sprint)
 
@@ -59,6 +64,6 @@ _(rien — sprint terminé)_
 
 ## Backlog
 
-- [ ] **#21** — lien projets internes ↔ opportunités (migration Supabase Option A recommandée)
-- [ ] **#13** — Connexion Gemini Enterprise (console steps manuels — voir issue)
+- [ ] **#13 — Gemini Enterprise** — étapes console manuelles (desktop requis). Checklist complète dans l'issue #13. Ref projet Supabase : `zgkvbjqlvebttbnkklpo`.
+- [ ] **#21 — projets ↔ opportunités** — décision Option A/B/C non prise. **Recommandation : Option A** (FK `parent_project_id` nullable dans `halcrm_projects`). Nécessite migration Supabase + expose dans hal-mcp + update skills `/crm` et `/pm`. Planifier en session dédiée.
 - [ ] schema-contract.json — cross-repo sync anchor (hal v0.3.0+)
