@@ -157,6 +157,15 @@ class TestCountLocalWorkspaceData(unittest.TestCase):
         self.assertEqual(crop_count, 0)
         self.assertEqual(ann_count, 0)
 
+    def test_photo_with_both_fields_counted_independently(self):
+        photos = [
+            {"crop_region": {"x": 0, "y": 0, "w": 100, "h": 100},
+             "annotations": [{"label": "fissure", "bbox": [0, 0, 10, 10]}]},
+        ]
+        crop_count, ann_count = build_context._count_local_workspace_data(photos)
+        self.assertEqual(crop_count, 1)
+        self.assertEqual(ann_count, 1)
+
 
 if __name__ == "__main__":
     unittest.main()
