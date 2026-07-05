@@ -136,6 +136,12 @@ def _filenames_for_note(note_id: str, photos_by_note: dict) -> list[str]:
     ]
 
 
+def _count_local_workspace_data(photos: list) -> tuple[int, int]:
+    crop_count = sum(1 for p in photos if p.get("crop_region"))
+    annotations_count = sum(1 for p in photos if p.get("annotations"))
+    return crop_count, annotations_count
+
+
 def build_observations(notes: list, photos: list, project_type: str) -> tuple[list, list]:
     """Return (observations, free_notes) routed by note.type per service_type."""
     photos_by_note: dict[str, list] = {}
@@ -348,6 +354,9 @@ def main() -> None:
     print(f"\n✅  context.json → {context_path}")
     print(f"   Type : {project_type}")
     print(f"   {len(observations)} observation(s) structurée(s) | {len(free_notes)} note(s) libre(s) | {len(photos)} photo(s) ({ok} téléchargées, {skipped} skippées)")
+    crop_count, ann_count = _count_local_workspace_data(photos)
+    if crop_count or ann_count:
+        print(f"   local-workspace → {crop_count} photo(s) recadrée(s) | {ann_count} photo(s) annotée(s)")
 
     if project_type == "diagnostic":
         print("\nObservations (désordres) — à qualifier avec /edifice improve :")

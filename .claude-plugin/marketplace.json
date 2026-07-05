@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — field work, building inspections, CRM",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
@@ -15,7 +15,7 @@
         "./plugins/hal/skills/crm",
         "./plugins/hal/skills/linkedin"
       ],
-      "version": "0.10.0",
+      "version": "0.10.1",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"

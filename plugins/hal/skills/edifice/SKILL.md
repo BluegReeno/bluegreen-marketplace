@@ -5,7 +5,7 @@ description: >
   *.edifice.md file, or asks to "pull an Edifice mission", "generate an
   Edifice report", "create a diagnostic report", "generate a devis", or
   "run edifice".
-version: 0.3.1
+version: 0.3.2
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 
@@ -169,6 +169,15 @@ python3 $PLUGIN_DIR/scripts/build_context.py mission/mcp_response.json ./mission
 The script builds `mission/context.json` with all fields pre-filled for the
 mission's `project_type`, maps notes → observations, and downloads all photos
 from their signed URLs. It prints the summary.
+
+Each entry in `photos[]` is a verbatim pass-through from the MCP response and
+may carry `crop_region` and `annotations` when the technician has previously
+used edifice's local-workspace desktop tool (a separate offline app, not part of
+this skill) to crop or annotate photos. These fields are informational passthrough
+only — Cowork reads them solely to print a diagnostic count in the console
+(`_count_local_workspace_data`), but does not write or offer any UI for
+`crop_region` / `annotations`; editing them is exclusively local-workspace's
+responsibility.
 
 ---
 
