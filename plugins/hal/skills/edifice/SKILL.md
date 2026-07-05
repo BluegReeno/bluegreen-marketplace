@@ -170,6 +170,13 @@ The script builds `mission/context.json` with all fields pre-filled for the
 mission's `project_type`, maps notes → observations, and downloads all photos
 from their signed URLs. It prints the summary.
 
+Each entry in `photos[]` is a verbatim pass-through from the MCP response and
+may carry `crop_region` and `annotations` when the technician has previously
+used edifice's local-workspace desktop tool (a separate offline app, not part of
+this skill) to crop or annotate photos. These fields are informational passthrough
+only — Cowork does not read, write, or offer any UI for `crop_region` /
+`annotations`; editing them is exclusively local-workspace's responsibility.
+
 ---
 
 ## /edifice improve
