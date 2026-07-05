@@ -16,6 +16,26 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.10.1] — 2026-07-05 — Edifice phase 3: crop_region & annotations pass-through
+
+### Added
+- **`build_context.py`** — `_count_local_workspace_data(photos)` private helper: counts photos
+  carrying non-null `crop_region` or non-empty `annotations` from the MCP response.
+- **`build_context.py` `main()`** — conditional summary line after the existing `✅ context.json →`
+  block: prints `local-workspace → N photo(s) recadrée(s) | M photo(s) annotée(s)` only when
+  counts > 0.
+- **6 unit tests** (`TestCountLocalWorkspaceData`): crop-present, crop-absent,
+  annotations-present, annotations-empty/absent, empty list, combined crop+annotations.
+  Suite: 14 passed (8 pre-existing + 6 new).
+
+### Documentation
+- **Skill `edifice` (0.3.2)** — `/edifice pull` step 3: paragraph clarifying that `crop_region`
+  and `annotations` are verbatim MCP pass-through fields managed exclusively by the
+  local-workspace desktop tool. Corrected to note Cowork reads them for diagnostic console
+  output only.
+
+---
+
 ## [0.10.0] — 2026-06-25 — New skill /linkedin — editorial content pipeline
 
 ### Added

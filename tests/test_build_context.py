@@ -113,5 +113,59 @@ class TestBuildBuildingContext(unittest.TestCase):
         self.assertIsNone(result)
 
 
+class TestCountLocalWorkspaceData(unittest.TestCase):
+    def test_photos_with_crop_region_counted(self):
+        photos = [
+            {"crop_region": {"x": 0, "y": 0, "w": 100, "h": 100}},
+            {"crop_region": {"x": 10, "y": 10, "w": 50, "h": 50}},
+        ]
+        crop_count, ann_count = build_context._count_local_workspace_data(photos)
+        self.assertEqual(crop_count, 2)
+        self.assertEqual(ann_count, 0)
+
+    def test_photos_without_crop_region_not_counted(self):
+        photos = [
+            {"crop_region": None},
+            {},
+            {"crop_region": ""},
+        ]
+        crop_count, ann_count = build_context._count_local_workspace_data(photos)
+        self.assertEqual(crop_count, 0)
+        self.assertEqual(ann_count, 0)
+
+    def test_photos_with_nonempty_annotations_counted(self):
+        photos = [
+            {"annotations": [{"label": "fissure", "bbox": [0, 0, 10, 10]}]},
+            {"annotations": [{"label": "humidité", "bbox": [5, 5, 20, 20]}, {"label": "autre", "bbox": [0, 0, 5, 5]}]},
+        ]
+        crop_count, ann_count = build_context._count_local_workspace_data(photos)
+        self.assertEqual(crop_count, 0)
+        self.assertEqual(ann_count, 2)
+
+    def test_photos_with_empty_or_absent_annotations_not_counted(self):
+        photos = [
+            {"annotations": []},
+            {},
+            {"annotations": None},
+        ]
+        crop_count, ann_count = build_context._count_local_workspace_data(photos)
+        self.assertEqual(crop_count, 0)
+        self.assertEqual(ann_count, 0)
+
+    def test_empty_photos_list_returns_zeros(self):
+        crop_count, ann_count = build_context._count_local_workspace_data([])
+        self.assertEqual(crop_count, 0)
+        self.assertEqual(ann_count, 0)
+
+    def test_photo_with_both_fields_counted_independently(self):
+        photos = [
+            {"crop_region": {"x": 0, "y": 0, "w": 100, "h": 100},
+             "annotations": [{"label": "fissure", "bbox": [0, 0, 10, 10]}]},
+        ]
+        crop_count, ann_count = build_context._count_local_workspace_data(photos)
+        self.assertEqual(crop_count, 1)
+        self.assertEqual(ann_count, 1)
+
+
 if __name__ == "__main__":
     unittest.main()
