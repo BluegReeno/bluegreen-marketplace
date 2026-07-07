@@ -10,7 +10,7 @@
 
 ## Project Overview
 
-**bluegreen-marketplace** is the public distribution layer for all BlueGreen Claude Code plugins. It decouples plugin distribution (public) from plugin development (private repos `edifice` and `hal`).
+**bluegreen-marketplace** is the public distribution layer for all BlueGreen Claude Code plugins. It decouples plugin distribution (public) from the private `edifice` upstream where the edifice skill originates. The `hal` plugin is developed directly in this repo.
 
 Clients install plugins via:
 ```
@@ -26,7 +26,6 @@ without a version bump, Claude Desktop won't surface the update and clients stay
 | Plugin | Status | Skills |
 |--------|--------|--------|
 | `hal` | `plugins/hal/` — developed here | `edifice` + `pm` + `crm` + `linkedin` |
-| `hal-crm` | placeholder — future sprint | — |
 
 ---
 
@@ -37,7 +36,7 @@ bluegreen-marketplace/
 ├── .claude-plugin/
 │   └── marketplace.json          # registry entry point (Anthropic schema)
 ├── plugins/
-│   ├── hal/
+│   └── hal/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .mcp.json             # hal-mcp SSE server + version
 │   │   ├── skills/
@@ -66,8 +65,6 @@ bluegreen-marketplace/
 │   │   ├── organizations/        # client config
 │   │   ├── requirements.txt
 │   │   └── CHANGELOG.md
-│   └── hal-crm/
-│       └── .gitkeep              # placeholder — future sprint
 ├── docs/
 │   ├── brief.md                  # sprint brief and architectural decisions
 │   ├── INSTALL.md                # one-liner install instructions
@@ -100,47 +97,50 @@ See `docs/skills-mcp-guide.md` for the full reference (MCP detection, cross-plat
 
 ## Versioning Policy
 
-Each component tracks its own version independently.
+One enforced invariant, checked by CI (`scripts/check_version_sync.sh`):
 
-| Component | Version field | File |
-|-----------|--------------|------|
-| Plugin `hal` | `"version"` | `plugins/hal/.claude-plugin/plugin.json` |
-| Skill `edifice` | `version:` frontmatter | `plugins/hal/skills/edifice/SKILL.md` |
-| Skill `pm` | `version:` frontmatter | `plugins/hal/skills/pm/SKILL.md` |
-| Skill `crm` | `version:` frontmatter | `plugins/hal/skills/crm/SKILL.md` |
-| Skill `linkedin` | `version:` frontmatter | `plugins/hal/skills/linkedin/SKILL.md` |
-| MCP `hal-mcp` | `"version"` | `plugins/hal/.mcp.json` |
-| Marketplace plugin entry | `plugins[name].version` | `.claude-plugin/marketplace.json` |
-| Marketplace top-level | `version` | `.claude-plugin/marketplace.json` |
+> **`plugin.json.version` == `marketplace.json` plugin entry (`plugins[0].version`)**
+
+These two fields must always be identical. The marketplace top-level `version` is a
+separate monotonic release counter, bumped by one PATCH on every release, independent
+of the plugin version.
+
+| Field | Role | File |
+|-------|------|------|
+| Plugin `hal` `"version"` | **enforced** — must equal marketplace entry | `plugins/hal/.claude-plugin/plugin.json` |
+| Marketplace plugin entry `plugins[0].version` | **enforced** — must equal plugin version | `.claude-plugin/marketplace.json` |
+| Marketplace top-level `version` | monotonic release counter | `.claude-plugin/marketplace.json` |
+| MCP `hal-mcp` `"version"` | informational — not enforced | `plugins/hal/.mcp.json` |
+
+Skill `SKILL.md` files carry **no** `version:` field — per-skill versions are not tracked.
 
 **Bump rule per release:**
-- Each modified component → PATCH+1 on that component
-- Plugin → always PATCH+1 once per release (regardless of how many components changed)
-- Marketplace plugin entry (`plugins[name].version`) = plugin version (always in sync)
-- Marketplace top-level `version` → monotonic PATCH+1 on every release, independent of plugin version numbers
-- `MINOR` (`0.x.0`) for interface changes (new command, new required field)
-- `PATCH` (`0.0.x`) for bugfix and internal improvements
+- Bump `plugin.json` `version` and the `marketplace.json` plugin entry together, keeping them identical
+- Increment the `marketplace.json` top-level `version` by one PATCH
+- Add a `CHANGELOG.md` entry for the new plugin version (CI-enforced)
+- `MINOR` (`0.x.0`) for interface changes (new command, new required field); `PATCH` (`0.0.x`) for bugfix and internal improvements
 
 **Example:**
 
-| Release | What changed | `edifice` | `pm` skill | `hal-mcp` | plugin |
-|---------|-------------|:---------:|:-----------:|:---------:|:------:|
-| v0.1.0 (initial) | — | 0.1.0 | 0.1.0 | 0.1.0 | **0.1.0** |
-| next — edifice only | edifice bugfix | **0.1.1** | 0.1.0 | 0.1.0 | **0.1.1** |
-| next — pm skill | new vault field | 0.1.1 | **0.1.1** | 0.1.0 | **0.1.2** |
-| next — Supabase migration | pm skill interface | 0.1.1 | **0.2.0** | **0.2.0** | **0.2.0** |
+| Release | What changed | plugin (= marketplace entry) |
+|---------|-------------|:----------------------------:|
+| v0.1.0 (initial) | — | **0.1.0** |
+| next | edifice bugfix | **0.1.1** |
+| next | new vault field (interface change) | **0.2.0** |
 
 ---
 
-## Release Process (manual — no CI)
+## Release Process (manual — CI-enforced)
 
-Releases are intentional and infrequent (~1-2/month). No GitHub Actions by design (see `docs/brief.md` — Out of scope).
+Releases are intentional and infrequent (~1-2/month). CI (`.github/workflows/ci.yml`)
+enforces the version invariant and the CHANGELOG entry, and runs the test suite on
+every PR and push to `main`.
 
 ```bash
-# 1. Bump version in each modified component (see Versioning Policy above)
-# 2. Bump plugin version in plugin.json and marketplace.json (must stay identical)
-# 3. Add a CHANGELOG.md entry for the new version (required — no push without it)
-# 4. Commit and push
+# 1. Bump plugin.json version + marketplace.json plugin entry together (kept identical)
+# 2. Increment marketplace.json top-level version by one PATCH
+# 3. Add a CHANGELOG.md entry for the new version (required — CI fails without it)
+# 4. Commit and push (CI enforces steps 1–3)
 git add -A && git commit -m "chore(hal): release vX.Y.Z"
 ```
 
@@ -182,11 +182,10 @@ See `docs/brief.md` → "Plugin skill constraints" for full rationale and decisi
 
 ## Common Gotchas
 
-- `marketplace.json` **plugin entry** (`plugins[name].version`) must match `plugin.json` version — always in sync. The **top-level** `version` is a separate monotonic counter, incremented by one PATCH on every release.
-- Component skill versions (SKILL.md) are independent — they only bump when that skill changes
+- `marketplace.json` **plugin entry** (`plugins[0].version`) must match `plugin.json` version — CI (`scripts/check_version_sync.sh`) fails the PR on drift. The **top-level** `version` is a separate monotonic counter, incremented by one PATCH on every release.
+- `SKILL.md` files carry no `version:` field — per-skill versions are not tracked
 - `hal` plugin is developed directly in this repo (`plugins/hal/`)
 - `plugins/hal/scripts/obsidian/` is the source of truth for vault I/O — do not edit scripts elsewhere
-- `plugins/hal-crm/` is intentionally empty — do not add code until the hal CRM Postgres migration is done
 
 ---
 
