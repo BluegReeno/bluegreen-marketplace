@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Enforce the version invariant for every plugin in this marketplace:
-#   plugin.json.version == marketplace.json plugin entry version
-# and require a CHANGELOG.md entry for the current plugin version.
+# Enforce the two-field version invariant for every plugin:
+#   1. plugin.json.version == marketplace.json plugin entry version
+#   2. CHANGELOG.md has a "## [<version>]" entry for that version
 # Usage: ./scripts/check_version_sync.sh
-# Exit 0 = all plugins in sync and changelogged. Exit 1 = any mismatch or missing entry.
+# Exit 0 = all plugins in sync with a matching CHANGELOG entry. Exit 1 = any failure.
 
 set -euo pipefail
 
@@ -16,7 +16,7 @@ for plugin_json in "$REPO_ROOT"/plugins/*/.claude-plugin/plugin.json; do
   plugin_name="$(basename "$plugin_dir")"
   plugin_ver="$(python3 -c "import json; print(json.load(open('$plugin_json'))['version'])")"
 
-  # Enforced invariant: plugin.json version must equal the marketplace entry version.
+  # 1. plugin.json must match the marketplace plugin entry.
   market_ver="$(python3 -c "
 import json
 data = json.load(open('$MARKETPLACE'))
@@ -26,7 +26,7 @@ print(entry['version'] if entry else 'NOT_FOUND')
 " 2>/dev/null || echo "NOT_FOUND")"
 
   if [ "$market_ver" = "NOT_FOUND" ]; then
-    echo "MISSING  [$plugin_name] not found in marketplace.json"
+    echo "ERROR    [$plugin_name] no matching entry in marketplace.json"
     ERRORS=$((ERRORS + 1))
   elif [ "$market_ver" != "$plugin_ver" ]; then
     echo "MISMATCH [$plugin_name] plugin.json=$plugin_ver marketplace.json=$market_ver"
@@ -35,25 +35,22 @@ print(entry['version'] if entry else 'NOT_FOUND')
     echo "OK       [$plugin_name] v$plugin_ver"
   fi
 
-  # CHANGELOG gate: require a heading for the current plugin version.
-  # Guarded with `if` so a grep non-match does not trip `set -e` before ERRORS++.
+  # 2. CHANGELOG.md must carry a "## [<plugin_ver>]" entry for this version.
   changelog="$plugin_dir/CHANGELOG.md"
   if [ ! -f "$changelog" ]; then
-    echo "MISSING  [$plugin_name] CHANGELOG.md not found"
+    echo "ERROR    [$plugin_name] missing CHANGELOG.md"
     ERRORS=$((ERRORS + 1))
-  elif grep -Eq "^## \[$plugin_ver\]" "$changelog"; then
-    echo "OK       [$plugin_name] CHANGELOG entry for v$plugin_ver"
-  else
-    echo "MISSING  [$plugin_name] CHANGELOG entry for v$plugin_ver"
+  elif ! grep -qE "^## \[${plugin_ver}\]" "$changelog"; then
+    echo "ERROR    [$plugin_name] CHANGELOG.md has no '## [$plugin_ver]' entry"
     ERRORS=$((ERRORS + 1))
   fi
 done
 
 if [ "$ERRORS" -gt 0 ]; then
   echo ""
-  echo "FAIL: $ERRORS error(s) found — version drift or missing CHANGELOG entry."
+  echo "FAIL: $ERRORS version-sync error(s) found."
   exit 1
 fi
 
 echo ""
-echo "OK: all plugin versions in sync with marketplace.json and changelogged."
+echo "OK: all plugin versions in sync with a matching CHANGELOG entry."

@@ -10,7 +10,7 @@
 
 ## Project Overview
 
-**bluegreen-marketplace** is the public distribution layer for all BlueGreen Claude Code plugins. It decouples plugin distribution (public) from the private `edifice` upstream where the edifice skill originates. The `hal` plugin is developed directly in this repo.
+**bluegreen-marketplace** is the public distribution layer for all BlueGreen Claude Code plugins. It decouples plugin distribution (public — this repo, where the `hal` plugin is developed) from the private backend it depends on (`edifice`/`hal-mcp` — the Supabase/MCP server, kept in a separate private repo).
 
 Clients install plugins via:
 ```
@@ -37,34 +37,34 @@ bluegreen-marketplace/
 │   └── marketplace.json          # registry entry point (Anthropic schema)
 ├── plugins/
 │   └── hal/
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── .mcp.json             # hal-mcp SSE server + version
-│   │   ├── skills/
-│   │   │   ├── edifice/SKILL.md  # /edifice — building inspection reports
-│   │   │   ├── pm/SKILL.md       # /pm list | tasks | new | task | log | doc | sprint | update — project management via hal-mcp
-│   │   │   ├── crm/SKILL.md      # /crm list | new | qualify | log | update | contact | doc — commercial pipeline via hal-mcp
-│   │   │   └── linkedin/SKILL.md # /linkedin idea | backlog | trend | draft | log — editorial content pipeline
-│   │   ├── scripts/
-│   │   │   ├── *.py              # edifice: build_context, render_*, download_photos
-│   │   │   └── obsidian/         # bundled obsidian-crm scripts ← source of truth ★
-│   │   │       ├── obsidian_api.py
-│   │   │       ├── note_schemas.py
-│   │   │       ├── search_vault.py
-│   │   │       ├── read_note.py
-│   │   │       ├── list_notes.py
-│   │   │       ├── create_note.py
-│   │   │       ├── update_frontmatter.py
-│   │   │       ├── sprint_transition.py
-│   │   │       └── references/schemas.md
-│   │   ├── commands/
-│   │   │   ├── pm.md             # /pm slash command (routes to pm skill)
-│   │   │   ├── edifice.md        # /edifice slash command (routes to edifice skill)
-│   │   │   ├── crm.md            # /crm slash command (routes to crm skill)
-│   │   │   └── linkedin.md       # /linkedin slash command (routes to linkedin skill)
-│   │   ├── templates/            # *.docx report templates
-│   │   ├── organizations/        # client config
-│   │   ├── requirements.txt
-│   │   └── CHANGELOG.md
+│       ├── .claude-plugin/plugin.json
+│       ├── .mcp.json             # hal-mcp SSE server + version
+│       ├── skills/
+│       │   ├── edifice/SKILL.md  # /edifice — building inspection reports
+│       │   ├── pm/SKILL.md       # /pm list | tasks | new | task | log | doc | sprint | update — project management via hal-mcp
+│       │   ├── crm/SKILL.md      # /crm list | new | qualify | log | update | contact | doc — commercial pipeline via hal-mcp
+│       │   └── linkedin/SKILL.md # /linkedin idea | backlog | trend | draft | log — editorial content pipeline
+│       ├── scripts/
+│       │   ├── *.py              # edifice: build_context, render_*, download_photos
+│       │   └── obsidian/         # bundled obsidian-crm scripts ← source of truth ★
+│       │       ├── obsidian_api.py
+│       │       ├── note_schemas.py
+│       │       ├── search_vault.py
+│       │       ├── read_note.py
+│       │       ├── list_notes.py
+│       │       ├── create_note.py
+│       │       ├── update_frontmatter.py
+│       │       ├── sprint_transition.py
+│       │       └── references/schemas.md
+│       ├── commands/
+│       │   ├── pm.md             # /pm slash command (routes to pm skill)
+│       │   ├── edifice.md        # /edifice slash command (routes to edifice skill)
+│       │   ├── crm.md            # /crm slash command (routes to crm skill)
+│       │   └── linkedin.md       # /linkedin slash command (routes to linkedin skill)
+│       ├── templates/            # *.docx report templates
+│       ├── organizations/        # client config
+│       ├── requirements.txt
+│       └── CHANGELOG.md
 ├── docs/
 │   ├── brief.md                  # sprint brief and architectural decisions
 │   ├── INSTALL.md                # one-liner install instructions
@@ -97,50 +97,51 @@ See `docs/skills-mcp-guide.md` for the full reference (MCP detection, cross-plat
 
 ## Versioning Policy
 
-One enforced invariant, checked by CI (`scripts/check_version_sync.sh`):
+**Two fields are enforced.** `scripts/check_version_sync.sh` checks them on every PR/push
+(CI runs it — see `.github/workflows/ci.yml`):
 
-> **`plugin.json.version` == `marketplace.json` plugin entry (`plugins[0].version`)**
+1. `plugin.json.version` **==** the marketplace plugin entry (`plugins[name].version`) — always identical.
+2. `plugins/hal/CHANGELOG.md` has a `## [<plugin_ver>]` entry for that version.
 
-These two fields must always be identical. The marketplace top-level `version` is a
-separate monotonic release counter, bumped by one PATCH on every release, independent
-of the plugin version.
+The marketplace **top-level** `version` is a monotonic PATCH+1 counter, bumped once per release.
 
-| Field | Role | File |
-|-------|------|------|
-| Plugin `hal` `"version"` | **enforced** — must equal marketplace entry | `plugins/hal/.claude-plugin/plugin.json` |
-| Marketplace plugin entry `plugins[0].version` | **enforced** — must equal plugin version | `.claude-plugin/marketplace.json` |
-| Marketplace top-level `version` | monotonic release counter | `.claude-plugin/marketplace.json` |
-| MCP `hal-mcp` `"version"` | informational — not enforced | `plugins/hal/.mcp.json` |
+| Component | Version field | File | Enforced |
+|-----------|--------------|------|:--------:|
+| Plugin `hal` | `"version"` | `plugins/hal/.claude-plugin/plugin.json` | ✅ (== marketplace entry) |
+| Marketplace plugin entry | `plugins[name].version` | `.claude-plugin/marketplace.json` | ✅ (== plugin.json) |
+| Marketplace top-level | `version` | `.claude-plugin/marketplace.json` | monotonic counter |
+| MCP `hal-mcp` | `"version"` | `plugins/hal/.mcp.json` | tracked, not sync-enforced |
 
-Skill `SKILL.md` files carry **no** `version:` field — per-skill versions are not tracked.
+Skills (`SKILL.md`) no longer carry a `version:` field — there is no per-skill bump ritual.
 
 **Bump rule per release:**
-- Bump `plugin.json` `version` and the `marketplace.json` plugin entry together, keeping them identical
-- Increment the `marketplace.json` top-level `version` by one PATCH
-- Add a `CHANGELOG.md` entry for the new plugin version (CI-enforced)
-- `MINOR` (`0.x.0`) for interface changes (new command, new required field); `PATCH` (`0.0.x`) for bugfix and internal improvements
+- Plugin → PATCH+1 once per release; the marketplace plugin entry moves with it (stay identical).
+- Marketplace top-level `version` → monotonic PATCH+1 on every release, independent of the plugin version.
+- Add a `## [<new-version>]` entry to `plugins/hal/CHANGELOG.md` — CI fails without it.
+- `MINOR` (`0.x.0`) for interface changes (new command, new required field); `PATCH` (`0.0.x`) for bugfixes and internal improvements.
 
 **Example:**
 
-| Release | What changed | plugin (= marketplace entry) |
-|---------|-------------|:----------------------------:|
-| v0.1.0 (initial) | — | **0.1.0** |
-| next | edifice bugfix | **0.1.1** |
-| next | new vault field (interface change) | **0.2.0** |
+| Release | What changed | plugin.json | marketplace entry | marketplace top-level |
+|---------|-------------|:-----------:|:-----------------:|:---------------------:|
+| v0.10.1 | — | 0.10.1 | 0.10.1 | 0.10.1 |
+| next — edifice bugfix | skill logic | **0.10.2** | **0.10.2** | **0.10.2** |
+| next — new `/pm` field | pm interface | **0.11.0** | **0.11.0** | **0.10.3** |
 
 ---
 
-## Release Process (manual — CI-enforced)
+## Release Process (manual)
 
-Releases are intentional and infrequent (~1-2/month). CI (`.github/workflows/ci.yml`)
-enforces the version invariant and the CHANGELOG entry, and runs the test suite on
-every PR and push to `main`.
+Releases are intentional and infrequent (~1-2/month). Cutting a release stays manual; CI only
+enforces the invariant — `.github/workflows/ci.yml` runs `scripts/check_version_sync.sh` + tests
+on every PR/push, so a broken version sync or a missing CHANGELOG entry fails the build.
 
 ```bash
-# 1. Bump plugin.json version + marketplace.json plugin entry together (kept identical)
-# 2. Increment marketplace.json top-level version by one PATCH
+# 1. Bump plugin version in plugin.json and the marketplace plugin entry (must stay identical)
+# 2. Bump the marketplace top-level version (monotonic PATCH+1)
 # 3. Add a CHANGELOG.md entry for the new version (required — CI fails without it)
-# 4. Commit and push (CI enforces steps 1–3)
+# 4. Verify locally, then commit and push
+bash scripts/check_version_sync.sh
 git add -A && git commit -m "chore(hal): release vX.Y.Z"
 ```
 
@@ -182,8 +183,7 @@ See `docs/brief.md` → "Plugin skill constraints" for full rationale and decisi
 
 ## Common Gotchas
 
-- `marketplace.json` **plugin entry** (`plugins[0].version`) must match `plugin.json` version — CI (`scripts/check_version_sync.sh`) fails the PR on drift. The **top-level** `version` is a separate monotonic counter, incremented by one PATCH on every release.
-- `SKILL.md` files carry no `version:` field — per-skill versions are not tracked
+- `marketplace.json` **plugin entry** (`plugins[name].version`) must match `plugin.json` version — always in sync (enforced by `scripts/check_version_sync.sh`). The **top-level** `version` is a separate monotonic counter, incremented by one PATCH on every release.
 - `hal` plugin is developed directly in this repo (`plugins/hal/`)
 - `plugins/hal/scripts/obsidian/` is the source of truth for vault I/O — do not edit scripts elsewhere
 
