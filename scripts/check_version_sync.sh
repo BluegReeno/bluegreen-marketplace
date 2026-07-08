@@ -14,18 +14,30 @@ ERRORS=0
 for plugin_json in "$REPO_ROOT"/plugins/*/.claude-plugin/plugin.json; do
   plugin_dir="$(dirname "$(dirname "$plugin_json")")"
   plugin_name="$(basename "$plugin_dir")"
-  plugin_ver="$(python3 -c "import json; print(json.load(open('$plugin_json'))['version'])")"
+  plugin_ver="$(python3 -c "import json; print(json.load(open('$plugin_json'))['version'])" 2>/dev/null || echo "READ_ERROR")"
+  if [ "$plugin_ver" = "READ_ERROR" ]; then
+    echo "ERROR    [$plugin_name] cannot read 'version' from plugin.json (missing key or malformed JSON)"
+    ERRORS=$((ERRORS + 1))
+    continue
+  fi
 
   # 1. plugin.json must match the marketplace plugin entry.
+  # A broken marketplace.json prints PARSE_ERROR; a valid file with no entry prints NOT_FOUND.
   market_ver="$(python3 -c "
 import json
-data = json.load(open('$MARKETPLACE'))
+try:
+    data = json.load(open('$MARKETPLACE'))
+except Exception:
+    print('PARSE_ERROR'); raise SystemExit(0)
 plugins = data.get('plugins', data) if isinstance(data, dict) else data
 entry = next((p for p in plugins if p.get('name','').lower() == '$plugin_name' or p.get('id','').lower() == '$plugin_name'), None)
 print(entry['version'] if entry else 'NOT_FOUND')
-" 2>/dev/null || echo "NOT_FOUND")"
+" 2>/dev/null || echo "PARSE_ERROR")"
 
-  if [ "$market_ver" = "NOT_FOUND" ]; then
+  if [ "$market_ver" = "PARSE_ERROR" ]; then
+    echo "ERROR    [$plugin_name] cannot parse marketplace.json (malformed/unreadable)"
+    ERRORS=$((ERRORS + 1))
+  elif [ "$market_ver" = "NOT_FOUND" ]; then
     echo "ERROR    [$plugin_name] no matching entry in marketplace.json"
     ERRORS=$((ERRORS + 1))
   elif [ "$market_ver" != "$plugin_ver" ]; then
