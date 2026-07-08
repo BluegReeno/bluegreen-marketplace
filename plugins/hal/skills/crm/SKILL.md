@@ -7,7 +7,6 @@ description: >
   opportunité", "qualifier le lead", "logger un CR commercial", "pipeline
   commercial", "attacher une propale".
   NE PAS déclencher pour : projets internes, tâches, sprints (→ /pm).
-version: 0.1.0
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 

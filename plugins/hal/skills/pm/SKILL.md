@@ -8,7 +8,6 @@ description: >
   note sur le projet", "attacher un doc", "c'est fait", "done", "next".
   NE PAS déclencher pour : opportunités commerciales, contacts, propales, devis
   (→ /crm).
-version: 0.8.0
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 

@@ -9,7 +9,6 @@ description: >
   "j'ai publié le post sur Z".
   NE PAS déclencher pour : projets internes (→ /pm), opportunités commerciales
   (→ /crm), missions terrain (→ /edifice).
-version: 0.1.0
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
