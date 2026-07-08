@@ -22,5 +22,4 @@ In Claude Code or Cowork:
 
 | Plugin | Skills | Description |
 |--------|--------|-------------|
-| `hal` | `/edifice`, `/hal list`, `/hal tasks`, `/hal update`, `/hal devis` | Edifice building inspection reports + BlueGreen CRM (Supabase) queries, writes, and devis generation via **hal-mcp** |
-| `hal-crm` *(placeholder — superseded by `/hal`)* | — | Reserved namespace; CRM features now ship inside `hal` (`/hal list`, `/hal tasks`, `/hal update`). |
+| `hal` | `/edifice`, `/pm`, `/crm`, `/linkedin` | Edifice building-inspection reports (DOCX) + project management, commercial pipeline, and LinkedIn editorial workflows via **hal-mcp** |
