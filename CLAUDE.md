@@ -130,20 +130,32 @@ Skills (`SKILL.md`) no longer carry a `version:` field — there is no per-skill
 
 ---
 
-## Release Process (manual)
+## Release Process (one command)
 
-Releases are intentional and infrequent (~1-2/month). Cutting a release stays manual; CI only
-enforces the invariant — `.github/workflows/ci.yml` runs `scripts/check_version_sync.sh` + tests
-on every PR/push, so a broken version sync or a missing CHANGELOG entry fails the build.
+Releases are intentional and infrequent (~1-2/month), and stay a deliberate human act — CI only
+enforces the invariant (`.github/workflows/ci.yml` runs `scripts/check_version_sync.sh` + tests on
+every PR/push, so a broken version sync or a missing CHANGELOG entry fails the build).
+
+`scripts/release.sh` performs the whole bump in one validated pass so a missed field can no longer
+strand Claude Desktop clients on the old version (the top-level marketplace counter is what surfaces
+the "Mettre à jour" button — see §Project Overview). It validates everything **before** writing, then:
+
+1. bumps `plugin.json.version`,
+2. bumps the matching marketplace plugin entry (kept identical),
+3. bumps the marketplace **top-level** `version` (monotonic PATCH +1),
+4. prepends a dated `## [<version>]` CHANGELOG entry,
+5. runs `scripts/check_version_sync.sh` and aborts if it fails,
+6. commits `chore(<plugin>): release v<version>` — **no push, no merge, no tag**.
 
 ```bash
-# 1. Bump plugin version in plugin.json and the marketplace plugin entry (must stay identical)
-# 2. Bump the marketplace top-level version (monotonic PATCH+1)
-# 3. Add a CHANGELOG.md entry for the new version (required — CI fails without it)
-# 4. Verify locally, then commit and push
-bash scripts/check_version_sync.sh
-git add -A && git commit -m "chore(hal): release vX.Y.Z"
+# <plugin> <new-version> "<changelog line>"  (--mcp-version <v> also bumps .mcp.json)
+bash scripts/release.sh hal 0.10.2 "fix edifice crop_region off-by-one"
+git push        # the human pushes after reviewing the commit
 ```
+
+It refuses (exit 1, clear message) on: missing args, unknown plugin, a version not strictly
+greater than the current one, a dirty working tree, or a CHANGELOG that already lists the version.
+A failed validation writes nothing. `.mcp.json` is left untouched unless `--mcp-version` is passed.
 
 ---
 
