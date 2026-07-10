@@ -96,6 +96,14 @@ class TestReleaseValidation(unittest.TestCase):
         r = self._fx().run("hal", "0.10", "not semver")
         self.assertEqual(r.returncode, 1)
 
+    def test_malformed_and_not_greater_give_distinct_messages(self):
+        # A malformed version must not be misreported as "not greater" (M2).
+        malformed = self._fx().run("hal", "0.10", "typo")
+        self.assertIn("X.Y.Z", malformed.stderr)
+        self.assertNotIn("greater", malformed.stderr.lower())
+        not_greater = self._fx().run("hal", "0.10.1", "same")
+        self.assertIn("greater", not_greater.stderr.lower())
+
 
 class TestReleaseHappyPath(unittest.TestCase):
     def setUp(self):

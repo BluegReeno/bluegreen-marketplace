@@ -136,9 +136,9 @@ Releases are intentional and infrequent (~1-2/month), and stay a deliberate huma
 enforces the invariant (`.github/workflows/ci.yml` runs `scripts/check_version_sync.sh` + tests on
 every PR/push, so a broken version sync or a missing CHANGELOG entry fails the build).
 
-`scripts/release.sh` performs the whole bump atomically so a missed field can no longer strand
-Claude Desktop clients on the old version (the top-level marketplace counter is what surfaces the
-"Mettre à jour" button — see §Project Overview). It validates everything **before** writing, then:
+`scripts/release.sh` performs the whole bump in one validated pass so a missed field can no longer
+strand Claude Desktop clients on the old version (the top-level marketplace counter is what surfaces
+the "Mettre à jour" button — see §Project Overview). It validates everything **before** writing, then:
 
 1. bumps `plugin.json.version`,
 2. bumps the matching marketplace plugin entry (kept identical),

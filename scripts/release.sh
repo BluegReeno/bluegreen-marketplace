@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-command release for a bluegreen-marketplace plugin.
 #
-# Bumps every version location atomically, refreshes the CHANGELOG, enforces the
+# Bumps every version location in one validated pass, refreshes the CHANGELOG, enforces the
 # version-sync invariant, then commits. It never pushes, merges, or tags — the
 # human does that after review.
 #
@@ -44,7 +44,7 @@ POSITIONAL=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --mcp-version)
-      [ $# -ge 2 ] || { usage >&2; die "--mcp-version requires a value"; }
+      { [ $# -ge 2 ] && [ -n "$2" ]; } || { usage >&2; die "--mcp-version requires a non-empty value"; }
       MCP_VERSION="$2"
       shift 2
       ;;
@@ -87,18 +87,22 @@ fi
 CURRENT_VERSION="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['version'])" "$PLUGIN_JSON" 2>/dev/null)" \
   || die "cannot read 'version' from $PLUGIN_JSON"
 
-# New version must be valid SemVer and strictly greater than the current one.
-python3 - "$CURRENT_VERSION" "$NEW_VERSION" <<'PY' || die "new version '$NEW_VERSION' is not strictly greater than current '$CURRENT_VERSION'"
+# New version must be a valid X.Y.Z (three-part numeric) and strictly greater
+# than the current one. Python owns the message so a malformed version is never
+# misreported as "not greater".
+python3 - "$CURRENT_VERSION" "$NEW_VERSION" <<'PY' || exit 1
 import re, sys
 
-def parse(v):
+def parse(v, label):
     m = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", v.strip())
     if not m:
-        sys.exit(1)
+        sys.exit(f"ERROR    {label} version '{v}' is not a valid X.Y.Z (three-part numeric)")
     return tuple(int(x) for x in m.groups())
 
-cur, new = parse(sys.argv[1]), parse(sys.argv[2])
-sys.exit(0 if new > cur else 1)
+cur = parse(sys.argv[1], "current")
+new = parse(sys.argv[2], "new")
+if new <= cur:
+    sys.exit(f"ERROR    new version '{sys.argv[2]}' is not strictly greater than current '{sys.argv[1]}'")
 PY
 
 # CHANGELOG must not already carry this version.
@@ -154,6 +158,8 @@ ver_pat = re.compile(r'"version"\s*:\s*"[^"]*"')
 
 # Top-level version is the first "version" key (precedes the plugins array).
 vm = ver_pat.search(text)
+if vm is None:
+    sys.exit("no top-level 'version' key found in marketplace.json")
 text = text[:vm.start()] + f'"version": "{new_top}"' + text[vm.end():]
 
 # Plugin entry version: the first "version" key after this plugin's name/id.
@@ -162,6 +168,8 @@ nm = name_pat.search(text)
 if nm is None:
     sys.exit(f"could not locate '{plugin}' name/id in marketplace.json text")
 vm = ver_pat.search(text, nm.end())
+if vm is None:
+    sys.exit(f"no 'version' key found after '{plugin}' entry in marketplace.json")
 text = text[:vm.start()] + f'"version": "{ver}"' + text[vm.end():]
 
 open(path, "w").write(text)
