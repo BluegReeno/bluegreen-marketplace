@@ -9,12 +9,6 @@
       "name": "hal",
       "description": "HAL — second brain and mission workflow for BlueGreen and IC Ingénieurs Conseils.",
       "source": "./plugins/hal",
-      "skills": [
-        "./plugins/hal/skills/edifice",
-        "./plugins/hal/skills/pm",
-        "./plugins/hal/skills/crm",
-        "./plugins/hal/skills/linkedin"
-      ],
       "version": "0.10.1",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
