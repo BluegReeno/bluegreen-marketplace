@@ -16,6 +16,8 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.10.2] — 2026-07-23 — pre-flight recovery now points at /mcp → plugin:hal:hal-mcp → authenticate
+
 ## [0.10.1] — 2026-07-05 — Edifice phase 3: crop_region & annotations pass-through
 
 ### Added
