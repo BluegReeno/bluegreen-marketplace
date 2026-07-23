@@ -79,8 +79,9 @@ Requis pour `list`, `pull`, et `push`. Pas nécessaire pour `improve` et `report
 3. **Échec** (outil indisponible / connexion refusée / timeout) :
 
 > ❌ **hal-mcp non connecté.**
-> Reconnexion : **Claude Desktop → Paramètres → Connexions → hal-mcp → Activer**
-> ⚠️ Ne pas lancer de commandes terminal — interface graphique uniquement.
+> Le serveur est fourni par le plugin `hal` (`plugin:hal:hal-mcp`).
+> Reconnexion : `/mcp` → `plugin:hal:hal-mcp` → `authenticate`.
+> Relancer la commande après reconnexion.
 
 ---
 
