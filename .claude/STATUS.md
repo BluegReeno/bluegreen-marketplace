@@ -1,10 +1,17 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-06-30
+Last updated: 2026-07-23
 
 ## Current Focus
 
-Issue triage — `update_interaction` (#27 dual-PR hal+skill), puis Gemini Enterprise (#13 manuel) et projet↔opportunité (#21 migration).
+Le plugin `hal` est désormais le **seul** propriétaire de la déclaration du serveur `hal-mcp` (`plugins/hal/.mcp.json`) — le serveur user manuel, le connecteur claude.ai et le doublon dans `renaud-marketplace/plugins/briefing` ont tous été supprimés. Reste #39 : déclarer les outils MCP dans les `allowed-tools` des 4 skills. Puis issue triage — `update_interaction` (#27 dual-PR hal+skill), Gemini Enterprise (#13 manuel) et projet↔opportunité (#21 migration).
+
+## Done (2026-07-23)
+
+- [x] **Pre-flight recovery corrigé** — hal v0.10.2 — 2026-07-23
+  - Les 4 skills (`crm`, `pm`, `edifice`, `linkedin`) renvoyaient vers « Claude Desktop → Paramètres → Connexions → hal-mcp → Activer » sur échec du `whoami`. Ce chemin n'existe plus : le connecteur claude.ai et le serveur user manuel ont été supprimés au profit du `.mcp.json` du plugin.
+  - Remplacé par `/mcp` → `plugin:hal:hal-mcp` → `authenticate`. La ligne « interface graphique uniquement, pas de commandes terminal » (spécifique à Claude Desktop, fausse dans Claude Code) est retirée.
+  - **Issue #39 ouverte** : aucune des 4 skills ne déclare d'outil MCP dans son `allowed-tools`, donc aucun appel n'est pré-approuvé → une demande de permission par appel.
 
 ## In Progress
 
