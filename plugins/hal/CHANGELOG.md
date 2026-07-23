@@ -16,6 +16,28 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.10.3] — 2026-07-23 — declare hal-mcp tools in allowed-tools for all 4 skills
+
+Each of `crm`, `pm`, `edifice`, `linkedin` calls `hal-mcp` MCP tools from prose in the
+skill body without ever declaring them in `allowed-tools`, so every MCP call
+triggered a permission prompt instead of being pre-approved for the invoking turn.
+
+### Fixed
+- **`crm`** — added `whoami`, `list_projects`, `create_project`, `update_project`,
+  `list_stages`, `update_project_stage`, `list_companies`, `create_company`,
+  `list_contacts`, `create_contact`, `update_contact`, `log_interaction`,
+  `save_document` to `allowed-tools` as `mcp__plugin_hal_hal-mcp__<tool>`.
+- **`pm`** — added `whoami`, `list_projects`, `list_tasks`, `list_sprints`,
+  `create_project`, `create_task`, `update_task`, `update_task_status`,
+  `assign_task_to_sprint`, `create_sprint`, `update_sprint`, `log_interaction`,
+  `save_document`.
+- **`edifice`** — added `list_edifice_missions`, `get_mission_with_assets`,
+  `push_mission_context`.
+- **`linkedin`** — added `whoami`, `create_task`, `list_tasks`,
+  `update_task_status`, `save_document`, `log_interaction` (the Bright Data
+  tools used by `/linkedin trend` belong to a separate MCP server and are out
+  of scope here).
+
 ## [0.10.2] — 2026-07-23 — pre-flight recovery now points at /mcp → plugin:hal:hal-mcp → authenticate
 
 ## [0.10.1] — 2026-07-05 — Edifice phase 3: crop_region & annotations pass-through

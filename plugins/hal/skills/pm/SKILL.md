@@ -8,7 +8,7 @@ description: >
   note sur le projet", "attacher un doc", "c'est fait", "done", "next".
   NE PAS déclencher pour : opportunités commerciales, contacts, propales, devis
   (→ /crm).
-allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
+allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__save_document"
 ---
 
 # PM — Gestion de projet interne via hal-mcp (Claude Code)
