@@ -5,7 +5,7 @@ description: >
   *.edifice.md file, or asks to "pull an Edifice mission", "generate an
   Edifice report", "create a diagnostic report", "generate a devis", or
   "run edifice".
-allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
+allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__list_edifice_missions mcp__plugin_hal_hal-mcp__get_mission_with_assets mcp__plugin_hal_hal-mcp__push_mission_context"
 ---
 
 # Edifice — Mission Workflow (Claude Code)

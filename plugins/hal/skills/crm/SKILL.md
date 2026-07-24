@@ -7,7 +7,7 @@ description: >
   opportunité", "qualifier le lead", "logger un CR commercial", "pipeline
   commercial", "attacher une propale".
   NE PAS déclencher pour : projets internes, tâches, sprints (→ /pm).
-allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
+allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__update_project mcp__plugin_hal_hal-mcp__list_stages mcp__plugin_hal_hal-mcp__update_project_stage mcp__plugin_hal_hal-mcp__list_companies mcp__plugin_hal_hal-mcp__create_company mcp__plugin_hal_hal-mcp__list_contacts mcp__plugin_hal_hal-mcp__create_contact mcp__plugin_hal_hal-mcp__update_contact mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__save_document"
 ---
 
 # CRM — Pipeline commercial Blue Green via hal-mcp (Claude Code)
