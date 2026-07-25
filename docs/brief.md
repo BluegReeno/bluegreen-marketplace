@@ -291,7 +291,7 @@ Append-only. One entry per release. Format:
 - Multiple DOCX template versions in marketplace
 - Plugin test suite in marketplace (tests stay in `edifice`)
 - `edifice/.claude-plugin/marketplace.json` coexistence — remove it, not keep both
-- **GitHub Actions CI sync** — deliberate choice: solo dev, low release frequency (~1-2/month). Manual sync (`rsync` + version bump + commit) is sufficient. CI adds infrastructure overhead (PAT tokens, secrets, YAML) with minimal gain. Revisit if release cadence increases significantly.
+- ~~**GitHub Actions CI sync**~~ — **superseded**: CI now runs `scripts/check_version_sync.sh` on every PR/push (`.github/workflows/ci.yml`), and releases go through `scripts/release.sh` (validated version bump + CHANGELOG entry, human pushes). See `CLAUDE.md` → "Release Process" for the current model.
 
 ---
 
