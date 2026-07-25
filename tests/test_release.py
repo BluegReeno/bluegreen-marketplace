@@ -3,7 +3,7 @@ Tests for scripts/release.sh — the one-command version-bump release tool.
 Drives the real script via subprocess against a throwaway git-repo fixture so
 the actual repo is never mutated. Covers: arg validation, the strictly-greater
 guard, dirty-tree refusal, the happy-path multi-file bump + commit, duplicate
-rejection, and --mcp-version.
+rejection, --mcp-version, and marketplace.json key-ordering regressions.
 """
 import json
 import pathlib
@@ -23,7 +23,8 @@ def _git(cwd, *args):
 
 class ReleaseFixture:
     """A minimal committed git repo with the release + sync scripts and a hal plugin."""
-    def __init__(self, tmp: pathlib.Path, plugin_ver="0.10.1", top_ver="0.10.1"):
+    def __init__(self, tmp: pathlib.Path, plugin_ver="0.10.1", top_ver="0.10.1",
+                 marketplace_json_text=None):
         self.root = tmp
         (tmp / "scripts").mkdir()
         (tmp / "plugins/hal/.claude-plugin").mkdir(parents=True)
@@ -35,9 +36,11 @@ class ReleaseFixture:
         (tmp / "plugins/hal/.claude-plugin/plugin.json").write_text(
             json.dumps({"name": "hal", "version": plugin_ver,
                         "author": {"name": "BG"}}, indent=2) + "\n")
-        (tmp / ".claude-plugin/marketplace.json").write_text(
-            json.dumps({"version": top_ver,
-                        "plugins": [{"name": "hal", "version": plugin_ver}]}, indent=2) + "\n")
+        if marketplace_json_text is None:
+            marketplace_json_text = json.dumps(
+                {"version": top_ver,
+                 "plugins": [{"name": "hal", "version": plugin_ver}]}, indent=2) + "\n"
+        (tmp / ".claude-plugin/marketplace.json").write_text(marketplace_json_text)
         (tmp / "plugins/hal/CHANGELOG.md").write_text(
             "# Changelog\n\n---\n\n## [0.10.1] — 2026-06-01 — baseline\n")
         (tmp / "plugins/hal/.mcp.json").write_text(
@@ -160,6 +163,68 @@ class TestReleaseDuplicateAndMcp(unittest.TestCase):
         r = fx.run("hal", "0.10.2", "with mcp", "--mcp-version", "9.9.9")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(fx.read_json("plugins/hal/.mcp.json")["version"], "9.9.9")
+
+
+class TestReleaseKeyOrdering(unittest.TestCase):
+    """Regression coverage for #36 — marketplace.json key order must not corrupt the bump.
+
+    release.sh locates the top-level and plugin-entry "version" keys with a
+    position-based regex search (to keep formatting byte-identical). Before this
+    fix that search assumed "plugins" always comes after the top-level "version"
+    key and that "name" always precedes "version" inside an entry. Reordering
+    either one made the top-level counter search land on the entry's version
+    instead — a swap that was NOT caught by the None guards from the M3 quick-win
+    (both regexes still matched *something*, just the wrong key) and produced a
+    silently wrong marketplace.json on a successful (exit 0) run.
+    """
+
+    def _fx(self, marketplace_json_text, plugin_ver="0.10.1"):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        return ReleaseFixture(pathlib.Path(self.tmp.name), plugin_ver=plugin_ver,
+                               marketplace_json_text=marketplace_json_text)
+
+    def test_plugins_array_before_top_level_version_bumps_correct_fields(self):
+        # "plugins" written before the top-level "version" key.
+        fx = self._fx(json.dumps({
+            "plugins": [{"name": "hal", "version": "0.10.1"}],
+            "version": "0.10.5",
+        }, indent=2) + "\n")
+        r = fx.run("hal", "0.10.2", "reordered top-level key")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        mkt = fx.read_json(".claude-plugin/marketplace.json")
+        self.assertEqual(mkt["plugins"][0]["version"], "0.10.2",
+                          "plugin entry must get the new plugin version, not the top-level bump")
+        self.assertEqual(mkt["version"], "0.10.6",
+                          "top-level counter must still get its independent +1 patch bump")
+
+    def test_entry_version_before_name_fails_cleanly_not_traceback(self):
+        # Inside the plugin entry, "version" written before "name"/"id".
+        fx = self._fx(json.dumps({
+            "plugins": [{"version": "0.10.1", "name": "hal"}],
+            "version": "0.10.5",
+        }, indent=2) + "\n")
+        r = fx.run("hal", "0.10.2", "reordered entry keys")
+        self.assertEqual(r.returncode, 1)
+        self.assertNotIn("Traceback", r.stderr)
+        self.assertIn("version", r.stderr.lower())
+        # A clean failure must not silently rewrite marketplace.json.
+        mkt = fx.read_json(".claude-plugin/marketplace.json")
+        self.assertEqual(mkt["version"], "0.10.5")
+        self.assertEqual(mkt["plugins"][0]["version"], "0.10.1")
+
+    def test_both_reorderings_together_still_bump_correct_fields(self):
+        # "plugins" before top-level "version", AND "id" before "version" inside
+        # the entry (id used instead of name) — the two guards compose.
+        fx = self._fx(json.dumps({
+            "plugins": [{"id": "hal", "name": "hal", "version": "0.10.1"}],
+            "version": "0.10.5",
+        }, indent=2) + "\n")
+        r = fx.run("hal", "0.10.2", "reordered + id-based lookup")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        mkt = fx.read_json(".claude-plugin/marketplace.json")
+        self.assertEqual(mkt["plugins"][0]["version"], "0.10.2")
+        self.assertEqual(mkt["version"], "0.10.6")
 
 
 if __name__ == "__main__":

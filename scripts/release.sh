@@ -156,21 +156,47 @@ new_top = f"{major}.{minor}.{patch + 1}"
 
 ver_pat = re.compile(r'"version"\s*:\s*"[^"]*"')
 
-# Top-level version is the first "version" key (precedes the plugins array).
-vm = ver_pat.search(text)
-if vm is None:
-    sys.exit("no top-level 'version' key found in marketplace.json")
-text = text[:vm.start()] + f'"version": "{new_top}"' + text[vm.end():]
+# Locate the plugins array span by bracket-counting, so the top-level "version"
+# key can be told apart from a plugin entry's "version" key regardless of
+# whether "plugins" is written before or after the top-level "version" key.
+plugins_key = re.search(r'"plugins"\s*:\s*\[', text)
+if plugins_key is None:
+    sys.exit("no 'plugins' array found in marketplace.json")
+depth, array_start, array_end = 0, plugins_key.end() - 1, None
+for i in range(array_start, len(text)):
+    if text[i] == '[':
+        depth += 1
+    elif text[i] == ']':
+        depth -= 1
+        if depth == 0:
+            array_end = i
+            break
+if array_end is None:
+    sys.exit("unterminated 'plugins' array in marketplace.json")
 
-# Plugin entry version: the first "version" key after this plugin's name/id.
+# Top-level version: the first "version" key OUTSIDE the plugins array.
+top_m = next((m for m in ver_pat.finditer(text)
+              if m.start() < array_start or m.start() > array_end), None)
+if top_m is None:
+    sys.exit("no top-level 'version' key found in marketplace.json")
+
+# Plugin entry version: the first "version" key after this plugin's name/id,
+# constrained to stay inside the plugins array (never bleeds into another
+# entry or mistakes an entry's version for the top-level one).
 name_pat = re.compile(r'"(?:name|id)"\s*:\s*"%s"' % re.escape(plugin), re.IGNORECASE)
-nm = name_pat.search(text)
+nm = name_pat.search(text, array_start, array_end)
 if nm is None:
     sys.exit(f"could not locate '{plugin}' name/id in marketplace.json text")
-vm = ver_pat.search(text, nm.end())
-if vm is None:
+entry_m = ver_pat.search(text, nm.end(), array_end)
+if entry_m is None:
     sys.exit(f"no 'version' key found after '{plugin}' entry in marketplace.json")
-text = text[:vm.start()] + f'"version": "{ver}"' + text[vm.end():]
+
+# Apply both edits back-to-front so neither offset invalidates the other.
+edits = sorted([(top_m.start(), top_m.end(), f'"version": "{new_top}"'),
+                (entry_m.start(), entry_m.end(), f'"version": "{ver}"')],
+               key=lambda e: e[0], reverse=True)
+for start, end, replacement in edits:
+    text = text[:start] + replacement + text[end:]
 
 open(path, "w").write(text)
 PY
