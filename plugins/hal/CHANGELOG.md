@@ -16,6 +16,22 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.10.4] — 2026-07-24 — document known `push_mission_context` project_id bug
+
+`/edifice push` fails deterministically with `null value in column "project_id" of
+relation "edifice_notes" violates not-null constraint` — the `hal-mcp`
+`push_mission_context` tool upserts instead of updating existing rows by
+`note_id`, dropping `project_id`. The fix belongs in the private `hal-mcp` repo
+(replace upsert with a targeted UPDATE by `note_id`, preserving `project_id`);
+this release only documents the known error in the skill so users aren't misled
+into thinking their `observations` payload is malformed.
+
+### Fixed
+- **`edifice`** — added a "Known issue" note under `/edifice push` explaining the
+  `project_id` not-null error is a backend bug, not a payload problem, and that
+  it should be reported rather than retried with different `note_id`/`type`
+  values (closes #31).
+
 ## [0.10.3] — 2026-07-23 — declare hal-mcp tools in allowed-tools for all 4 skills
 
 Each of `crm`, `pm`, `edifice`, `linkedin` calls `hal-mcp` MCP tools from prose in the

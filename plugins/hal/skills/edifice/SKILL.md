@@ -461,3 +461,12 @@ missions (`"1" | "2"` → `poor`, `"3"` → `medium`, `"4" | "-"` → `good`).
 **3. Confirm to user**
 Report `{ updated, skipped, errors }` from the MCP response.
 
+**Known issue — `null value in column "project_id"`**
+If `errors` contains `null value in column "project_id" of relation "edifice_notes"
+violates not-null constraint`, this is a **backend bug** in `push_mission_context`
+(hal-mcp), not a problem with the `observations` payload — do not retry with a
+different `note_id` or `type`. `push_mission_context` must UPDATE existing
+`edifice_notes` rows by `note_id` (preserving their `project_id`), never INSERT.
+Report the error to the user and point them to the `hal-mcp` repo for a fix; this
+skill's contract (partial updates keyed by `note_id`) is unaffected.
+
