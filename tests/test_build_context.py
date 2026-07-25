@@ -3,6 +3,7 @@ Tests for build_context.py — IGN 2D map functions.
 Covers: build_building_context, _download_building_2d_map.
 Closes #5.
 """
+import json
 import pathlib
 import sys
 import tempfile
@@ -165,6 +166,42 @@ class TestCountLocalWorkspaceData(unittest.TestCase):
         crop_count, ann_count = build_context._count_local_workspace_data(photos)
         self.assertEqual(crop_count, 1)
         self.assertEqual(ann_count, 1)
+
+
+class TestPullDoesNotClobberExistingContext(unittest.TestCase):
+    """Closes #45 — /edifice pull must not silently destroy unpushed context.json edits."""
+
+    MCP_RESPONSE = {"project": {"type": "diagnostic"}, "building": None, "notes": [], "photos": []}
+
+    def _run_main(self, tmp: str):
+        mcp_response_path = pathlib.Path(tmp) / "mcp_response.json"
+        mcp_response_path.write_text(json.dumps(self.MCP_RESPONSE), encoding="utf-8")
+        output_dir = pathlib.Path(tmp) / "mission"
+        with patch.object(sys, "argv", ["build_context.py", str(mcp_response_path), str(output_dir)]):
+            build_context.main()
+        return output_dir
+
+    def test_first_pull_no_existing_context_writes_directly(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = self._run_main(tmp)
+            context_path = output_dir / "context.json"
+            self.assertTrue(context_path.exists())
+            self.assertEqual(list(output_dir.glob("context.json.bak-*")), [])
+
+    def test_second_pull_backs_up_existing_context_instead_of_overwriting(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = self._run_main(tmp)
+            context_path = output_dir / "context.json"
+            context_path.write_text('{"observations": [{"edited_by_technician": true}]}', encoding="utf-8")
+
+            self._run_main(tmp)
+
+            backups = list(output_dir.glob("context.json.bak-*"))
+            self.assertEqual(len(backups), 1)
+            self.assertIn("edited_by_technician", backups[0].read_text(encoding="utf-8"))
+            # the fresh context.json is written normally, unaffected by the backup
+            self.assertTrue(context_path.exists())
+            self.assertNotIn("edited_by_technician", context_path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

@@ -346,12 +346,20 @@ def main() -> None:
     if building_ctx is not None:
         context["building"] = building_ctx
     context_path = output_dir / "context.json"
+    backup_path = None
+    if context_path.exists():
+        stamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+        backup_path = output_dir / f"context.json.bak-{stamp}"
+        context_path.rename(backup_path)
     context_path.write_text(json.dumps(context, indent=2, ensure_ascii=False), encoding="utf-8")
 
     ok, skipped = download_photos(photos, photos_dir)
 
     # Summary
-    print(f"\n✅  context.json → {context_path}")
+    print()
+    if backup_path is not None:
+        print(f"⚠️  Existing context.json preserved → {backup_path}")
+    print(f"✅  context.json → {context_path}")
     print(f"   Type : {project_type}")
     print(f"   {len(observations)} observation(s) structurée(s) | {len(free_notes)} note(s) libre(s) | {len(photos)} photo(s) ({ok} téléchargées, {skipped} skippées)")
     crop_count, ann_count = _count_local_workspace_data(photos)
