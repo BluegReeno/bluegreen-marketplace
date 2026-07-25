@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — field work, building inspections, CRM",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
@@ -9,7 +9,7 @@
       "name": "hal",
       "description": "HAL — second brain and mission workflow for BlueGreen and IC Ingénieurs Conseils.",
       "source": "./plugins/hal",
-      "version": "0.10.4",
+      "version": "0.10.5",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"

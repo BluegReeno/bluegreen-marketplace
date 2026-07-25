@@ -16,6 +16,20 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.10.5] — 2026-07-25 — fix `/edifice pull` clobbering unpushed `context.json` edits
+
+`build_context.py` rewrote `mission/context.json` unconditionally on every
+`/edifice pull`, with no check for an existing file. Any edits made via
+`/edifice improve` that had not yet been pushed to the server (e.g. after a
+partial `/edifice push` failure) were silently destroyed — the script still
+printed its usual success summary.
+
+### Fixed
+- **`edifice`** — `build_context.py` now renames an existing `context.json` to
+  `context.json.bak-<timestamp>` before writing the new one, and prints a
+  warning with the backup path. A first pull (no existing `context.json`)
+  behaves exactly as before.
+
 ## [0.10.4] — 2026-07-24 — document known `push_mission_context` project_id bug
 
 `/edifice push` fails deterministically with `null value in column "project_id" of

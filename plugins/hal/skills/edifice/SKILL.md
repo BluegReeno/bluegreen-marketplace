@@ -170,6 +170,12 @@ The script builds `mission/context.json` with all fields pre-filled for the
 mission's `project_type`, maps notes → observations, and downloads all photos
 from their signed URLs. It prints the summary.
 
+**Existing `context.json` is never silently overwritten.** If `mission/context.json`
+already exists (e.g. from a previous `/edifice improve` session not yet pushed),
+the script renames it to `mission/context.json.bak-<timestamp>` before writing the
+new one, and prints `⚠️  Existing context.json preserved → …`. If you see that
+warning, check the backup file for unpushed edits before discarding it.
+
 Each entry in `photos[]` is a verbatim pass-through from the MCP response and
 may carry `crop_region` and `annotations` when the technician has previously
 used edifice's local-workspace desktop tool (a separate offline app, not part of
