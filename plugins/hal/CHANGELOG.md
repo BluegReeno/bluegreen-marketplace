@@ -16,6 +16,8 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.10.6] — 2026-07-27 — escape XML (&, <, >) in docx renderer contexts (fixes broken render on ampersand in free text)
+
 ## [0.10.5] — 2026-07-25 — fix `/edifice pull` clobbering unpushed `context.json` edits
 
 `build_context.py` rewrote `mission/context.json` unconditionally on every

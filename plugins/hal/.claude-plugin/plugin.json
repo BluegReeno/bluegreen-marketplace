@@ -1,6 +1,6 @@
 {
   "name": "hal",
-  "version": "0.10.5",
+  "version": "0.10.6",
   "description": "HAL — second brain and mission workflow for BlueGreen and IC Ingénieurs Conseils.",
   "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" }
 }
