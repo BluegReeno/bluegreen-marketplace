@@ -20,17 +20,6 @@ jobs:
           python-version: '3.12'
       - name: Version sync + CHANGELOG check
         run: bash scripts/check_version_sync.sh
-      - name: Tests
-        run: |
-          # Capture output so we can fail closed when discovery collects zero tests:
-          # `unittest discover` exits 0 on "Ran 0 tests", which would let a broken
-          # test wiring pass CI silently.
-          output="$(python3 -m unittest discover -s tests -v 2>&1)"
-          echo "$output"
-          if grep -qE '^Ran 0 tests' <<<"$output"; then
-            echo "FAIL: zero tests collected — test discovery is broken."
-            exit 1
-          fi
       - name: Detect ui/ changes
         uses: dorny/paths-filter@v4
         id: ui-changes
@@ -53,3 +42,17 @@ jobs:
       - name: Artifact sync check
         if: steps.ui-changes.outputs.ui == 'true'
         run: bash scripts/check_artifact_sync.sh
+      - name: Tests
+        run: |
+          # Capture output so we can fail closed when discovery collects zero tests:
+          # `unittest discover` exits 0 on "Ran 0 tests", which would let a broken
+          # test wiring pass CI silently.
+          # Runs after the (ui-changes-gated) Artifact sync check above so that
+          # tests/test_build_artifact.py's node subprocess has ui/node_modules
+          # available whenever ui/** changed; it skips itself otherwise.
+          output="$(python3 -m unittest discover -s tests -v 2>&1)"
+          echo "$output"
+          if grep -qE '^Ran 0 tests' <<<"$output"; then
+            echo "FAIL: zero tests collected — test discovery is broken."
+            exit 1
+          fi

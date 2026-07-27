@@ -29,6 +29,10 @@ DEFAULT_DIST_HTML = (
 )
 
 
+def _node_toolchain_ready():
+    return shutil.which("node") is not None and (UI_DIR / "node_modules" / "cheerio").exists()
+
+
 class BuildArtifactFixture:
     def __init__(self, dist_html=DEFAULT_DIST_HTML):
         self.name = f"_test_fixture_{int(time.time() * 1000)}"
@@ -50,6 +54,11 @@ class BuildArtifactFixture:
         self.artifact_file.unlink(missing_ok=True)
 
 
+@unittest.skipUnless(
+    _node_toolchain_ready(),
+    "ui/ Node toolchain not installed (run `pnpm install` in ui/ first) — "
+    "CI only installs it for ui/**-touching PRs",
+)
 class TestBuildArtifact(unittest.TestCase):
     def _fx(self, dist_html=DEFAULT_DIST_HTML):
         fx = BuildArtifactFixture(dist_html)
