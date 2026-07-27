@@ -193,6 +193,35 @@ See `docs/brief.md` → "Plugin skill constraints" for full rationale and decisi
 
 ---
 
+## Artifact front-ends
+
+Rich (React/Tailwind) artifacts are **developed here**, in `ui/`, and **distributed** as a single
+committed HTML file under `plugins/hal/artifacts/`. This repo is both a build environment and a
+distribution channel — the two must not contaminate each other.
+
+- **`ui/` is source, never read at runtime.** It is a pnpm workspace at the repo root (sibling to,
+  **not** inside, `plugins/hal/`), one directory per artifact (`ui/<name>/`), pinned to the same
+  toolchain as `edifice/local-workspace`. Its `node_modules/` and `dist/` are gitignored and never
+  cloned, so the Node toolchain costs plugin installers nothing.
+- **`plugins/hal/artifacts/<name>.html` is the only artifact-facing output** — a single self-contained
+  file (JS/CSS/assets inlined, zero external requests per the artifact CSP), committed, built via
+  `pnpm --filter <name> build` from within `ui/`. That command runs `vite build` then
+  `ui/scripts/build-artifact.mjs`, which stamps provenance, applies the `ARTIFACT_TARGET` shape
+  (`cowork` default / `fragment`), enforces the 16 MiB ceiling, and writes the committed file.
+- **`scripts/check_artifact_sync.sh` makes "committed output matches source" a machine-checked
+  invariant**, not a discipline: it rebuilds every `ui/<name>/` and fails if the committed HTML drifts
+  (ignoring only the non-reproducible build-stamp line). CI runs it **only** when `ui/**` or
+  `plugins/hal/artifacts/**` changed, so Python-only PRs stay fast.
+- **A hydrated artifact is never written back into the plugin.** When a future skill (`#50`) reads a
+  bundled artifact and injects per-session values, the result goes to a **working directory** — never
+  back into `plugins/hal/artifacts/` or anywhere under the plugin root, which is read-only input.
+- This is **dev-time / CI-time tooling only.** It never runs inside a live Cowork/Claude Code session,
+  so it does not conflict with the "no `pip install` / `uv` only" runtime-skill-script rule above.
+
+See `docs/artifact-front-ends.md` for how a skill consumes a bundled artifact.
+
+---
+
 ## Common Gotchas
 
 - `marketplace.json` **plugin entry** (`plugins[name].version`) must match `plugin.json` version — always in sync (enforced by `scripts/check_version_sync.sh`). The **top-level** `version` is a separate monotonic counter, incremented by one PATCH on every release.

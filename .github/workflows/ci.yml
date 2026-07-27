@@ -29,3 +29,24 @@ jobs:
             echo "FAIL: zero tests collected — test discovery is broken."
             exit 1
           fi
+      - name: Detect ui/ changes
+        uses: dorny/paths-filter@v4
+        id: ui-changes
+        with:
+          base: ${{ github.event.pull_request.base.sha || github.event.before }}
+          filters: |
+            ui:
+              - 'ui/**'
+              - 'plugins/hal/artifacts/**'
+      - name: Enable corepack (pnpm via packageManager field)
+        if: steps.ui-changes.outputs.ui == 'true'
+        run: corepack enable
+      - uses: actions/setup-node@v7
+        if: steps.ui-changes.outputs.ui == 'true'
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
+      - name: Artifact sync check
+        if: steps.ui-changes.outputs.ui == 'true'
+        run: bash scripts/check_artifact_sync.sh
