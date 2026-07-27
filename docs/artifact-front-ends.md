@@ -49,9 +49,10 @@ pnpm --filter <name> build
 `ui/scripts/build-artifact.mjs <name>`, which:
 
 1. **Size guard** — hard-fails past 16 MiB (the Cowork/Claude Code rendered ceiling), warns past 2 MiB.
-2. **Provenance stamp** — prepends an HTML comment carrying build date, source commit, and the
-   `@bluegreeno/annotation-core` version (or `n/a`). This answers "which code produced this committed
-   HTML?", otherwise unanswerable without regenerating it. The stamp line is intentionally
+2. **Provenance stamp** — inserts an HTML comment inside `<head>` carrying build date, source commit,
+   and the `@bluegreeno/annotation-core` version (or `n/a`). This answers "which code produced this
+   committed HTML?", otherwise unanswerable without regenerating it. Living inside `<head>` (rather
+   than before `<html>`) means it survives both target shapes below. The stamp line is intentionally
    non-reproducible (its date changes every run), so `scripts/check_artifact_sync.sh` strips it before
    diffing.
 3. **Target shape** (`ARTIFACT_TARGET`, see below).
@@ -65,12 +66,13 @@ The two artifact runtimes want incompatible document shapes; they are **not** in
 
 | `ARTIFACT_TARGET` | Runtime | Output |
 |-------------------|---------|--------|
-| `cowork` (default) | Cowork live artifact | Full document — `<!doctype html>`, stamp, then `<html>/<head>/<body>`. |
+| `cowork` (default) | Cowork live artifact | Full document — `<!doctype html>`, then `<html>/<head>` (stamp inside)`/<body>`. |
 | `fragment` | Claude Code / claude.ai | **Fragment only** — the `Artifact` tool wraps the file in its own `<!doctype html>…<body>` shell, so emitting wrapper tags is a bug. |
 
 `vite-plugin-singlefile` inlines the `<script>`/`<style>` into `<head>`, so the fragment extraction
 concatenates `head` **and** `body` (dropping only the wrapper tags) — a body-only extraction would
-silently drop the entire bundle.
+silently drop the entire bundle. Because the stamp lives inside `<head>`, it survives this
+extraction too, so both targets carry the same provenance guarantee.
 
 **v1 ships the `cowork` target only** (per `#50`). The `fragment` path is implemented and verified but
 nothing consumes it yet.

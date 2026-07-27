@@ -72,12 +72,16 @@ try {
   if (deps["@bluegreeno/annotation-core"]) {
     annotationCore = deps["@bluegreeno/annotation-core"];
   }
-} catch {
-  // no package.json / no dependency — leave "n/a"
+} catch (e) {
+  console.warn(
+    `WARN: [${name}] could not read annotation-core version from package.json: ${e.message}`,
+  );
 }
 
+// Inserted inside <head> (not before <!doctype html>) so the stamp survives
+// the fragment extraction below — both targets share one invariant.
 const stamp = `<!-- build: date=${buildDate} commit=${commit} annotation-core=${annotationCore} -->`;
-html = html.replace(/(<!doctype html>)/i, `$1\n${stamp}`);
+html = html.replace(/(<head>)/i, `$1\n${stamp}`);
 
 // 4. Target-flag branch.
 const target = process.env.ARTIFACT_TARGET || "cowork";
@@ -87,7 +91,15 @@ if (target === "fragment") {
   // body-only extraction would silently drop the entire bundle. Concatenate
   // head + body to keep both while dropping the wrapper tags.
   const $ = cheerio.load(html);
-  output = ($("head").html() || "") + ($("body").html() || "");
+  const head = $("head").html();
+  const body = $("body").html();
+  if (!head || !body) {
+    console.error(
+      `ERROR: [${name}] fragment extraction found no <head>/<body> content — refusing to write an empty/partial artifact`,
+    );
+    process.exit(1);
+  }
+  output = head + body;
 } else if (target === "cowork") {
   output = html;
 } else {

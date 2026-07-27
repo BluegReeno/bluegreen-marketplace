@@ -63,12 +63,16 @@ bluegreen-marketplace/
 │       │   └── linkedin.md       # /linkedin slash command (routes to linkedin skill)
 │       ├── templates/            # *.docx report templates
 │       ├── organizations/        # client config
+│       ├── artifacts/            # committed artifact-front-end HTML — see § Artifact front-ends
 │       ├── requirements.txt
 │       └── CHANGELOG.md
+├── ui/                            # artifact front-end build workspace — see § Artifact front-ends
+├── scripts/                       # check_version_sync.sh, check_artifact_sync.sh, release.sh
 ├── docs/
 │   ├── brief.md                  # sprint brief and architectural decisions
 │   ├── INSTALL.md                # one-liner install instructions
-│   └── skills-mcp-guide.md       # skill vs command architecture, MCP check, cross-platform
+│   ├── skills-mcp-guide.md       # skill vs command architecture, MCP check, cross-platform
+│   └── artifact-front-ends.md    # how a skill consumes a bundled artifact
 └── README.md                     # public-facing install guide
 ```
 

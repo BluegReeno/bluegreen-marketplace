@@ -40,7 +40,15 @@ for app_dir in "$REPO_ROOT"/ui/*/; do
   # snapshot (rather than `git show HEAD`) also catches an uncommitted hand-edit
   # of the committed HTML, which the acceptance criteria require.
   before_file="$(mktemp)"
-  grep -v '^<!-- build:' "$committed" > "$before_file" || true
+  trap 'rm -f "$before_file"' EXIT
+
+  grep -v '^<!-- build:' "$committed" > "$before_file" && grep_status=0 || grep_status=$?
+  if [ "$grep_status" -gt 1 ]; then
+    echo "ERROR    [$name] failed to read committed artifact $committed (grep exit $grep_status)"
+    ERRORS=$((ERRORS + 1))
+    rm -f "$before_file"
+    continue
+  fi
 
   ( cd "$REPO_ROOT/ui" && pnpm --filter "$name" build ) >/dev/null
 
