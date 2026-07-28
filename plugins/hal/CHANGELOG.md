@@ -16,6 +16,33 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.11.5] — 2026-07-28 — edifice-front: meta block in the document preamble, where Cowork reads the mcp_tools allowlist
+
+Cowork reads `cowork-artifact-meta` **at publish time** to build the artifact's `mcp_tools`
+allowlist, and reads it only from the preamble — between `<!doctype html>` and `<html>`,
+where the working reference carries it. Ours sat inside `<head>`, so it was never read: the
+published artifact got an empty allowlist and a `name` invented from the filename
+(`Edifice Front`, not the block's `edifice-front`). On 0.11.4, with ids correctly resolved
+and hydrated, the call was rejected with `Tool "mcp__7898d523-…__list_edifice_missions" is
+not in this artifact's mcp_tools allowlist`.
+
+That error also settles what 0.11.4 could not: the allowlist is **not** derived by scanning
+the bundle. Literal ids stay necessary — nothing resolves without them — but they are not
+what grants access.
+
+### Fixed
+- **`edifice`** — `ui/scripts/build-artifact.mjs` hoists the meta block into the preamble for
+  the `cowork` target. The rule lives in the shared build step, not in each app's
+  `index.html`: Vite copies `<head>` through and has no say in the preamble, so every current
+  and future artifact gets it without having to remember. Fragment targets keep the block in
+  place — a fragment has no doctype to anchor a preamble.
+
+### Added
+- Three tests in `tests/test_build_artifact.py` covering the hoist, the no-meta-block case,
+  and the fragment case.
+- `docs/artifact-front-ends.md` — « Reaching MCP tools from a Cowork artifact »: the two rules
+  (preamble placement, literal ids) that make connector access work.
+
 ## [0.11.4] — 2026-07-28 — edifice-front: full tool ids as literals — Cowork regenerates the meta block
 
 **Cowork regenerates `cowork-artifact-meta` when it publishes an artifact**, deriving
