@@ -13,6 +13,8 @@ from pathlib import Path
 
 from docxtpl import DocxTemplate
 
+from xml_escape import escape_xml_values
+
 TEMPLATE_PATH = Path(__file__).parent.parent / "templates" / "ic-ingenieurs" / "devis.docx"
 
 MOIS_FR = [
@@ -68,7 +70,7 @@ def _build_context(context: dict) -> dict:
 def render_devis(context: dict, photos_dir: str = ".", output_path: str = "rapport_devis.docx") -> str:
     doc = DocxTemplate(str(TEMPLATE_PATH))
     tpl_ctx = _build_context(context)
-    doc.render(tpl_ctx)
+    doc.render(escape_xml_values(tpl_ctx))
     out = Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(out))

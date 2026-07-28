@@ -16,6 +16,21 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.11.1] — 2026-07-28 — escape XML (&, <, >) in docx renderer contexts
+
+An `&` in any free-text field broke the docx render: docxtpl interpolates values straight
+into the document's XML with no autoescaping, so `Dupont & Fils` produced an invalid file.
+Found on a real `/edifice pull → improve → report → push` run. All three renderers were
+affected, so a **devis** and a **CR de visite** failed the same way — not just the edifice
+report.
+
+### Fixed
+- **`edifice`**, **`crm`** — new shared `plugins/hal/scripts/xml_escape.py`, applied in
+  `render_diagnostic.py`, `render_devis.py` and `render_cr_visite.py` before `doc.render()`.
+  It escapes `str` leaves only and recurses through `dict`/`list`, passing every other type
+  through untouched — `InlineImage` photos and `None` values keep working, which is the
+  regression the tests guard against.
+
 ## [0.11.0] — 2026-07-28 — `/edifice front`: read-only Cowork live artifact for mission viewing
 
 New command: `/edifice front` generates a self-contained live-artifact HTML
