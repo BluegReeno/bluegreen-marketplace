@@ -39,8 +39,16 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
           cache-dependency-path: 'ui/pnpm-lock.yaml'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@bluegreeno'
       - name: Artifact sync check
         if: steps.ui-changes.outputs.ui == 'true'
+        env:
+          # Reads @bluegreeno/* from GitHub Packages (ui/edifice-front depends on
+          # @bluegreeno/annotation-core). The default GITHUB_TOKEN cannot read
+          # packages published from a different repo in the same org — this must
+          # be a classic PAT with read:packages, stored as a repo secret.
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_READ_TOKEN }}
         run: bash scripts/check_artifact_sync.sh
       - name: Tests
         run: |
