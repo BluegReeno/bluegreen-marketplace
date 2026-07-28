@@ -7,6 +7,7 @@
 
 export type ErrorCode =
   | "no_cowork"
+  | "bad_meta"
   | "needs_reauth"
   | "server_not_connected"
   | "server_unavailable"
@@ -24,6 +25,7 @@ export class McpToolError extends Error {
 type ToolShortName = "list_edifice_missions" | "get_mission_context" | "get_mission_photo";
 
 interface CoworkArtifactMeta {
+  name?: string;
   mcpTools: string[];
   mcpServerNames: string[];
 }
@@ -61,19 +63,40 @@ function readMeta(): CoworkArtifactMeta {
   if (cachedMeta) return cachedMeta;
   const el = document.getElementById("cowork-artifact-meta");
   if (!el || !el.textContent) {
-    throw new McpToolError("no_cowork", "Bloc meta cowork-artifact-meta introuvable.");
+    throw new McpToolError("bad_meta", "Bloc meta cowork-artifact-meta introuvable dans ce document.");
   }
-  cachedMeta = JSON.parse(el.textContent) as CoworkArtifactMeta;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(el.textContent);
+  } catch (err) {
+    throw new McpToolError("bad_meta", `Bloc meta illisible (JSON invalide) : ${String(err)}`);
+  }
+  cachedMeta = parsed as CoworkArtifactMeta;
   return cachedMeta;
 }
 
+/**
+ * Resolves a short tool name to the full `mcp__<uuid>__<tool>` id declared in the
+ * meta block. On failure the message reports which artifact is running and what
+ * the block actually declares — a mismatch here means the open artifact is a
+ * stale copy or was never hydrated, and only the real values tell them apart.
+ */
 function resolveToolName(shortName: ToolShortName): string {
   const meta = readMeta();
-  const full = meta.mcpTools.find((t) => t.endsWith(`__${shortName}`));
+  const declared = Array.isArray(meta.mcpTools) ? meta.mcpTools : [];
+  const full = declared.find((t) => t.endsWith(`__${shortName}`));
   if (!full) {
+    const artifact = meta.name ? `"${meta.name}"` : "(sans nom)";
+    const list = declared.length
+      ? declared.map((t) => `"${t}"`).join(", ")
+      : Array.isArray(meta.mcpTools)
+        ? "liste vide"
+        : "champ mcpTools absent ou non-tableau";
     throw new McpToolError(
-      "no_cowork",
-      `Outil MCP "${shortName}" absent du bloc meta — artefact non hydraté correctement.`,
+      "bad_meta",
+      `Outil "${shortName}" introuvable dans le bloc meta de l'artefact ${artifact}. ` +
+        `mcpTools déclare : ${list}. Un id complet ressemble à ` +
+        `"mcp__<uuid-connecteur>__${shortName}".`,
     );
   }
   return full;
