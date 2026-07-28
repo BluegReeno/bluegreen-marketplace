@@ -1,14 +1,25 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-07-27
+Last updated: 2026-07-28
 
 ## Current Focus
 
-Chantier **Edifice front as an artifact** (#50) découpé et lancé sur Archon. Ce repo devient aussi un environnement de développement d'interfaces (`ui/`), en plus de son rôle de canal de distribution — les deux ne doivent pas se contaminer (#51).
+Chantier **Edifice front as an artifact** (#50) livré en v1 : socle `ui/` (#51/PR #52), artefact lecture seule (#50/PR #53), puis correction de l'hydratation du connecteur trouvée au premier test réel en Cowork (#54/PR #55). La route `/edifice front` est désormais fonctionnelle end-to-end.
 
-Ordre d'exécution strictement séquentiel : [edifice#68](https://github.com/BluegReeno/edifice/issues/68) → #51 → [hal#82](https://github.com/BluegReeno/hal/issues/82) → #50. Seul #51 est parallélisable avec edifice#68.
+Prochaine étape sur ce chantier : phase 2 (écriture — `push_mission_context` depuis l'artefact, #49), pas encore lancée.
 
-En arrière-plan : #39 (`allowed-tools` MCP des 4 skills), puis triage — `update_interaction` (#27 dual-PR hal+skill), Gemini Enterprise (#13 manuel), projet↔opportunité (#21 migration).
+En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smoke test de rendu (#44), Gemini Enterprise (#13 manuel), projet↔opportunité (#21 migration).
+
+## Done (2026-07-28)
+
+- [x] **#54 — `/edifice front` : UUID connecteur lu via `ListConnectors`** — PR #55 mergée — hal v0.11.2 — 2026-07-28
+  - L'étape 2 du skill dérivait l'UUID des noms d'outils MCP de la session, en supposant la convention `mcp__<uuid>__<tool>`. **Cowork expose hal-mcp sous son nom court** (`mcp__hal-mcp__list_edifice_missions`) : le meta block était hydraté avec `hal-mcp` et l'artefact refusait de charger.
+  - Fix : `ListConnectors(keywords: ["hal"])` → `installedServerId`, le seul id que `window.cowork.callMcpTool` sait résoudre. `ToolSearch` + `ListConnectors` ajoutés à `allowed-tools` — sans eux l'étape corrigée reste bloquée par le frontmatter.
+  - Aucun changement côté `ui/` : le bundle résolvait déjà correctement par suffixe depuis le meta block, seule la valeur injectée était fausse.
+  - Les deux TODO « verify in Cowork » retirés — route exécutée end-to-end en session réelle, hand-off fichier → live artifact confirmé.
+- [x] **#47 — Échappement XML dans les 3 renderers docx** — PR #48 mergée — hal v0.11.1 — 2026-07-28
+- [x] **#50 — Artefact Cowork lecture seule pour les missions** — PR #53 mergée — hal v0.11.0 — 2026-07-28
+- [x] **#51 — Socle de build Node pour les fronts artefact** (`ui/`, build single-file, `check_artifact_sync.sh` en CI) — PR #52 mergée — 2026-07-28
 
 ## Done (2026-07-27)
 
