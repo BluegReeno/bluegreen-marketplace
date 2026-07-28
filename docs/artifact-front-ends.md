@@ -79,8 +79,9 @@ nothing consumes it yet.
 
 ## How a skill consumes a bundled artifact
 
-A future skill (`#50`) reads the committed template, hydrates any per-session values, and writes the
-result **to a working directory** — never back under the plugin root.
+The `edifice` skill's `/edifice front` route (`#50`) reads the committed template, hydrates any
+per-session values, and writes the result **to a working directory** — never back under the plugin
+root.
 
 - Read the template through `${CLAUDE_PLUGIN_ROOT}/artifacts/<name>.html`. Treat `${CLAUDE_PLUGIN_ROOT}`
   as **read-only, ephemeral input**: it changes on every plugin update, and the previous directory is
@@ -104,8 +105,8 @@ from a fresh rebuild (ignoring the build-stamp line). This is what makes "commit
 ≥10.34.2/≥11.5.3 ignores `${VAR}`-style expansion in a committed project-level `.npmrc`
 (GHSA-3qhv-2rgh-x77r), and a token must never be committed regardless.
 
-The mapping has no effect until a future issue (`#50`) adds a real `@bluegreeno/*` dependency. When it
-does:
+`ui/edifice-front/` (`#50`) is the first real `@bluegreeno/*` dependency (`@bluegreeno/annotation-core`)
+exercising this mapping:
 
 - **Local dev**: `pnpm config set "//npm.pkg.github.com/:_authToken" "$TOKEN"` (writes user-level
   config, which still expands normally).
