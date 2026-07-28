@@ -77,6 +77,31 @@ extraction too, so both targets carry the same provenance guarantee.
 **v1 ships the `cowork` target only** (per `#50`). The `fragment` path is implemented and verified but
 nothing consumes it yet.
 
+## Reaching MCP tools from a Cowork artifact
+
+Two rules, both learned the hard way on 2026-07-28 (`#54`, PRs #55/#57/#58/#59). Break either one and
+the artifact renders fine, then fails on its first tool call.
+
+**1. The `cowork-artifact-meta` block belongs in the document preamble** — between `<!doctype html>`
+and `<html>`, exactly where the working reference carries it
+(`docs/reference-cowork-artifact-command-center.html`). Cowork reads it **at publish time** to build
+the artifact's `mcp_tools` allowlist, and the page cannot call a tool the allowlist omits. A block
+left inside `<head>` is never read: the published artifact gets an empty allowlist and a `name`
+invented from the filename, and every call comes back with
+`Tool "mcp__…__…" is not in this artifact's mcp_tools allowlist`.
+
+`build-artifact.mjs` hoists the block automatically for the `cowork` target, so each app's
+`index.html` can keep it in `<head>` where Vite expects it. Don't hand-place it in the preamble of a
+source `index.html` — let the build own the move, and it stays correct for every artifact.
+
+**2. Full tool ids are literals in the bundle**, each carrying a placeholder the consuming skill
+substitutes (`mcp__PLACEHOLDER_HAL_MCP_UUID__list_edifice_missions`). Never assemble an id at runtime
+and never read one back from the meta block — Cowork **regenerates** that block when it publishes,
+so a bundle that reads its own ids from it is reasoning about a document that no longer exists.
+
+The connector UUID is per-desktop and must never be committed. The skill reads it live from
+`ListConnectors` — see `/edifice front` step 2 in `plugins/hal/skills/edifice/SKILL.md`.
+
 ## How a skill consumes a bundled artifact
 
 The `edifice` skill's `/edifice front` route (`#50`) reads the committed template, hydrates any

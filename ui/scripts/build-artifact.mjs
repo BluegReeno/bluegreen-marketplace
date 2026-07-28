@@ -7,8 +7,10 @@
  *      ceiling), warn past 2 MiB.
  *   3. Prepend a provenance stamp comment (build date, source commit,
  *      annotation-core version) right after <!doctype html>.
- *   4. Branch on ARTIFACT_TARGET (default "cowork"): keep the full document,
- *      or strip the <html>/<head>/<body> wrapper for a "fragment" target.
+ *   4. Branch on ARTIFACT_TARGET (default "cowork"): keep the full document and
+ *      hoist the cowork-artifact-meta block into the preamble (where Cowork
+ *      reads it to build the mcp_tools allowlist), or strip the
+ *      <html>/<head>/<body> wrapper for a "fragment" target.
  *   5. Write the result to <repo-root>/plugins/hal/artifacts/<name>.html.
  * Exit 0 = artifact written. Exit 1 = missing input, size ceiling, or bad args.
  */
@@ -86,6 +88,43 @@ html = html.replace(/(<head>)/i, `$1\n${stamp}`);
 // 4. Target-flag branch.
 const target = process.env.ARTIFACT_TARGET || "cowork";
 let output;
+
+/**
+ * Moves the cowork-artifact-meta block out of <head> and into the document
+ * preamble, between <!doctype html> and <html> — where the one artifact known
+ * to work in Cowork carries it (docs/reference-cowork-artifact-command-center.html).
+ *
+ * Cowork reads this block at publish time to build the artifact's mcp_tools
+ * allowlist; the page cannot call a tool the allowlist omits. A block left in
+ * <head> is not read: an artifact published on 2026-07-28 came back with an
+ * empty allowlist AND a `name` invented from the filename ("Edifice Front"
+ * rather than the block's own "edifice-front"), and calls were rejected with
+ * `Tool "…" is not in this artifact's mcp_tools allowlist`. Declaring the ids
+ * as literals in the bundle does not help — the allowlist is not derived from
+ * the code.
+ *
+ * Vite has no say in where the block lands (it copies index.html's <head>
+ * through), so the move happens here rather than in each app's index.html —
+ * one rule for every current and future artifact.
+ */
+function hoistMetaToPreamble(doc, artifactName) {
+  const META_RE =
+    /[ \t]*<script\b[^>]*\bid=["']cowork-artifact-meta["'][^>]*>[\s\S]*?<\/script>\n?/i;
+  const match = doc.match(META_RE);
+  if (!match) return doc; // artifacts without connector access (e.g. hello-artifact)
+
+  const block = match[0].trim();
+  const withoutBlock = doc.replace(META_RE, "");
+  const DOCTYPE_RE = /(<!doctype html>\n?)/i;
+  if (!DOCTYPE_RE.test(withoutBlock)) {
+    console.error(
+      `ERROR: [${artifactName}] no <!doctype html> to anchor the meta block preamble`,
+    );
+    process.exit(1);
+  }
+  return withoutBlock.replace(DOCTYPE_RE, `$1${block}\n`);
+}
+
 if (target === "fragment") {
   // vite-plugin-singlefile inlines <script>/<style> into <head>, so a
   // body-only extraction would silently drop the entire bundle. Concatenate
@@ -101,7 +140,7 @@ if (target === "fragment") {
   }
   output = head + body;
 } else if (target === "cowork") {
-  output = html;
+  output = hoistMetaToPreamble(html, name);
 } else {
   console.error(
     `ERROR: unknown ARTIFACT_TARGET="${target}" (expected "cowork" or "fragment")`,

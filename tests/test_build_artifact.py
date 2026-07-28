@@ -28,6 +28,18 @@ DEFAULT_DIST_HTML = (
     "<body><p>hello</p></body></html>"
 )
 
+META_BLOCK = (
+    '<script type="application/json" id="cowork-artifact-meta">\n'
+    '{"name":"fx","mcpTools":["mcp__UUID__list_edifice_missions"]}\n'
+    "</script>"
+)
+
+DIST_HTML_WITH_META = (
+    f"<!doctype html>\n<html><head>{META_BLOCK}"
+    "<style>.a{color:red}</style></head>"
+    "<body><p>hello</p></body></html>"
+)
+
 
 def _node_toolchain_ready():
     return shutil.which("node") is not None and (UI_DIR / "node_modules" / "cheerio").exists()
@@ -72,6 +84,42 @@ class TestBuildArtifact(unittest.TestCase):
         out = fx.artifact_file.read_text()
         self.assertIn("<html>", out)
         self.assertIn("<!-- build:", out)
+
+    def test_cowork_target_hoists_meta_block_into_the_preamble(self):
+        # Cowork reads this block at publish time to build the artifact's
+        # mcp_tools allowlist, and only reads it from the preamble. Left in
+        # <head> it is ignored: the artifact is published with an empty
+        # allowlist and every tool call is rejected (observed 2026-07-28).
+        fx = self._fx(DIST_HTML_WITH_META)
+        result = fx.build()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        out = fx.artifact_file.read_text()
+        self.assertEqual(out.count('id="cowork-artifact-meta"'), 1, "block duplicated")
+        self.assertLess(
+            out.index("cowork-artifact-meta"),
+            out.index("<html>"),
+            "meta block must sit between <!doctype html> and <html>",
+        )
+        self.assertIn("mcp__UUID__list_edifice_missions", out)
+        self.assertIn("<!-- build:", out)
+
+    def test_cowork_target_without_meta_block_is_untouched(self):
+        fx = self._fx()
+        result = fx.build()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        out = fx.artifact_file.read_text()
+        self.assertNotIn("cowork-artifact-meta", out)
+        self.assertIn("<p>hello</p>", out)
+
+    def test_fragment_target_keeps_meta_block_in_place(self):
+        # A fragment has no doctype to anchor a preamble; hoisting there would
+        # drop the block outside the returned markup.
+        fx = self._fx(DIST_HTML_WITH_META)
+        result = fx.build(target="fragment")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        out = fx.artifact_file.read_text()
+        self.assertIn('id="cowork-artifact-meta"', out)
+        self.assertNotIn("<!doctype", out.lower())
 
     def test_fragment_target_strips_wrapper_but_keeps_stamp_and_content(self):
         fx = self._fx()
