@@ -16,6 +16,8 @@ from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Cm
 from PIL import Image, ImageOps
 
+from xml_escape import escape_xml_values
+
 TEMPLATE_PATH = Path(__file__).parent.parent / "templates" / "ic-ingenieurs" / "diagnostic.docx"
 
 def _auto_rotate(path: Path) -> Path:
@@ -170,7 +172,7 @@ def _build_context(context: dict, photos_dir: str, doc: DocxTemplate) -> dict:
 def render_diagnostic(context: dict, photos_dir: str = ".", output_path: str = "rapport_diagnostic.docx") -> str:
     doc = DocxTemplate(str(TEMPLATE_PATH))
     tpl_ctx = _build_context(context, photos_dir, doc)
-    doc.render(tpl_ctx)
+    doc.render(escape_xml_values(tpl_ctx))
     out = Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(out))
