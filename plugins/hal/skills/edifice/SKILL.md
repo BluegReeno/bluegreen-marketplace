@@ -6,7 +6,7 @@ description: >
   Edifice report", "create a diagnostic report", "generate a devis",
   "open the edifice front", "show the mission viewer artifact", or
   "run edifice".
-allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__list_edifice_missions mcp__plugin_hal_hal-mcp__get_mission_with_assets mcp__plugin_hal_hal-mcp__push_mission_context"
+allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob ToolSearch ListConnectors mcp__plugin_hal_hal-mcp__list_edifice_missions mcp__plugin_hal_hal-mcp__get_mission_with_assets mcp__plugin_hal_hal-mcp__push_mission_context"
 ---
 
 # Edifice — Mission Workflow (Claude Code)
@@ -488,12 +488,12 @@ Generates a **read-only Claude Cowork live artifact** for browsing Edifice missi
 constraints, why this is Cowork-only in v1): `docs/artifact-front-ends.md` and issue #50.
 
 **Precondition**: this route only works when invoked from inside a live Claude Cowork
-session — the UUID-extraction step below depends on Cowork's `mcp__<uuid>__<tool>`
-MCP tool-naming convention. Claude Code CLI does not name plugin MCP tools this way,
-so step 2 cannot succeed outside Cowork.
-<!-- TODO: verify in Cowork — this exact extraction has not been executed end-to-end
-     in a real Cowork session; it is derived from the reference artifact documented
-     in issue #50. -->
+session — step 2 reads the connector registry through Cowork's `ListConnectors` tool,
+which Claude Code CLI does not expose. The UUID it returns is the only id
+`window.cowork.callMcpTool` can resolve; the session's own MCP tool names are **not** a
+source for it (in Cowork hal-mcp is exposed under its short name,
+`mcp__hal-mcp__list_edifice_missions`, so deriving the UUID from tool names yields
+`hal-mcp` and the artifact fails to load).
 
 ### Steps
 
@@ -502,18 +502,21 @@ so step 2 cannot succeed outside Cowork.
 Read `$PLUGIN_DIR/artifacts/edifice-front.html` with the Read tool. Treat it as
 read-only input — never write back into `$PLUGIN_DIR`.
 
-**2. Extract the hal-mcp connector UUID**
+**2. Read the hal-mcp connector UUID via `ListConnectors`**
 
-Look at your own available MCP tool names in this session. Find one matching
-`mcp__<uuid>__list_edifice_missions` (or `__get_mission_context` / `__get_mission_photo`)
-— the segment between the first and second `__` is `<uuid>`, hal-mcp's per-desktop
-connector id. This value is per-desktop and must never be hardcoded — always
-re-extract it live, every time this command runs.
+Load the tool schema first — `ToolSearch { query: "select:ListConnectors" }` — then call
+`ListConnectors { keywords: ["hal"] }` and take the entry whose server name is `hal-mcp`.
+Its `installedServerId` (a UUID, e.g. `7898d523-…`) is `<uuid>` for step 3. This value is
+per-desktop and must never be hardcoded — always re-read it live, every time this command
+runs.
 
-If no such tool name is available in this session, hal-mcp isn't connected here —
-stop and tell the user: "❌ hal-mcp non connecté dans cette session Cowork. Activez le
-connecteur hal-mcp, puis relancez `/edifice front`." Do not generate a file with an
-unresolved placeholder.
+Stop and tell the user — without generating a file with an unresolved placeholder — if:
+
+- no `hal-mcp` entry comes back, or
+- the entry has `connected: false` or `enabledInChat: false`:
+
+> ❌ hal-mcp non connecté dans cette session Cowork. Activez le connecteur hal-mcp,
+> puis relancez `/edifice front`.
 
 **3. Hydrate the meta block**
 
@@ -531,9 +534,6 @@ Write the hydrated HTML to `./edifice-front.html` in the current working directo
 
 > Artefact généré : `edifice-front.html`. Ouvrez-le comme live artifact dans Claude
 > Cowork et autorisez le connecteur `hal-mcp` si demandé.
-<!-- TODO: verify in Cowork — confirm the exact hand-off UX for turning a
-     Claude-written HTML file into an open live artifact; not yet executed
-     end-to-end in a real Cowork session. -->
 
 ### Known Phase 1 scope (read-only)
 
