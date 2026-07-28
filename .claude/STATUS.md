@@ -4,19 +4,25 @@ Last updated: 2026-07-28
 
 ## Current Focus
 
-Chantier **Edifice front as an artifact** (#50) livré en v1 : socle `ui/` (#51/PR #52), artefact lecture seule (#50/PR #53), puis correction de l'hydratation du connecteur trouvée au premier test réel en Cowork (#54/PR #55). La route `/edifice front` est désormais fonctionnelle end-to-end.
+Chantier **Edifice front as an artifact** (#50) livré en v1 : socle `ui/` (#51/PR #52), artefact lecture seule (#50/PR #53), UUID connecteur via `ListConnectors` (#54/PR #55), erreur auto-diagnostiquante (PR #57).
 
-Prochaine étape sur ce chantier : phase 2 (écriture — `push_mission_context` depuis l'artefact, #49), pas encore lancée.
+**En attente de validation** : `/edifice front` n'a pas encore chargé une liste de missions en Cowork. Le dernier échec observé est attribué à un artefact obsolète resté dans la galerie — l'artefact publié téléchargé s'est révélé identique octet pour octet à la source commitée, meta hydraté avec le bon UUID, donc l'erreur ne pouvait pas venir de ce document. À confirmer par un test après purge de la galerie et mise à jour du plugin en 0.11.3.
+
+Prochaine étape une fois validé : phase 2 (écriture — `push_mission_context` depuis l'artefact, #49), pas encore lancée.
 
 En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smoke test de rendu (#44), Gemini Enterprise (#13 manuel), projet↔opportunité (#21 migration).
 
 ## Done (2026-07-28)
 
+- [x] **Erreur auto-diagnostiquante de l'artefact** — PR #57 mergée — hal v0.11.3 — 2026-07-28
+  - « Outil MCP … absent du bloc meta » ne nommait ni l'artefact en cours d'exécution ni les outils réellement déclarés : un artefact obsolète de la galerie était indiscernable d'un vrai échec d'hydratation. Les distinguer a coûté un téléchargement de l'artefact publié et un diff contre la source.
+  - Le message rapporte maintenant le `name` du meta et la liste `mcpTools` lue. Nouveau code `bad_meta` extrait de `no_cowork` — l'artefact *tourne* dans Cowork, l'ancienne bannière désignait la mauvaise cause.
+  - **Leçon** : une erreur qui n'expose pas ce qu'elle a observé transforme un diagnostic d'une seconde en enquête. Vaut pour tout front artefact à venir.
 - [x] **#54 — `/edifice front` : UUID connecteur lu via `ListConnectors`** — PR #55 mergée — hal v0.11.2 — 2026-07-28
   - L'étape 2 du skill dérivait l'UUID des noms d'outils MCP de la session, en supposant la convention `mcp__<uuid>__<tool>`. **Cowork expose hal-mcp sous son nom court** (`mcp__hal-mcp__list_edifice_missions`) : le meta block était hydraté avec `hal-mcp` et l'artefact refusait de charger.
   - Fix : `ListConnectors(keywords: ["hal"])` → `installedServerId`, le seul id que `window.cowork.callMcpTool` sait résoudre. `ToolSearch` + `ListConnectors` ajoutés à `allowed-tools` — sans eux l'étape corrigée reste bloquée par le frontmatter.
   - Aucun changement côté `ui/` : le bundle résolvait déjà correctement par suffixe depuis le meta block, seule la valeur injectée était fausse.
-  - Les deux TODO « verify in Cowork » retirés — route exécutée end-to-end en session réelle, hand-off fichier → live artifact confirmé.
+  - Les deux TODO « verify in Cowork » retirés — route exécutée en session réelle, hand-off fichier → live artifact confirmé (le chargement des missions, lui, reste à valider — voir Current Focus).
 - [x] **#47 — Échappement XML dans les 3 renderers docx** — PR #48 mergée — hal v0.11.1 — 2026-07-28
 - [x] **#50 — Artefact Cowork lecture seule pour les missions** — PR #53 mergée — hal v0.11.0 — 2026-07-28
 - [x] **#51 — Socle de build Node pour les fronts artefact** (`ui/`, build single-file, `check_artifact_sync.sh` en CI) — PR #52 mergée — 2026-07-28
