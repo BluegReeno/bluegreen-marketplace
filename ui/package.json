@@ -1,0 +1,9 @@
+{
+  "name": "bluegreen-marketplace-ui",
+  "private": true,
+  "packageManager": "pnpm@10.27.0",
+  "engines": { "node": ">=20" },
+  "devDependencies": {
+    "cheerio": "^1.0.0"
+  }
+}
