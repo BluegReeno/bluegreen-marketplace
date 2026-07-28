@@ -16,6 +16,20 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.11.2] — 2026-07-28 — /edifice front: read the hal-mcp connector UUID via ListConnectors
+
+`/edifice front` shipped broken in 0.11.0. Step 2 derived the connector UUID from the
+session's own MCP tool names, expecting Cowork's `mcp__<uuid>__<tool>` convention — but
+Cowork exposes hal-mcp under its short name, so the meta block was hydrated with
+`hal-mcp` and the artifact refused to load. Found on a real Cowork run.
+
+### Fixed
+- **`edifice`** — `/edifice front` step 2 now reads `installedServerId` from
+  `ListConnectors(keywords: ["hal"])`, the only id `window.cowork.callMcpTool` resolves;
+  it stops with a clear message when the `hal-mcp` entry is missing, `connected: false`,
+  or `enabledInChat: false`. `ToolSearch` and `ListConnectors` added to `allowed-tools`.
+  Both "verify in Cowork" TODOs removed — the route was run end-to-end on 2026-07-28.
+
 ## [0.11.1] — 2026-07-28 — escape XML (&, <, >) in docx renderer contexts
 
 An `&` in any free-text field broke the docx render: docxtpl interpolates values straight
