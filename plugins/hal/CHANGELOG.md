@@ -16,6 +16,25 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.11.3] — 2026-07-28 — edifice-front: self-diagnosing error when the meta block declares no hal-mcp tools
+
+A stale artifact left open in the Cowork gallery produced the same message as a
+genuine hydration failure — « Outil MCP … absent du bloc meta ». Telling the two apart
+required downloading the published artifact and diffing it against the committed source.
+The message now carries the evidence.
+
+### Fixed
+- **`edifice`** — `resolveToolName()` now reports the running artifact's meta `name` and
+  the `mcpTools` it actually declares (or `liste vide` / `champ mcpTools absent ou
+  non-tableau`), plus the shape of a valid id. `readMeta()` catches `JSON.parse` instead
+  of letting a `SyntaxError` escape.
+- **`edifice`** — new error code `bad_meta`, split out of `no_cowork`: the artifact *is*
+  running in Cowork, so the old banner (« ne fonctionne que dans Claude Cowork ») pointed
+  at the wrong cause. Its banner now says to regenerate with `/edifice front` and delete
+  the stale artifact from the gallery.
+
+Diagnostics only — no change to how tools are resolved or called.
+
 ## [0.11.2] — 2026-07-28 — /edifice front: read the hal-mcp connector UUID via ListConnectors
 
 `/edifice front` shipped broken in 0.11.0. Step 2 derived the connector UUID from the
