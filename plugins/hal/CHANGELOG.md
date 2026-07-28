@@ -16,6 +16,34 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.11.0] — 2026-07-28 — `/edifice front`: read-only Cowork live artifact for mission viewing
+
+New command: `/edifice front` generates a self-contained live-artifact HTML
+(`plugins/hal/artifacts/edifice-front.html`, ~430 KB, built from `ui/edifice-front/`)
+that renders a mission's notes and photos entirely through `hal-mcp`'s Edifice tools —
+no signed URLs, no external network calls, CSP-safe. The skill hydrates a per-desktop
+connector UUID into the template's meta block and writes the result to a working
+directory (never back into the plugin root).
+
+### Added
+- **`edifice`** — `/edifice front` command + skill route: reads the committed
+  artifact template, extracts the hal-mcp connector UUID from the invoking session's
+  own MCP tool names, and writes the hydrated HTML.
+- `ui/edifice-front/` — React 19 + Vite app consuming `@bluegreeno/annotation-core`
+  (mission list, Infos/Notes/Photos tabs, `PhotoGallery` for photo viewing). MCP calls
+  are gated behind user clicks (mission select, Photos tab) rather than fired
+  automatically on load, to limit the artifact load-time permission-dialog risk.
+- `plugins/hal/.mcp.json` — bumped to hal-mcp `0.3.0` (adds `get_mission_context` and
+  `get_mission_photo`, the two tools this artifact depends on).
+
+### Known limitations (Phase 1, read-only)
+- Rotate/crop/annotate affordances inherited from `PhotoGallery` are visually present
+  but not wired to persistence — changes are local to the browser tab only. Phase 2
+  wires `push_mission_context`.
+- The permission-dialog behavior for MCP calls made from within a live artifact has
+  not been verified in a real Cowork session — see `<!-- TODO: verify in Cowork -->`
+  markers in `plugins/hal/skills/edifice/SKILL.md` and `ui/edifice-front/src/cowork-mcp.ts`.
+
 ## [0.10.5] — 2026-07-25 — fix `/edifice pull` clobbering unpushed `context.json` edits
 
 `build_context.py` rewrote `mission/context.json` unconditionally on every
