@@ -6,12 +6,12 @@ const MESSAGES: Record<ErrorCode, { title: string; hint: string; retryable: bool
     hint: "Ouvrez-le depuis une session Cowork avec le connecteur hal-mcp activé.",
     retryable: false,
   },
-  bad_meta: {
-    title: "Cet artefact n'est pas exploitable en l'état.",
+  not_hydrated: {
+    title: "Cet artefact n'a pas été généré par /edifice front.",
     hint:
-      "Son bloc meta ne déclare pas les outils hal-mcp attendus — c'est une copie " +
-      "obsolète ou jamais hydratée. Régénérez-en un avec /edifice front, ouvrez celui-là, " +
-      "et supprimez l'ancien de votre galerie d'artefacts pour ne pas le rouvrir par erreur.",
+      "Ses ids d'outils hal-mcp portent encore leur placeholder. Lancez /edifice front " +
+      "dans une session Cowork, ouvrez l'artefact que la commande produit, et supprimez " +
+      "les anciens de votre galerie pour ne pas les rouvrir par erreur.",
     retryable: false,
   },
   needs_reauth: {

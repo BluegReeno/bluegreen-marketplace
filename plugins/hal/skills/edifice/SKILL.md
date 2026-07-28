@@ -518,12 +518,18 @@ Stop and tell the user — without generating a file with an unresolved placehol
 > ❌ hal-mcp non connecté dans cette session Cowork. Activez le connecteur hal-mcp,
 > puis relancez `/edifice front`.
 
-**3. Hydrate the meta block**
+**3. Hydrate the tool ids**
 
-Replace every occurrence of the literal string `PLACEHOLDER_HAL_MCP_UUID` in the
-template (3 occurrences, all inside the `<script id="cowork-artifact-meta">` block)
-with the `<uuid>` from step 2. Nothing else in the file needs to change — the bundled
-JS resolves tool names from this block at runtime.
+Replace **every** occurrence of the literal string `PLACEHOLDER_HAL_MCP_UUID` in the
+template with the `<uuid>` from step 2 — currently 6: three in the
+`<script id="cowork-artifact-meta">` block and three in the bundled JS, which carries
+each `mcp__<uuid>__<tool>` id as a full literal. Do not count them and stop; replace
+all occurrences, the build may change how many there are.
+
+Never hydrate only the meta block. Cowork **regenerates** that block when it publishes
+the artifact, deriving `mcpTools` from the ids it finds in the code — a build whose JS
+names no tool literally is published with `mcpTools: []`, which resolves nothing and
+grants nothing, since that block is the permission manifest the user approves.
 
 **4. Write to a working directory**
 
@@ -534,6 +540,10 @@ Write the hydrated HTML to `./edifice-front.html` in the current working directo
 
 > Artefact généré : `edifice-front.html`. Ouvrez-le comme live artifact dans Claude
 > Cowork et autorisez le connecteur `hal-mcp` si demandé.
+
+Tell them to open **that** artifact — the one this run produced. An artifact published
+from an earlier run stays in the Cowork gallery under a humanized name (`Edifice Front`)
+and reopening it silently serves the old build.
 
 ### Known Phase 1 scope (read-only)
 
