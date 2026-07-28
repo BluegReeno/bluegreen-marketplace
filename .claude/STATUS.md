@@ -1,10 +1,23 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-07-23
+Last updated: 2026-07-27
 
 ## Current Focus
 
-Le plugin `hal` est désormais le **seul** propriétaire de la déclaration du serveur `hal-mcp` (`plugins/hal/.mcp.json`) — le serveur user manuel, le connecteur claude.ai et le doublon dans `renaud-marketplace/plugins/briefing` ont tous été supprimés. Reste #39 : déclarer les outils MCP dans les `allowed-tools` des 4 skills. Puis issue triage — `update_interaction` (#27 dual-PR hal+skill), Gemini Enterprise (#13 manuel) et projet↔opportunité (#21 migration).
+Chantier **Edifice front as an artifact** (#50) découpé et lancé sur Archon. Ce repo devient aussi un environnement de développement d'interfaces (`ui/`), en plus de son rôle de canal de distribution — les deux ne doivent pas se contaminer (#51).
+
+Ordre d'exécution strictement séquentiel : [edifice#68](https://github.com/BluegReeno/edifice/issues/68) → #51 → [hal#82](https://github.com/BluegReeno/hal/issues/82) → #50. Seul #51 est parallélisable avec edifice#68.
+
+En arrière-plan : #39 (`allowed-tools` MCP des 4 skills), puis triage — `update_interaction` (#27 dual-PR hal+skill), Gemini Enterprise (#13 manuel), projet↔opportunité (#21 migration).
+
+## Done (2026-07-27)
+
+- [x] **Décisions d'architecture artefact** — #50 mise à jour, 3 issues créées — 2026-07-27
+  - **(b)** la source du front vit ici (`ui/edifice-front/`, hors `plugins/hal/`). Un toolchain Node ne coûte rien à l'utilisateur : le clone ne tire que ce qui est commité, `node_modules/` est gitignoré.
+  - **`@bluegreeno/annotation-core`** — tranche framework-agnostic d'`annotation-kit`, buildée et publiée sur GitHub Packages depuis le monorepo edifice. Le scope doit matcher l'org GitHub, d'où `@bluegreeno` et non `@edifice`.
+  - **Build commité + `check_artifact_sync.sh` en CI** — l'invariant source↔output est vérifié par la machine, pas par la discipline.
+  - **Cible v1 : Cowork uniquement.** Le runtime claude.ai est un runtime *différent* (API `window.claude.mcp` vs `window.cowork.callMcpTool`, fragment vs document complet) et exigerait de réenregistrer hal-mcp comme connecteur claude.ai — ce que #39 a supprimé. Non réouvert sans décision explicite.
+  - Recherche complète (deux runtimes, mécanisme de packaging, bugs amont [#57398](https://github.com/anthropics/claude-code/issues/57398) / [#55788](https://github.com/anthropics/claude-code/issues/55788), plafond 16 MiB) : premier commentaire de #50.
 
 ## Done (2026-07-23)
 

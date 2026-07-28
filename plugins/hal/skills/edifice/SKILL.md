@@ -3,7 +3,8 @@ name: edifice
 description: >
   This skill should be used when the user is in a directory containing a
   *.edifice.md file, or asks to "pull an Edifice mission", "generate an
-  Edifice report", "create a diagnostic report", "generate a devis", or
+  Edifice report", "create a diagnostic report", "generate a devis",
+  "open the edifice front", "show the mission viewer artifact", or
   "run edifice".
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__list_edifice_missions mcp__plugin_hal_hal-mcp__get_mission_with_assets mcp__plugin_hal_hal-mcp__push_mission_context"
 ---
@@ -475,4 +476,78 @@ different `note_id` or `type`. `push_mission_context` must UPDATE existing
 `edifice_notes` rows by `note_id` (preserving their `project_id`), never INSERT.
 Report the error to the user and point them to the `hal-mcp` repo for a fix; this
 skill's contract (partial updates keyed by `note_id`) is unaffected.
+
+---
+
+## /edifice front
+
+Generates a **read-only Claude Cowork live artifact** for browsing Edifice missions
+(mission list, notes, photos) — a ported slice of the `edifice` monorepo's
+`local-workspace` annotation UI, built from `ui/edifice-front/` and consuming
+`@bluegreeno/annotation-core`. Full architecture (MCP invocation API, sandbox
+constraints, why this is Cowork-only in v1): `docs/artifact-front-ends.md` and issue #50.
+
+**Precondition**: this route only works when invoked from inside a live Claude Cowork
+session — the UUID-extraction step below depends on Cowork's `mcp__<uuid>__<tool>`
+MCP tool-naming convention. Claude Code CLI does not name plugin MCP tools this way,
+so step 2 cannot succeed outside Cowork.
+<!-- TODO: verify in Cowork — this exact extraction has not been executed end-to-end
+     in a real Cowork session; it is derived from the reference artifact documented
+     in issue #50. -->
+
+### Steps
+
+**1. Read the committed template**
+
+Read `$PLUGIN_DIR/artifacts/edifice-front.html` with the Read tool. Treat it as
+read-only input — never write back into `$PLUGIN_DIR`.
+
+**2. Extract the hal-mcp connector UUID**
+
+Look at your own available MCP tool names in this session. Find one matching
+`mcp__<uuid>__list_edifice_missions` (or `__get_mission_context` / `__get_mission_photo`)
+— the segment between the first and second `__` is `<uuid>`, hal-mcp's per-desktop
+connector id. This value is per-desktop and must never be hardcoded — always
+re-extract it live, every time this command runs.
+
+If no such tool name is available in this session, hal-mcp isn't connected here —
+stop and tell the user: "❌ hal-mcp non connecté dans cette session Cowork. Activez le
+connecteur hal-mcp, puis relancez `/edifice front`." Do not generate a file with an
+unresolved placeholder.
+
+**3. Hydrate the meta block**
+
+Replace every occurrence of the literal string `PLACEHOLDER_HAL_MCP_UUID` in the
+template (3 occurrences, all inside the `<script id="cowork-artifact-meta">` block)
+with the `<uuid>` from step 2. Nothing else in the file needs to change — the bundled
+JS resolves tool names from this block at runtime.
+
+**4. Write to a working directory**
+
+Write the hydrated HTML to `./edifice-front.html` in the current working directory —
+**never** back into `$PLUGIN_DIR/artifacts/`, which is read-only plugin input.
+
+**5. Tell the user**
+
+> Artefact généré : `edifice-front.html`. Ouvrez-le comme live artifact dans Claude
+> Cowork et autorisez le connecteur `hal-mcp` si demandé.
+<!-- TODO: verify in Cowork — confirm the exact hand-off UX for turning a
+     Claude-written HTML file into an open live artifact; not yet executed
+     end-to-end in a real Cowork session. -->
+
+### Known Phase 1 scope (read-only)
+
+- Mission list (`list_edifice_missions`), then per-mission Infos/Notes/Photos tabs.
+  Only one MCP call happens automatically on artifact open (the mission list); a
+  mission's `get_mission_context` and its photos' `get_mission_photo` calls are each
+  gated behind a user click (selecting a mission, then opening its Photos tab) — this
+  minimizes the load-time permission-dialog risk documented in issue #50, rather than
+  eagerly fetching everything on open.
+- Rotate/crop/annotate affordances inherited from `@bluegreeno/annotation-core`'s
+  `PhotoGallery` are visually present but **not wired to persistence** — any change is
+  local to the browser tab and lost on reload. Phase 2 (`push_mission_context`) wires
+  real persistence; do not tell users their edits are saved.
+- `needs_reauth` / `server_not_connected` errors are never auto-retried; only
+  `server_unavailable` offers a retry, once per session — per the error-handling
+  contract in `ui/edifice-front/src/cowork-mcp.ts`.
 
