@@ -7,6 +7,11 @@ on:
 
 permissions:
   contents: read
+  # ui/edifice-front depends on @bluegreeno/annotation-core, a PRIVATE package on
+  # GitHub Packages. Declaring this block at all drops every unlisted permission to
+  # `none`, so `packages: read` has to be spelled out — without it GITHUB_TOKEN is
+  # refused by npm.pkg.github.com whatever the package's access settings say.
+  packages: read
 
 jobs:
   checks:
@@ -39,8 +44,20 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
           cache-dependency-path: 'ui/pnpm-lock.yaml'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@bluegreeno'
       - name: Artifact sync check
         if: steps.ui-changes.outputs.ui == 'true'
+        env:
+          # Reads @bluegreeno/annotation-core, published from BluegReeno/edifice and
+          # private. A workflow's GITHUB_TOKEN is scoped to its own repo, so reading a
+          # package published from another one requires that package to grant this repo
+          # Read under "Manage Actions access" — granted 2026-07-28. No PAT needed, and
+          # no secret to rotate: GITHUB_TOKEN is minted per run and dies with it.
+          # If this ever 401s, check the grant on the package page first; the owner is a
+          # User account, so there is no API to read that list back (/repositories is
+          # org-only and 404s here).
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/check_artifact_sync.sh
       - name: Tests
         run: |

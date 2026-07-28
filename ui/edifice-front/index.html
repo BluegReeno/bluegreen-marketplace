@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>edifice-front</title>
+    <script type="application/json" id="cowork-artifact-meta">
+      {
+        "name": "edifice-front",
+        "schemaVersion": 1,
+        "description": "Edifice — visualisation des missions d'inspection (lecture seule)",
+        "mcpTools": [
+          "mcp__PLACEHOLDER_HAL_MCP_UUID__list_edifice_missions",
+          "mcp__PLACEHOLDER_HAL_MCP_UUID__get_mission_context",
+          "mcp__PLACEHOLDER_HAL_MCP_UUID__get_mission_photo"
+        ],
+        "mcpServerNames": ["hal-mcp", "hal-mcp", "hal-mcp"]
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

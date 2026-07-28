@@ -3,7 +3,7 @@
     "hal-mcp": {
       "type": "http",
       "url": "https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp",
-      "version": "0.2.1"
+      "version": "0.3.0"
     }
   }
 }

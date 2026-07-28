@@ -1,6 +1,6 @@
 ---
-description: Edifice — inspection missions IC Ingénieurs Conseils (list, pull, improve, report, push)
-argument-hint: "list [status=active] [limit=N] | pull | improve | report | push"
+description: Edifice — inspection missions IC Ingénieurs Conseils (list, pull, improve, report, push, front)
+argument-hint: "list [status=active] [limit=N] | pull | improve | report | push | front"
 allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 
@@ -14,10 +14,13 @@ Appeler `list_edifice_missions` avec `limit: 1` avant `list`, `pull`, ou `push`.
 
 Si indisponible :
 > ❌ **hal-mcp non connecté.**
-> Reconnexion : **Claude Desktop → Paramètres → Connexions → hal-mcp → Activer**
-> ⚠️ Interface graphique uniquement — ne pas utiliser le terminal.
+> Le serveur est fourni par le plugin `hal` (`plugin:hal:hal-mcp`).
+> Reconnexion : `/mcp` → `plugin:hal:hal-mcp` → `authenticate`.
+> Relancer la commande après reconnexion.
 
-`improve` et `report` ne nécessitent pas MCP — pas de pre-flight pour ces commandes.
+`improve`, `report` et `front` ne nécessitent pas d'appel MCP direct depuis cette
+session — pas de pre-flight pour ces commandes (`front` délègue tous les appels MCP à
+l'artefact généré, à l'exécution).
 
 ---
 
@@ -50,6 +53,13 @@ Output : `Rapport généré : mission/rapport.docx`
 **`push`**
 Lire `mission/context.json`, appeler `push_mission_context` avec les observations éditées.
 Reporter `{ updated, skipped, errors }`.
+
+**`front`**
+Générer l'artefact live Cowork de visualisation des missions (lecture seule) :
+lire `$PLUGIN_DIR/artifacts/edifice-front.html`, extraire l'UUID du connecteur hal-mcp
+depuis les noms d'outils MCP disponibles dans cette session (`mcp__<uuid>__list_edifice_missions`),
+remplacer les 3 occurrences de `PLACEHOLDER_HAL_MCP_UUID`, écrire `./edifice-front.html`.
+Pour les instructions complètes : charger le skill `edifice` (section `/edifice front`).
 
 ---
 
