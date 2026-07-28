@@ -16,6 +16,32 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.11.4] — 2026-07-28 — edifice-front: full tool ids as literals — Cowork regenerates the meta block
+
+**Cowork regenerates `cowork-artifact-meta` when it publishes an artifact**, deriving
+`mcpTools` from the ids it finds in the code. The artifact read its ids back from that
+same block — circular. Its bundle named no tool literally, so the published artifact got
+`mcpTools: []`: nothing to resolve, and no access either, since that block is the
+permission manifest the user approves.
+
+Observed in a live Cowork session on hal 0.11.3: the error reported `name: "Edifice Front"`
+and an empty tool list, while the source file the skill wrote to disk still carried
+`name: "edifice-front"` and the three correct ids. The published artifact and the source
+file are distinct objects — diffing the downloaded source had wrongly cleared the platform.
+
+### Fixed
+- **`edifice`** — the three ids are full literals in the bundle, each carrying the
+  `PLACEHOLDER_HAL_MCP_UUID` the skill substitutes. This matches the one artifact known to
+  work (`docs/reference-cowork-artifact-command-center.html`). `readMeta()` is gone; the
+  meta block stays in the HTML as platform input.
+- **`edifice`** — `SKILL.md` step 3 said « 3 occurrences, all inside the meta block ». It is
+  6 now, and hydrating only the meta block was the bug. Step 5 warns that an artifact from
+  an earlier run lingers in the gallery under a humanized name and silently serves the old build.
+
+### Changed
+- **`edifice`** — error code `bad_meta` (introduced in 0.11.3) → `not_hydrated`, the only
+  failure this path can still produce.
+
 ## [0.11.3] — 2026-07-28 — edifice-front: self-diagnosing error when the meta block declares no hal-mcp tools
 
 A stale artifact left open in the Cowork gallery produced the same message as a
