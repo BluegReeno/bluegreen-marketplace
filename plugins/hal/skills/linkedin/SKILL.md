@@ -21,9 +21,10 @@ Supabase) et les outils Bright Data. Zéro script, zéro Bash — pur NL → map
 rédaction et sauvegarde de drafts, log de publications. Les projets internes
 (tâches, sprints) sont hors scope → skill `/pm`.
 
-Les idées de posts sont des **tâches** hal taguées `linkedin`. Toutes les commandes
-LinkedIn filtrent par `tags: ["linkedin"]` pour lire le backlog, et passent
-`tags: ["linkedin"]` à la création.
+Les idées de posts sont des **tâches** hal taguées `marketing` (le workspace
+`blue-green` n'autorise pas de tag `linkedin` dédié — voir `allowed_tags`).
+Toutes les commandes LinkedIn filtrent par `tags: ["marketing"]` pour lire le
+backlog, et passent `tags: ["marketing"]` à la création.
 
 ---
 
@@ -77,7 +78,7 @@ Capturer une idée de post LinkedIn comme tâche hal.
 4. Appeler `create_task` avec :
    - `workspace_slug`
    - `title`
-   - `tags: ["linkedin"]`
+   - `tags: ["marketing"]`
    - `description` (si fourni)
    - `due_date` (si fourni)
 5. Output : `✅ Idée créée : <titre>`
@@ -94,7 +95,7 @@ Afficher le backlog éditorial LinkedIn groupé par statut.
 2. **Résoudre workspace** — règle standard.
 3. Appeler `list_tasks` avec :
    - `workspace_slug`
-   - `tags: ["linkedin"]`
+   - `tags: ["marketing"]`
 4. Grouper par `status`. Ordre fixe : `todo` → `in_progress` → `done`.
    - `done` est terminal — préfixer `✓ `.
 5. Format d'affichage :
@@ -168,7 +169,7 @@ Rédiger un post LinkedIn et le sauvegarder comme document hal.
 
 1. **Pre-flight** — voir ci-dessus.
 2. **Résoudre workspace** — règle standard.
-3. **Résoudre l'idée** — fuzzy match sur `title` via `list_tasks(tags=["linkedin"])`.
+3. **Résoudre l'idée** — fuzzy match sur `title` via `list_tasks(tags=["marketing"])`.
    Seuils : > 80 → match direct ; 50–80 → lister candidats, demander ;
    < 50 → rédiger quand même à partir du titre fourni (sans tâche liée).
 4. **Rédiger le draft** (pur Claude, aucun MCP) :
@@ -200,7 +201,7 @@ Marquer un post comme publié et enregistrer une trace dans hal.
 
 1. **Pre-flight** — voir ci-dessus.
 2. **Résoudre workspace** — règle standard.
-3. **Résoudre la tâche** — fuzzy match sur `title` via `list_tasks(tags=["linkedin"])`.
+3. **Résoudre la tâche** — fuzzy match sur `title` via `list_tasks(tags=["marketing"])`.
    Seuils standard. Si score < 50 → demander confirmation avant de continuer.
 4. Collecter depuis la conversation ou demander si absent :
    - `summary` (requis) — lien du post publié, ou note sur la publication
@@ -224,8 +225,8 @@ de confirmation), logger quand même via `log_interaction` en incluant le titre 
 
 | L'utilisateur dit | Outil(s) MCP |
 |-------------------|-------------|
-| "idée de post sur X", "noter une idée LinkedIn" | `create_task` (tags: linkedin) |
-| "mon backlog LinkedIn", "mes idées de posts", "qu'est-ce que j'ai à écrire" | `list_tasks` (tags: linkedin) |
+| "idée de post sur X", "noter une idée LinkedIn" | `create_task` (tags: marketing) |
+| "mon backlog LinkedIn", "mes idées de posts", "qu'est-ce que j'ai à écrire" | `list_tasks` (tags: marketing) |
 | "tendances LinkedIn sur X", "qu'est-ce qui marche sur LinkedIn en ce moment" | `search_engine` + `web_data_linkedin_posts` |
 | "rédiger un post sur X", "draft LinkedIn X", "écrire le post Y" | `list_tasks` → fuzzy → AI rédige → `save_document` (+ `update_task_status` in_progress) |
 | "j'ai publié le post sur X", "post Y publié", "logger la publication" | `list_tasks` → fuzzy → `update_task_status` (done) + `log_interaction` |

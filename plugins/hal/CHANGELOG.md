@@ -16,6 +16,15 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.11.5] — 2026-07-29 — linkedin: use an allowed workspace tag
+
+### Fixed
+- **`linkedin`** — `idea`, `backlog`, `draft`, and `log` all filtered/created tasks with
+  `tags: ["linkedin"]`, but `linkedin` is not in the `blue-green` workspace's `allowed_tags`
+  vocabulary (`client`, `commercial`, `finance`, `hr`, `legal`, `marketing`, `memory`,
+  `operations`, `other`, `product`). `create_task` rejected every call. Switched to
+  `tags: ["marketing"]`, which is allowed and matches the editorial-content nature of the task.
+
 ## [0.11.4] — 2026-07-28 — edifice-front: full tool ids as literals — Cowork regenerates the meta block
 
 **Cowork regenerates `cowork-artifact-meta` when it publishes an artifact**, deriving
