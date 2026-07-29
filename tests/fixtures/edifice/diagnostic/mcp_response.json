@@ -1,0 +1,62 @@
+{
+  "project": {
+    "id": "proj-diag-1",
+    "type": "diagnostic",
+    "building_id": "bldg-1",
+    "name": "Diagnostic structurel — Résidence Test",
+    "mission_context": {
+      "titre_service": "Diagnostic structurel",
+      "client": "Client Test SAS",
+      "residence": "Résidence Les Tilleuls",
+      "adresse": "12 Rue de Test (Paris) 75012",
+      "code_postal_ville": "75012 Paris",
+      "ref_dossier": "DIAG-2026-001",
+      "date_visite": "2026-03-15",
+      "objet_visite": "Diagnostic structurel planchers",
+      "synthese": "Synthèse test.",
+      "conclusion": "Conclusion test."
+    }
+  },
+  "building": {
+    "id": "bldg-1",
+    "name": "Résidence Les Tilleuls",
+    "address": "12 Rue de Test, 75012 Paris",
+    "description": "Immeuble R+4 en maçonnerie"
+  },
+  "notes": [
+    {
+      "id": "note-1",
+      "type": "disorder",
+      "name": "Fissure façade nord",
+      "zone": "Façade nord",
+      "location": "Étage 2",
+      "description": "Fissure diagonale visible sur enduit",
+      "assessment": "2",
+      "recommendations": "Surveiller et reprendre l'enduit",
+      "metadata": {}
+    },
+    {
+      "id": "note-2",
+      "type": "disorder",
+      "name": "Affaissement plancher",
+      "zone": "Appartement 12",
+      "location": "Salon",
+      "description": "Affaissement local du plancher bois",
+      "assessment": "1",
+      "recommendations": "Renforcement urgent",
+      "metadata": {}
+    },
+    {
+      "id": "note-3",
+      "type": "note",
+      "name": "Vue générale façade",
+      "description": "Vue d'ensemble avant visite",
+      "metadata": {"tag": "methodo:visite_terrain"}
+    }
+  ],
+  "photos": [
+    {"note_id": "note-1", "storage_path": "missions/proj-diag-1/note-1/diag_photo_1.jpg", "signed_url": null},
+    {"note_id": "note-2", "storage_path": "missions/proj-diag-1/note-2/diag_photo_2.jpg", "signed_url": null},
+    {"note_id": "note-3", "storage_path": "missions/proj-diag-1/note-3/methodo_1.jpg", "signed_url": null}
+  ]
+}
