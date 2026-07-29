@@ -1,0 +1,493 @@
+<!doctype html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Command Center Quotidien",
+  "schemaVersion": 1,
+  "description": "Command center de Renaud, 2 onglets. (1) Command Center : agenda du jour (3 calendriers Google), sprint Blue Green, relances/actions job search dues, tâches perso/famille — via hal. (2) Daily logs : les 2 daily logs du jour (blue-green + renaud) rendus en markdown (priorités, relances, cases à cocher, agenda, notes), avec sélecteur de journée pour remonter les jours précédents. Sélection auto du sprint contenant la date du jour.",
+  "mcpTools": [
+    "mcp__6fd5fd1e-2c83-4b88-9e45-6b063ff778ec__list_events",
+    "mcp__7898d523-5bb3-4502-b704-16db78ae0a8c__list_sprints",
+    "mcp__7898d523-5bb3-4502-b704-16db78ae0a8c__list_tasks",
+    "mcp__7898d523-5bb3-4502-b704-16db78ae0a8c__list_documents",
+    "mcp__7898d523-5bb3-4502-b704-16db78ae0a8c__get_document"
+  ],
+  "mcpServerNames": [
+    "Google Calendar",
+    "hal-mcp",
+    "hal-mcp",
+    "hal-mcp",
+    "hal-mcp"
+  ]
+}
+</script>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Command Center — Renaud</title>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1a1d21; --muted:#6b7280; --line:#e6e8ec;
+    --bg-blue:#0f766e; --bg-blue-soft:#e6f4f2;
+    --js:#b45309; --js-soft:#fdf1e3;
+    --fam:#be185d; --fam-soft:#fbe8f0;
+    --perso:#4f46e5; --perso-soft:#ecebfb;
+    --red:#dc2626; --red-soft:#fdeaea; --orange:#d97706; --orange-soft:#fdf3e2;
+    --green:#16a34a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 18px 40px}
+  header.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;margin-bottom:2px}
+  header.top h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em}
+  header.top .date{color:var(--muted);font-size:13px;text-transform:capitalize}
+  .updated{color:var(--muted);font-size:12px;margin-left:auto}
+
+  nav.tabs{display:flex;gap:2px;margin:12px 0 16px;border-bottom:1px solid var(--line)}
+  .tab{appearance:none;border:0;background:none;font:inherit;cursor:pointer;padding:9px 15px;
+    color:var(--muted);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab.active{color:var(--ink);border-bottom-color:var(--bg-blue)}
+  .tab:hover{color:var(--ink)}
+  .hidden{display:none!important}
+
+  .stats{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:8px 12px;display:flex;align-items:center;gap:8px;min-width:120px}
+  .stat .n{font-size:20px;font-weight:700;line-height:1}
+  .stat .l{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .stat .dot{width:9px;height:9px;border-radius:50%}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    box-shadow:0 1px 2px rgba(16,24,40,.03)}
+  .card h2{font-size:13.5px;margin:0;padding:13px 15px;display:flex;align-items:center;gap:9px;
+    font-weight:700;border-bottom:1px solid var(--line)}
+  .card h2 .accent{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+  .card h2 .count{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600;
+    background:var(--bg);border-radius:20px;padding:1px 9px}
+  .body{padding:6px 6px 10px}
+  .row{padding:9px 10px;border-radius:9px;display:flex;gap:10px;align-items:flex-start}
+  .row + .row{border-top:1px solid var(--line)}
+  .row .time{flex:0 0 auto;font-variant-numeric:tabular-nums;font-weight:600;font-size:12.5px;
+    color:var(--ink);min-width:44px;text-align:right}
+  .row .txt{flex:1 1 auto;min-width:0}
+  .row .title{font-weight:550;overflow-wrap:anywhere}
+  .row .sub{color:var(--muted);font-size:12px;margin-top:2px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .chip{font-size:10.5px;padding:1px 7px;border-radius:20px;font-weight:600;white-space:nowrap}
+  .join{font-size:11.5px;text-decoration:none;color:#fff;background:var(--green);
+    padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
+  .join:hover{filter:brightness(.94)}
+  .due{font-size:11px;padding:1px 7px;border-radius:6px;font-weight:700;white-space:nowrap;flex:0 0 auto}
+  .due.over{background:var(--red-soft);color:var(--red)}
+  .due.today{background:var(--orange-soft);color:var(--orange)}
+  .due.soft{background:var(--bg);color:var(--muted)}
+  .pdot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;margin-top:6px}
+  .p-high{background:var(--red)} .p-medium{background:var(--orange)} .p-normal{background:#cbd0d6}
+  .allday{font-size:10.5px;color:var(--muted);font-weight:600;min-width:44px;text-align:right;flex:0 0 auto}
+  .empty{padding:16px 14px;color:var(--muted);font-size:13px;text-align:center}
+  .sec-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+    font-weight:700;padding:10px 12px 4px}
+  .skel{height:12px;background:linear-gradient(90deg,#eef0f3,#f6f7f9,#eef0f3);
+    background-size:200% 100%;animation:sh 1.2s infinite;border-radius:6px;margin:11px 10px}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .err{color:var(--red);font-size:12.5px;padding:12px 14px}
+  .foot{color:var(--muted);font-size:11.5px;margin-top:18px;text-align:center}
+
+  /* daily logs */
+  .logs-toolbar{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .logs-toolbar label{font-size:12.5px;color:var(--muted);font-weight:600}
+  .logs-toolbar select{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;
+    background:#fff;color:var(--ink);text-transform:capitalize}
+  .logs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;align-items:start}
+  .log-card .mdwrap{padding:4px 16px 18px}
+  .md-body h3{font-size:15px;margin:16px 0 6px;font-weight:700;letter-spacing:-.01em}
+  .md-body h3:first-child{margin-top:8px}
+  .md-body h4{font-size:12px;margin:15px 0 5px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.03em}
+  .md-body h5{font-size:12.5px;margin:11px 0 3px;font-weight:700;color:var(--muted)}
+  .md-body p{margin:5px 0}
+  .md-body ul.md,.md-body ol.md{margin:5px 0 10px;padding-left:20px}
+  .md-body li{margin:3px 0}
+  .md-body li.chk{list-style:none;margin-left:-20px;display:flex;gap:8px;align-items:flex-start}
+  .md-body .cb{width:15px;height:15px;border:1.5px solid #c3c8d0;border-radius:4px;flex:0 0 auto;margin-top:2px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;line-height:1}
+  .md-body .cb.done{background:var(--green);border-color:var(--green)}
+  .md-body .strk{color:var(--muted);text-decoration:line-through}
+  .md-body code{background:var(--bg);padding:1px 5px;border-radius:5px;font-size:12.5px}
+  .md-body a{color:var(--bg-blue);overflow-wrap:anywhere}
+  .md-body strong{font-weight:700}
+  .doc-meta{font-size:11px;color:var(--muted);padding:0 16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Command Center</h1>
+    <span class="date" id="today-str">—</span>
+    <span class="updated" id="updated">chargement…</span>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-view="cc">Command Center</button>
+    <button class="tab" data-view="logs">Daily logs</button>
+  </nav>
+
+  <!-- ===================== VUE COMMAND CENTER ===================== -->
+  <section id="view-cc">
+    <div class="stats" id="stats"></div>
+    <div class="grid">
+      <section class="card" id="card-agenda">
+        <h2><span class="accent" style="background:#334155"></span> Agenda du jour <span class="count" id="c-agenda"></span></h2>
+        <div class="body" id="b-agenda"><div class="skel" style="width:70%"></div><div class="skel" style="width:85%"></div><div class="skel" style="width:60%"></div></div>
+      </section>
+
+      <section class="card" id="card-bg">
+        <h2><span class="accent" style="background:var(--bg-blue)"></span> Blue Green — sprint <span class="count" id="c-bg"></span></h2>
+        <div class="body" id="b-bg"><div class="skel" style="width:80%"></div><div class="skel" style="width:65%"></div></div>
+      </section>
+
+      <section class="card" id="card-js">
+        <h2><span class="accent" style="background:var(--js)"></span> Job search — relances &amp; actions <span class="count" id="c-js"></span></h2>
+        <div class="body" id="b-js"><div class="skel" style="width:85%"></div><div class="skel" style="width:70%"></div><div class="skel" style="width:75%"></div></div>
+      </section>
+
+      <section class="card" id="card-perso">
+        <h2><span class="accent" style="background:var(--perso)"></span> Perso &amp; famille <span class="count" id="c-perso"></span></h2>
+        <div class="body" id="b-perso"><div class="skel" style="width:60%"></div></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ===================== VUE DAILY LOGS ===================== -->
+  <section id="view-logs" class="hidden">
+    <div class="logs-toolbar">
+      <label for="log-date">Journée</label>
+      <select id="log-date"></select>
+    </div>
+    <div class="logs-grid">
+      <section class="card log-card">
+        <h2><span class="accent" style="background:var(--bg-blue)"></span> Blue Green</h2>
+        <div class="mdwrap" id="log-bg"><div class="skel" style="width:70%"></div><div class="skel" style="width:85%"></div></div>
+      </section>
+      <section class="card log-card">
+        <h2><span class="accent" style="background:var(--js)"></span> Renaud — perso / job search</h2>
+        <div class="mdwrap" id="log-renaud"><div class="skel" style="width:70%"></div><div class="skel" style="width:85%"></div></div>
+      </section>
+    </div>
+  </section>
+
+  <div class="foot">Données live via tes connecteurs Google Agenda + hal. Bouton <b>Reload</b> en haut du panneau pour rafraîchir.</div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- connector tool ids ---------- */
+const T_EVENTS  = "mcp__6fd5fd1e-2c83-4b88-9e45-6b063ff778ec__list_events";
+const T_SPRINTS = "mcp__7898d523-5bb3-4502-b704-16db78ae0a8c__list_sprints";
+const T_TASKS   = "mcp__7898d523-5bb3-4502-b704-16db78ae0a8c__list_tasks";
+const T_DOCS    = "mcp__7898d523-5bb3-4502-b704-16db78ae0a8c__list_documents";
+const T_GETDOC  = "mcp__7898d523-5bb3-4502-b704-16db78ae0a8c__get_document";
+
+// Calendar ids redacted for public distribution — this file is a structural
+// reference for the mcpTools declaration, not a runnable artifact.
+const CALS = [
+  { id:"WORK_CALENDAR_ID",     label:"Blue Green", color:"var(--bg-blue)" },
+  { id:"PERSONAL_CALENDAR_ID", label:"Job search", color:"var(--js)" },
+  { id:"FAMILY_CALENDAR_ID",   label:"Famille",    color:"var(--fam)" }
+];
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+async function callTool(name, args){
+  const r = await window.cowork.callMcpTool(name, args||{});
+  if(r && r.isError){ throw new Error(extractText(r) || "Erreur outil"); }
+  if(r && r.content && r.content[0] && typeof r.content[0].text === "string"){
+    try { return JSON.parse(r.content[0].text); } catch(e){ /* fallthrough */ }
+  }
+  if(r && r.structuredContent != null) return r.structuredContent;
+  return null;
+}
+function extractText(r){ try{ return r.content[0].text; }catch(e){ return ""; } }
+
+function parisToday(){
+  return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+}
+function addDays(dateStr,n){ const d=new Date(dateStr+"T00:00:00"); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function ddmm(dateStr){ const p=dateStr.split("-"); return p[2]+"/"+p[1]; }
+function fmtTime(iso){ try{ return new Intl.DateTimeFormat("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"}).format(new Date(iso)); }catch(e){ return ""; } }
+function frDate(dateStr){ try{ return new Intl.DateTimeFormat("fr-FR",{weekday:"long",day:"numeric",month:"long"}).format(new Date(dateStr+"T00:00:00")); }catch(e){ return dateStr; } }
+
+const TODAY = parisToday();
+const SOON  = addDays(TODAY,7);
+const PRIO = { high:3, medium:2, normal:1, low:0 };
+function prio(t){ return PRIO[t && t.priority] || 0; }
+function pClass(t){ const p=(t&&t.priority)||"normal"; return p==="high"?"p-high":p==="medium"?"p-medium":"p-normal"; }
+
+function asArray(p){
+  if(Array.isArray(p)) return p;
+  if(p && Array.isArray(p.result)) return p.result;
+  if(p && Array.isArray(p.tasks)) return p.tasks;
+  if(p && Array.isArray(p.items)) return p.items;
+  if(p && Array.isArray(p.sprints)) return p.sprints;
+  if(p && Array.isArray(p.documents)) return p.documents;
+  return [];
+}
+function pickCurrentSprint(sprints){
+  const arr = asArray(sprints);
+  if(!arr.length) return null;
+  const cont = arr.find(s=> s.starts_at && s.ends_at && s.starts_at<=TODAY && TODAY<=s.ends_at);
+  if(cont) return cont;
+  return arr.slice().sort((a,b)=>(b.starts_at||"").localeCompare(a.starts_at||""))[0];
+}
+function taskSort(a,b){
+  const ad=a.due_date||"9999-12-31", bd=b.due_date||"9999-12-31";
+  if(ad!==bd) return ad<bd?-1:1;
+  return prio(b)-prio(a);
+}
+function dueBadge(t){
+  if(!t.due_date) return "";
+  if(t.due_date < TODAY) return '<span class="due over">⚠ '+ddmm(t.due_date)+'</span>';
+  if(t.due_date === TODAY) return '<span class="due today">Aujourd\'hui</span>';
+  return '<span class="due soft">'+ddmm(t.due_date)+'</span>';
+}
+function shortRef(r){
+  if(/Opportunites\//.test(r) || /Opportunité/.test(r)) return "vault";
+  if(/Entretiens\//.test(r)) return "entretien";
+  return "vault";
+}
+function taskRow(t){
+  const ref = t.external_ref ? '<span class="chip" style="background:var(--bg);color:var(--muted)">'+esc(shortRef(t.external_ref))+'</span>' : "";
+  return '<div class="row"><span class="pdot '+pClass(t)+'"></span>'
+    + '<div class="txt"><div class="title">'+esc(t.title)+'</div>'
+    + '<div class="sub">'+dueBadge(t)+ref+'</div></div></div>';
+}
+
+const state = { agenda:null, bg:null, js:null, perso:null };
+function setUpdated(){
+  const t = new Intl.DateTimeFormat("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"}).format(new Date());
+  $("updated").textContent = "mis à jour à "+t;
+}
+function renderStats(){
+  const s=state, items=[];
+  if(s.agenda!=null) items.push({n:s.agenda, l:"RDV aujourd'hui", c:"#334155"});
+  if(s.js!=null)     items.push({n:s.js,     l:"Relances dues",   c:"var(--js)"});
+  if(s.bg!=null)     items.push({n:s.bg,     l:"Tâches Blue Green",c:"var(--bg-blue)"});
+  if(s.perso!=null)  items.push({n:s.perso,  l:"Perso & famille", c:"var(--perso)"});
+  $("stats").innerHTML = items.map(i=>
+    '<div class="stat"><span class="dot" style="background:'+i.c+'"></span><span class="n">'+i.n+'</span><span class="l">'+i.l+'</span></div>'
+  ).join("");
+}
+
+/* ---------- AGENDA ---------- */
+async function loadAgenda(){
+  const args = { startTime:TODAY+"T00:00:00", endTime:TODAY+"T23:59:59", timeZone:"Europe/Paris", pageSize:50 };
+  const results = await Promise.allSettled(
+    CALS.map(c=> callTool(T_EVENTS, Object.assign({calendarId:c.id}, args)))
+  );
+  let evs=[];
+  results.forEach((res,i)=>{
+    if(res.status!=="fulfilled" || !res.value) return;
+    const list = (res.value.events)||[];
+    list.forEach(e=>{
+      if(e.status==="cancelled") return;
+      const self=(e.attendees||[]).find(a=>a.self);
+      if(self && self.responseStatus==="declined") return;
+      const allDay = !!(e.start && e.start.date);
+      evs.push({
+        cal:CALS[i], allDay:allDay, summary:e.summary||"(sans titre)",
+        sortKey: allDay ? "00:00" : fmtTime(e.start.dateTime),
+        startTime: allDay ? "" : fmtTime(e.start.dateTime),
+        endTime: (e.end && e.end.dateTime) ? fmtTime(e.end.dateTime) : "",
+        join: e.conferenceUrl || "",
+      });
+    });
+  });
+  evs.sort((a,b)=> (a.allDay===b.allDay) ? a.sortKey.localeCompare(b.sortKey) : (a.allDay?-1:1));
+  state.agenda = evs.length;
+  $("c-agenda").textContent = evs.length;
+
+  if(!evs.length){ $("b-agenda").innerHTML='<div class="empty">Rien au programme aujourd\'hui 🎉</div>'; renderStats(); return; }
+  $("b-agenda").innerHTML = evs.map(e=>{
+    const left = e.allDay ? '<span class="allday">journée</span>'
+                          : '<span class="time">'+esc(e.startTime)+'</span>';
+    const join = e.join ? ' <a class="join" href="'+esc(e.join)+'" target="_blank" rel="noopener">Rejoindre</a>' : "";
+    const sub = '<div class="sub"><span class="chip" style="background:'+e.cal.color+';color:#fff">'+esc(e.cal.label)+'</span>'
+      + (e.endTime && !e.allDay ? '<span style="color:var(--muted)">→ '+esc(e.endTime)+'</span>' : "")
+      + join + '</div>';
+    return '<div class="row">'+left+'<div class="txt"><div class="title">'+esc(e.summary)+'</div>'+sub+'</div></div>';
+  }).join("");
+  renderStats();
+}
+
+/* ---------- BLUE GREEN sprint ---------- */
+async function loadBlueGreen(){
+  const sprints = await callTool(T_SPRINTS, {workspace_slug:"blue-green", status:"actuel"});
+  const sp = pickCurrentSprint(sprints);
+  if(!sp){ $("b-bg").innerHTML='<div class="empty">Aucun sprint actif.</div>'; state.bg=0; renderStats(); return; }
+  const tasks = asArray(await callTool(T_TASKS, {workspace_slug:"blue-green", sprint_id:sp.id}))
+    .filter(t=> t.status!=="done");
+  tasks.sort(taskSort);
+  state.bg = tasks.length; $("c-bg").textContent = tasks.length;
+  $("b-bg").innerHTML = tasks.length
+    ? ('<div class="sec-label">'+esc(sp.name)+'</div>' + tasks.map(taskRow).join(""))
+    : '<div class="empty">Sprint vide côté Blue Green.</div>';
+  renderStats();
+}
+
+/* ---------- PERSO & FAMILLE ---------- */
+async function loadPerso(){
+  const sprints = await callTool(T_SPRINTS, {workspace_slug:"renaud", status:"actuel"});
+  const sp = pickCurrentSprint(sprints);
+  if(!sp){ $("b-perso").innerHTML='<div class="empty">Aucun sprint actif.</div>'; state.perso=0; renderStats(); return; }
+  const tasks = asArray(await callTool(T_TASKS, {workspace_slug:"renaud", sprint_id:sp.id}))
+    .filter(t=> t.status!=="done" && !((t.tags||[]).includes("jobsearch")));
+  tasks.sort(taskSort);
+  state.perso = tasks.length; $("c-perso").textContent = tasks.length;
+  $("b-perso").innerHTML = tasks.length
+    ? tasks.map(taskRow).join("")
+    : '<div class="empty">Rien de perso en attente.</div>';
+  renderStats();
+}
+
+/* ---------- JOB SEARCH relances ---------- */
+async function loadJobSearch(){
+  const all = asArray(await callTool(T_TASKS, {workspace_slug:"renaud", tags:["jobsearch"]}))
+    .filter(t=> t.status!=="done");
+  const over = all.filter(t=> t.due_date && t.due_date < TODAY).sort(taskSort);
+  const today = all.filter(t=> t.due_date===TODAY).sort(taskSort);
+  const soon = all.filter(t=> t.due_date && t.due_date>TODAY && t.due_date<=SOON).sort(taskSort);
+  const dueNow = over.length + today.length;
+  state.js = dueNow; $("c-js").textContent = dueNow;
+
+  const CAP = 6;
+  function section(label,color,list){
+    if(!list.length) return "";
+    const shown = list.slice(0,CAP).map(taskRow).join("");
+    const more = list.length>CAP ? '<div class="empty" style="padding:6px 12px;text-align:left">+'+(list.length-CAP)+' autre(s)…</div>' : "";
+    return '<div class="sec-label" style="color:'+color+'">'+label+'</div>'+shown+more;
+  }
+  let html = section("En retard","var(--red)",over)
+           + section("À faire aujourd'hui","var(--orange)",today)
+           + section("Cette semaine","var(--muted)",soon);
+  if(!html) html = '<div class="empty">Aucune relance due. 👌</div>';
+  $("b-js").innerHTML = html;
+  renderStats();
+}
+
+/* ================= DAILY LOGS (markdown) ================= */
+function mdInline(s){
+  s = esc(s);
+  s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  s = s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return s;
+}
+function mdToHtml(md){
+  const lines = md.replace(/\r/g,"").split("\n");
+  let html="", listType=null;
+  const closeList=()=>{ if(listType){ html+="</"+listType+">"; listType=null; } };
+  for(const raw of lines){
+    const line = raw.replace(/\s+$/,"");
+    if(!line.trim()){ closeList(); continue; }
+    let m;
+    if(m = line.match(/^(#{1,6})\s+(.*)$/)){
+      closeList();
+      const lvl=m[1].length, tag = lvl<=1?"h3":lvl===2?"h4":"h5";
+      html += "<"+tag+">"+mdInline(m[2])+"</"+tag+">"; continue;
+    }
+    if(m = line.match(/^\s*[-*]\s+\[([ xX])\]\s+(.*)$/)){
+      if(listType!=="ul"){ closeList(); html+='<ul class="md">'; listType="ul"; }
+      const done = m[1].toLowerCase()==="x";
+      html += '<li class="chk"><span class="cb'+(done?" done":"")+'">'+(done?"✓":"")+'</span>'
+            + '<span'+(done?' class="strk"':"")+'>'+mdInline(m[2])+'</span></li>'; continue;
+    }
+    if(m = line.match(/^\s*[-*]\s+(.*)$/)){
+      if(listType!=="ul"){ closeList(); html+='<ul class="md">'; listType="ul"; }
+      html += "<li>"+mdInline(m[1])+"</li>"; continue;
+    }
+    if(m = line.match(/^\s*\d+\.\s+(.*)$/)){
+      if(listType!=="ol"){ closeList(); html+='<ol class="md">'; listType="ol"; }
+      html += "<li>"+mdInline(m[1])+"</li>"; continue;
+    }
+    closeList();
+    html += "<p>"+mdInline(line)+"</p>";
+  }
+  closeList();
+  return html;
+}
+
+let logsInited=false, dateList=[], selectedDate=TODAY;
+
+async function initLogs(){
+  if(logsInited) return; logsInited=true;
+  const res = await Promise.allSettled([
+    callTool(T_DOCS,{workspace_slug:"blue-green",domain:"memory",kind:"daily-log"}),
+    callTool(T_DOCS,{workspace_slug:"renaud",domain:"memory",kind:"daily-log"})
+  ]);
+  const set=new Set();
+  res.forEach(r=>{ if(r.status==="fulfilled") asArray(r.value).forEach(d=>{
+    if(d.slug && d.slug.indexOf("daily-log-")===0) set.add(d.slug.replace("daily-log-",""));
+  }); });
+  dateList = [...set].sort().reverse();
+  selectedDate = dateList.includes(TODAY) ? TODAY : (dateList[0]||TODAY);
+  const sel=$("log-date");
+  sel.innerHTML = dateList.map(d=>'<option value="'+d+'"'+(d===selectedDate?" selected":"")+'>'
+    + esc(frDate(d)) + (d===TODAY?" — aujourd'hui":"") + '</option>').join("");
+  sel.onchange = ()=>{ selectedDate=sel.value; loadDailyLogs(selectedDate); };
+  if(!dateList.length){ sel.innerHTML='<option>—</option>'; }
+  await loadDailyLogs(selectedDate);
+}
+
+async function loadDailyLogs(date){
+  const slug="daily-log-"+date, sk='<div class="skel" style="width:70%"></div><div class="skel" style="width:85%"></div>';
+  $("log-bg").innerHTML=sk; $("log-renaud").innerHTML=sk;
+  const [bg,rn]=await Promise.allSettled([
+    callTool(T_GETDOC,{workspace_slug:"blue-green",slug:slug}),
+    callTool(T_GETDOC,{workspace_slug:"renaud",slug:slug})
+  ]);
+  renderDoc("log-bg", bg);
+  renderDoc("log-renaud", rn);
+}
+function renderDoc(id,res){
+  if(res.status!=="fulfilled" || !res.value || !res.value.content_md){
+    $(id).innerHTML='<div class="empty">Pas de daily log pour cette journée.</div>'; return;
+  }
+  const doc=res.value;
+  const md = doc.content_md.replace(/^﻿?#\s+Daily log[^\n]*\n?/,"");
+  $(id).innerHTML='<div class="md-body">'+mdToHtml(md)+'</div>';
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tab").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(b=> b.classList.toggle("active", b===btn));
+    const v=btn.dataset.view;
+    $("view-cc").classList.toggle("hidden", v!=="cc");
+    $("view-logs").classList.toggle("hidden", v!=="logs");
+    if(v==="logs") initLogs();
+  });
+});
+
+/* ---------- init ---------- */
+function panelError(id,e){ $(id).innerHTML='<div class="err">Impossible de charger — '+esc((e&&e.message)||e)+'</div>'; }
+
+async function init(){
+  $("today-str").textContent = frDate(TODAY);
+  await Promise.allSettled([
+    loadAgenda().catch(e=>panelError("b-agenda",e)),
+    loadBlueGreen().catch(e=>panelError("b-bg",e)),
+    loadJobSearch().catch(e=>panelError("b-js",e)),
+    loadPerso().catch(e=>panelError("b-perso",e))
+  ]);
+  setUpdated();
+  renderStats();
+}
+init();
+</script>
+</body>
+</html>
