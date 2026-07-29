@@ -1,0 +1,56 @@
+{
+  "project": {
+    "id": "proj-cr-1",
+    "type": "suivi_chantier",
+    "building_id": "bldg-2",
+    "name": "Visite chantier — Résidence Le Gros Saule",
+    "mission_context": {
+      "titre_service": "Visite de chantier — ferraillage",
+      "client": "Client CR Test",
+      "residence": "Résidence Le Gros Saule",
+      "batiments_visites": "Bâtiment C",
+      "adresse": "5 Avenue du Chantier (Aulnay-sous-Bois) 93600",
+      "code_postal_ville": "93600 Aulnay-sous-Bois",
+      "ref_dossier": "CR-2026-014",
+      "date_visite": "2026-04-17",
+      "participants": [
+        {"nom": "Jean Dupont", "fonction": "Conducteur de travaux", "entreprise": "BTP Constructions", "contact": "j.dupont@btp.fr"}
+      ],
+      "objet_visite": "Contrôle du ferraillage avant coulage",
+      "synthese": "Ferraillage conforme sur les points contrôlés.",
+      "conclusion": "Poursuite du chantier autorisée."
+    }
+  },
+  "building": {
+    "id": "bldg-2",
+    "name": "Résidence Le Gros Saule",
+    "address": "5 Avenue du Chantier, 93600 Aulnay-sous-Bois",
+    "description": "Bâtiment R+3 en construction"
+  },
+  "notes": [
+    {
+      "id": "note-10",
+      "type": "reservation",
+      "name": "Ferraillage poteau P3",
+      "location": "Bâtiment C, RDC",
+      "description": "Recouvrement des aciers non conforme au plan",
+      "assessment": "a_faire",
+      "recommendations": "Reprendre le recouvrement avant coulage",
+      "metadata": {}
+    },
+    {
+      "id": "note-11",
+      "type": "reservation",
+      "name": "Ferraillage voile V2",
+      "location": "Bâtiment C, R+1",
+      "description": "Espacement des cadres conforme",
+      "assessment": "observation",
+      "recommendations": "",
+      "metadata": {}
+    }
+  ],
+  "photos": [
+    {"note_id": "note-10", "storage_path": "missions/proj-cr-1/note-10/cr_photo_1.jpg", "signed_url": null},
+    {"note_id": "note-11", "storage_path": "missions/proj-cr-1/note-11/cr_photo_2.jpg", "signed_url": null}
+  ]
+}

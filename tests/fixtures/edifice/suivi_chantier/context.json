@@ -1,0 +1,34 @@
+{
+  "project_type": "suivi_chantier",
+  "service_type": "Visite de chantier — ferraillage",
+  "client": "Client CR Test",
+  "residence": "Résidence Le Gros Saule",
+  "complement_adresse": "Bâtiment C",
+  "adresse": "5 Avenue du Chantier",
+  "code_postal": "93600",
+  "commune": "Aulnay-sous-Bois",
+  "dossier": "CR-2026-014",
+  "date_visite": "2026-04-17",
+  "objet_visite": "Contrôle du ferraillage avant coulage",
+  "synthese": "Ferraillage conforme sur les points contrôlés, une reprise nécessaire sur le poteau P3.",
+  "conclusion": "Poursuite du chantier autorisée sous réserve de la reprise du ferraillage du poteau P3.",
+  "participants": [
+    {"nom": "Jean Dupont", "fonction": "Conducteur de travaux", "entreprise": "BTP Constructions", "contact": "j.dupont@btp.fr"}
+  ],
+  "observations": [
+    {
+      "location": "Bâtiment C, RDC",
+      "description": "Recouvrement des aciers non conforme au plan sur le poteau P3",
+      "recommendations": "Reprendre le recouvrement avant coulage",
+      "assessment": "a_faire",
+      "photo": "cr_photo_1.jpg"
+    },
+    {
+      "location": "Bâtiment C, R+1",
+      "description": "Espacement des cadres conforme sur le voile V2",
+      "recommendations": "",
+      "assessment": "observation",
+      "photo": "cr_photo_2.jpg"
+    }
+  ]
+}

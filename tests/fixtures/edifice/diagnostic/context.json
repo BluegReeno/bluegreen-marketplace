@@ -1,0 +1,45 @@
+{
+  "project_type": "diagnostic",
+  "titre_service": "Diagnostic structurel",
+  "client": "Client Test SAS",
+  "residence": "Résidence Les Tilleuls",
+  "adresse": "12 Rue de Test, 75012 Paris",
+  "ref_dossier": "DIAG-2026-001",
+  "date_visite": "2026-03-15",
+  "objet_visite": "Diagnostic structurel planchers",
+  "description_batiment": "Immeuble R+4 en maçonnerie",
+  "synthese": "Deux désordres identifiés nécessitant une intervention.",
+  "conclusion": "Reprise de l'enduit et renforcement du plancher recommandés sous 3 mois.",
+  "notes": [
+    {
+      "name": "Vue générale façade",
+      "description": "Vue d'ensemble de la façade nord avant intervention",
+      "photo": "methodo_1.jpg",
+      "metadata": {"tag": "methodo:visite_terrain"}
+    }
+  ],
+  "observations": [
+    {
+      "ref": "OBS-01",
+      "name": "Fissure façade nord",
+      "zone": "Façade nord",
+      "location": "Étage 2",
+      "description": "Fissure diagonale visible sur enduit, ouverture environ 2mm",
+      "assessment": "2",
+      "recommendations": "Surveiller et reprendre l'enduit sous 6 mois",
+      "photos": ["diag_photo_1.jpg"],
+      "photo": "diag_photo_1.jpg"
+    },
+    {
+      "ref": "OBS-02",
+      "name": "Affaissement plancher",
+      "zone": "Appartement 12",
+      "location": "Salon",
+      "description": "Affaissement local du plancher bois d'environ 1cm",
+      "assessment": "1",
+      "recommendations": "Renforcement urgent de la structure porteuse",
+      "photos": ["diag_photo_2.jpg"],
+      "photo": "diag_photo_2.jpg"
+    }
+  ]
+}
