@@ -4,16 +4,24 @@ Last updated: 2026-07-28
 
 ## Current Focus
 
-Chantier **Edifice front as an artifact** (#50) livré en v1 : socle `ui/` (#51/PR #52), artefact lecture seule (#50/PR #53), UUID connecteur via `ListConnectors` (#54/PR #55), erreur auto-diagnostiquante (PR #57).
+**`/edifice front` ne fonctionne toujours pas — reprise cadrée dans [#60](https://github.com/BluegReeno/bluegreen-marketplace/issues/60).**
 
-**En attente de validation** : `/edifice front` n'a pas encore chargé une liste de missions en Cowork. Le dernier échec observé est attribué à un artefact obsolète resté dans la galerie — l'artefact publié téléchargé s'est révélé identique octet pour octet à la source commitée, meta hydraté avec le bon UUID, donc l'erreur ne pouvait pas venir de ce document. À confirmer par un test après purge de la galerie et mise à jour du plugin en 0.11.3.
+La route est publiée depuis v0.11.0 et n'a jamais chargé une seule mission. Quatre correctifs livrés le 2026-07-28 (v0.11.2 → v0.11.4), chacun réel, aucun suffisant : l'artefact charge, résout ses ids, émet l'appel — et Cowork le refuse (`Tool "mcp__…__list_edifice_missions" is not in this artifact's mcp_tools allowlist`).
 
-Prochaine étape une fois validé : phase 2 (écriture — `push_mission_context` depuis l'artefact, #49), pas encore lancée.
+**Cause trouvée en fin de journée** (via une session Cowork interrogée sur le « Command Center », seul artefact connecté qui fonctionne) : l'allowlist `mcp_tools` est déclarée **à la création de l'artefact**, comme paramètre de l'outil de publication. Ni le bloc `cowork-artifact-meta` du HTML, ni les littéraux du bundle ne l'alimentent. Notre skill écrit un fichier HTML et demande à l'utilisateur de l'ouvrir : personne ne déclare jamais l'allowlist. Il manque aussi l'appel hal préalable dans la session, qui approuve le connecteur pour l'artefact.
+
+Recette complète, état d'avancement et inconnue restante (signature de l'outil de publication) : **#60**. Ne pas rouvrir la piste « bloc meta dans le préambule » — PR #59 fermée sans merge, hypothèse fausse.
+
+Le reste du chantier #50 est acquis : socle `ui/` (#51/PR #52), artefact lecture seule (#50/PR #53), toolchain et CI en place. Phase 2 (écriture — `push_mission_context` depuis l'artefact, #49) reste bloquée derrière #60.
 
 En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smoke test de rendu (#44), Gemini Enterprise (#13 manuel), projet↔opportunité (#21 migration).
 
 ## Done (2026-07-28)
 
+- [x] **Diagnostic `/edifice front` — cause racine identifiée, correctif non livré** — #60 ouverte — 2026-07-28
+  - Journée entière de diagnostic, quatre releases, aucune ne débloque. Ce qui a fait avancer : à chaque itération, faire dire à l'erreur ce qu'elle avait *observé* plutôt que ce qu'elle supposait.
+  - **Leçon de méthode** : trois hypothèses successives ont été construites sur l'artefact de référence téléchargé (`docs/reference-cowork-artifact-command-center.html`), en le lisant comme un livrable. C'est un **produit de session** — l'essentiel de sa recette (déclaration `mcp_tools` à la publication) n'est pas dans son HTML et ne pouvait pas en être déduit. Interroger la session qui l'a produit a donné en une réponse ce que six heures de lecture du fichier n'avaient pas donné.
+  - Erreur d'analyse à ne pas répéter : le fichier téléchargé depuis le bloc « Code · HTML » d'une conversation est la **source** écrite sur disque, pas l'artefact publié. Les differ pour « disculper la plateforme » est un raisonnement invalide.
 - [x] **Erreur auto-diagnostiquante de l'artefact** — PR #57 mergée — hal v0.11.3 — 2026-07-28
   - « Outil MCP … absent du bloc meta » ne nommait ni l'artefact en cours d'exécution ni les outils réellement déclarés : un artefact obsolète de la galerie était indiscernable d'un vrai échec d'hydratation. Les distinguer a coûté un téléchargement de l'artefact publié et un diff contre la source.
   - Le message rapporte maintenant le `name` du meta et la liste `mcpTools` lue. Nouveau code `bad_meta` extrait de `no_cowork` — l'artefact *tourne* dans Cowork, l'ancienne bannière désignait la mauvaise cause.
