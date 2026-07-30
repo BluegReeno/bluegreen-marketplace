@@ -16,6 +16,33 @@ Règle : les refactors internes (changement de librairie, restructuration code) 
 
 ---
 
+## [0.11.6] — 2026-07-30 — edifice-front: publish the live artifact declaring `mcp_tools`
+
+### Fixed
+- **`edifice`** (`/edifice front`) — the route wrote a hydrated HTML file to disk and asked
+  the user to open it manually; nobody ever declared the artifact's `mcp_tools` allowlist,
+  so every hal-mcp call was refused (`Tool "mcp__…__list_edifice_missions" is not in this
+  artifact's mcp_tools allowlist`), even though the artifact resolved the right connector UUID
+  and emitted the right call. Root cause (#60): `mcpTools` is a host-enforced allowlist
+  declared as a parameter of Cowork's publish call — never read from the HTML, and never
+  populated by the `mcp__remote-devices__*` cloud persistence path (`create_artifact` /
+  `update_artifact` silently drop it, and can overwrite an existing artifact's working
+  version).
+- Added a step that calls `list_edifice_missions` once, before hydrating, to approve the
+  hal-mcp connector for the artifact — part of the recipe confirmed against the one live
+  artifact that already worked (the "Command Center" reference).
+- Added a step that publishes through this session's local artifact-creation tool, declaring
+  the three full hal-mcp tool ids in `mcp_tools` — instead of writing a file and stopping.
+- Added a guard that refuses to run in a cloud/remote Cowork session (`mcp__remote-devices__*`
+  present) before generating anything, with a message pointing to a local session instead.
+
+### Known limitation
+- The exact publish tool signature, and whether hal-mcp needs to also exist as a claude.ai
+  account-level connector (not just the plugin's `.mcp.json`), are unconfirmed — see the
+  `<!-- TODO: verify in Cowork -->` comments in `/edifice front`'s step 5. This fix is
+  unvalidated until a human runs `/edifice front` in a real local Cowork session; the PR
+  stays in draft until then.
+
 ## [0.11.5] — 2026-07-29 — linkedin: use an allowed workspace tag
 
 ### Fixed
