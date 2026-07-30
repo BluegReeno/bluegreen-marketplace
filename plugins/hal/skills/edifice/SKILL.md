@@ -481,21 +481,45 @@ skill's contract (partial updates keyed by `note_id`) is unaffected.
 
 ## /edifice front
 
-Generates a **read-only Claude Cowork live artifact** for browsing Edifice missions
-(mission list, notes, photos) — a ported slice of the `edifice` monorepo's
+Generates and **publishes a read-only Claude Cowork live artifact** for browsing Edifice
+missions (mission list, notes, photos) — a ported slice of the `edifice` monorepo's
 `local-workspace` annotation UI, built from `ui/edifice-front/` and consuming
 `@bluegreeno/annotation-core`. Full architecture (MCP invocation API, sandbox
 constraints, why this is Cowork-only in v1): `docs/artifact-front-ends.md` and issue #50.
+Root-cause history for why this route never worked before this fix: issues #54, #56, #60
+and PRs #55, #57, #58, #59 (closed unmerged — do not reopen its approach, see step 4).
 
-**Precondition**: this route only works when invoked from inside a live Claude Cowork
-session — step 2 reads the connector registry through Cowork's `ListConnectors` tool,
-which Claude Code CLI does not expose. The UUID it returns is the only id
-`window.cowork.callMcpTool` can resolve; the session's own MCP tool names are **not** a
+**Precondition**: this route only works in a **local** Claude Cowork session — one running
+on the user's machine. Step 0 below stops it before anything is generated in a cloud/remote
+session. It also depends on step 2 reading the connector registry through Cowork's
+`ListConnectors` tool, which Claude Code CLI does not expose. The UUID it returns is the only
+id `window.cowork.callMcpTool` can resolve; the session's own MCP tool names are **not** a
 source for it (in Cowork hal-mcp is exposed under its short name,
 `mcp__hal-mcp__list_edifice_missions`, so deriving the UUID from tool names yields
 `hal-mcp` and the artifact fails to load).
 
 ### Steps
+
+**0. Guard — refuse cloud/remote sessions before generating anything**
+
+Check the tool names available in this session. If any is prefixed `mcp__remote-devices__`
+(e.g. `mcp__remote-devices__create_artifact`), this is a **cloud Cowork session**, not a
+local one — stop immediately, before reading the template or writing anything:
+
+> ❌ `/edifice front` ne peut pas publier depuis une session cloud. Les serveurs MCP
+> locaux/projet (dont hal-mcp) ne tournent pas côté session distante, et l'outil de
+> persistance cloud ne transporte pas la déclaration `mcp_tools` faite à la publication —
+> la page publiée ne pourrait de toute façon jamais appeler hal-mcp.
+> Relancez cette tâche en local (sélecteur « Run this task » → machine locale), puis
+> relancez `/edifice front`.
+
+This is not a precaution against a hypothetical bug: verified three ways in the 2026-07-28
+session, `mcp__remote-devices__create_artifact` / `update_artifact` never transport the
+`mcp_tools` declaration made at publish time — the stored artifact always comes back with
+`mcpTools: []`. Worse, calling either against an **existing** artifact overwrites its
+working version (this happened to `edifice-front` during diagnosis). **Never call
+`create_artifact` / `update_artifact` via `mcp__remote-devices__*` for this route** — guard
+or no guard, there is no scenario where that path produces a working artifact.
 
 **1. Read the committed template**
 
@@ -506,9 +530,9 @@ read-only input — never write back into `$PLUGIN_DIR`.
 
 Load the tool schema first — `ToolSearch { query: "select:ListConnectors" }` — then call
 `ListConnectors { keywords: ["hal"] }` and take the entry whose server name is `hal-mcp`.
-Its `installedServerId` (a UUID, e.g. `7898d523-…`) is `<uuid>` for step 3. This value is
-per-desktop and must never be hardcoded — always re-read it live, every time this command
-runs.
+Its `installedServerId` (a UUID, e.g. `7898d523-…`) is `<uuid>` for the steps below. This
+value is per-desktop and must never be hardcoded — always re-read it live, every time this
+command runs.
 
 Stop and tell the user — without generating a file with an unresolved placeholder — if:
 
@@ -518,7 +542,17 @@ Stop and tell the user — without generating a file with an unresolved placehol
 > ❌ hal-mcp non connecté dans cette session Cowork. Activez le connecteur hal-mcp,
 > puis relancez `/edifice front`.
 
-**3. Hydrate the tool ids**
+**3. Approve the connector — call `list_edifice_missions` once**
+
+Before hydrating or publishing, call `mcp__<uuid>__list_edifice_missions` (the `<uuid>` from
+step 2) with `limit: 1`. The returned data is not the point — this call resolves the tool's
+real full name once in this live session and approves the hal-mcp connector for use by a
+live artifact. Per the recipe confirmed by the session that produced the working "Command
+Center" reference artifact, **a live artifact can only use connectors already approved at
+creation/update time** — skipping this call is a known way for step 5's publish to grant an
+allowlist that resolves nothing at runtime even though every id is spelled correctly.
+
+**4. Hydrate the tool ids**
 
 Replace **every** occurrence of the literal string `PLACEHOLDER_HAL_MCP_UUID` in the
 template with the `<uuid>` from step 2 — currently 6: three in the
@@ -526,24 +560,60 @@ template with the `<uuid>` from step 2 — currently 6: three in the
 each `mcp__<uuid>__<tool>` id as a full literal. Do not count them and stop; replace
 all occurrences, the build may change how many there are.
 
-Never hydrate only the meta block. Cowork **regenerates** that block when it publishes
-the artifact, deriving `mcpTools` from the ids it finds in the code — a build whose JS
-names no tool literally is published with `mcpTools: []`, which resolves nothing and
-grants nothing, since that block is the permission manifest the user approves.
+Never rely on the meta block alone to grant access. Cowork **regenerates**
+`cowork-artifact-meta` when it publishes the artifact — the block in the published preamble
+is an *output* the platform writes after the publish call, not an input it reads (this was
+tested directly in PR #59, closed unmerged: moving/editing that block changes nothing about
+the resulting allowlist). What grants access is step 5's `mcp_tools` declaration at publish
+time, not any content of the HTML file.
 
-**4. Write to a working directory**
+**5. Publish the live artifact — declare `mcp_tools` at publish time**
 
-Write the hydrated HTML to `./edifice-front.html` in the current working directory —
-**never** back into `$PLUGIN_DIR/artifacts/`, which is read-only plugin input.
+Publish the hydrated HTML as a Cowork live artifact, using this **local** session's own
+artifact-creation tool (search with `ToolSearch` if its schema isn't already loaded — it is
+**not** `mcp__remote-devices__create_artifact` / `update_artifact`, forbidden by step 0).
+Declare all three full tool ids from step 2 as the artifact's allowed MCP tools:
 
-**5. Tell the user**
+```
+["mcp__<uuid>__list_edifice_missions",
+ "mcp__<uuid>__get_mission_context",
+ "mcp__<uuid>__get_mission_photo"]
+```
 
-> Artefact généré : `edifice-front.html`. Ouvrez-le comme live artifact dans Claude
-> Cowork et autorisez le connecteur `hal-mcp` si demandé.
+**`mcpTools` is a host-enforced allowlist, checked server-side by Cowork — it is not config
+read from the HTML.** An empty allowlist refuses every call at runtime no matter how
+correctly a tool name is reconstructed inside the bundle (this is exactly the failure mode
+step 4 describes). It is declared as a parameter of the publish call itself. Write this step
+at the intentional level — "publish this artifact, declaring these three ids as its allowed
+MCP tools" — and let Claude map that onto whichever publish tool this session actually
+exposes, the same way step 2 maps onto `ListConnectors` without this file hardcoding its
+schema.
 
-Tell them to open **that** artifact — the one this run produced. An artifact published
-from an earlier run stays in the Cowork gallery under a humanized name (`Edifice Front`)
-and reopening it silently serves the old build.
+<!-- TODO: verify in Cowork — the exact name and parameter shape of the local publish tool
+     are not confirmed anywhere in this repo or in Anthropic's public docs as of 2026-07-30.
+     Do not guess or hardcode a tool name/schema here until a live local Cowork session has
+     surfaced it (e.g. by unfolding the "Create an artifact" permission prompt, or asking
+     in-session which tool publishes a live artifact and which parameter declares allowed
+     MCP tools). -->
+
+<!-- TODO: verify in Cowork — hal-mcp is currently installed as a plugin-level MCP server
+     (`plugins/hal/.mcp.json`), not as a claude.ai account-level connector. Anthropic's
+     "Artifacts call your MCP connectors" docs (CLI v2.1.209+) state published pages can only
+     call account-level connectors, not project/local MCP servers — if that constraint
+     applies to this publish path, hal-mcp may also need to be added under
+     Settings → Connectors (see docs/connectors-and-skills.md §1b) before this step can work
+     at all. Confirm before relying on the recipe above; do not assume it is unnecessary. -->
+
+If no local publish tool that accepts an `mcp_tools`-style declaration can be found or
+confirmed, **stop and tell the user**, quoting what was tried — a static HTML file the user
+opens and connects manually is not an acceptable substitute for this route (issue #60 §1).
+
+**6. Tell the user**
+
+> Artefact publié : « Edifice Front » — c'est un live artifact Cowork connecté à hal-mcp,
+> pas un fichier à ouvrir manuellement. Vérifiez que la liste des missions se charge.
+
+If the publish call returns a viewer URL or artifact id, include it in the message.
 
 ### Known Phase 1 scope (read-only)
 
@@ -560,4 +630,15 @@ and reopening it silently serves the old build.
 - `needs_reauth` / `server_not_connected` errors are never auto-retried; only
   `server_unavailable` offers a retry, once per session — per the error-handling
   contract in `ui/edifice-front/src/cowork-mcp.ts`.
+
+### Validation limit — do not claim this route works until it is proven
+
+This chain can only be proven in a **local Cowork session with a genuinely published
+artifact**. A headless run (including the one that wrote this section) can write and reason
+about these steps but cannot observe whether Cowork's allowlist honours a declared
+`mcp_tools`, whether the step 0 guard fires the way described here, or whether hal-mcp needs
+to also be an account-level connector (see step 5's second TODO). Do not report `/edifice
+front` as fixed based on a headless run or on reading this file. Any PR touching this section
+stays in **draft** until a human has run `/edifice front` in a real local Cowork session and
+confirmed a hal-mcp call returns live mission data.
 
