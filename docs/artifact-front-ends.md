@@ -1,9 +1,9 @@
 # Artifact front-ends
 
-How rich (React/Tailwind) front-ends are built here and shipped as part of the `hal` plugin.
+How rich (React/Tailwind) front-ends are built here and shipped as part of the `edifice` plugin.
 
 This repo is both a **build environment** (`ui/`) and a **distribution channel**
-(`plugins/hal/artifacts/`). Sources, configs and build tooling live in `ui/`; the plugin directory
+(`plugins/edifice/artifacts/`). Sources, configs and build tooling live in `ui/`; the plugin directory
 contains only what is read at runtime. The two must not contaminate each other.
 
 ## Why static HTML, not a plugin component
@@ -27,11 +27,11 @@ ui/                                   ← SOURCE — never read at runtime
     ├── vite.config.ts                (viteSingleFile())
     └── src/
 
-plugins/hal/artifacts/
+plugins/edifice/artifacts/
 └── <name>.html                       ← DELIVERED — single-file, committed
 ```
 
-`ui/` sits at the repo root, **not** under `plugins/hal/`: the plugin directory stays auditable, and
+`ui/` sits at the repo root, **not** under `plugins/edifice/`: the plugin directory stays auditable, and
 no skill can read a source file by accident. `ui/**/node_modules/` and `ui/**/dist/` are gitignored,
 so `git clone` pulls no dependencies and no uncommitted build output — only source and the committed
 `.html`.
@@ -56,9 +56,9 @@ pnpm --filter <name> build
    non-reproducible (its date changes every run), so `scripts/check_artifact_sync.sh` strips it before
    diffing.
 3. **Target shape** (`ARTIFACT_TARGET`, see below).
-4. Writes `plugins/hal/artifacts/<name>.html`.
+4. Writes `plugins/edifice/artifacts/<name>.html`.
 
-Commit both the source (`ui/<name>/`) and the resulting `plugins/hal/artifacts/<name>.html`.
+Commit both the source (`ui/<name>/`) and the resulting `plugins/edifice/artifacts/<name>.html`.
 
 ## Two output shapes — pick per artifact
 
@@ -96,7 +96,7 @@ root.
 `scripts/check_artifact_sync.sh` rebuilds every `ui/<name>/` and fails if the committed HTML drifts
 from a fresh rebuild (ignoring the build-stamp line). This is what makes "committed build output" safe
 — the invariant is machine-checked, not maintained by discipline. CI runs it (with a Node/pnpm setup)
-**only** when `ui/**` or `plugins/hal/artifacts/**` changed, so Python-only PRs stay fast.
+**only** when `ui/**` or `plugins/edifice/artifacts/**` changed, so Python-only PRs stay fast.
 
 ## GitHub Packages auth (`@bluegreeno/*`)
 

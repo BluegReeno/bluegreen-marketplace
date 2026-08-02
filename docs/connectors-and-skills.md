@@ -1,17 +1,17 @@
 # Installing connectors & skills — Claude, Gemini, OpenAI
 
-How to connect the `hal` plugin's MCP server (**connector**) and its `SKILL.md`
-files (**skills**) across the three major AI providers.
+How to connect the `hal` plugin's MCP server (**connector**) and the `SKILL.md` files shipped by
+the `edifice`, `pm` and `gtm` plugins (**skills**) across the three major AI providers.
 
 Read this first: **a connector and a skill are two different things with different reach.**
 
 | | What it is | Where it installs |
 |---|---|---|
 | **Connector** | A remote **MCP server** (our Supabase Edge Function `hal-mcp`) exposing tools | **Every** surface: Claude (Code / Desktop / claude.ai), Gemini (Enterprise / CLI), ChatGPT |
-| **Skill** | A `SKILL.md` capability file (`/edifice`, `/hal …`) | **Only the agent/CLI surfaces**: Claude Code, Gemini **CLI**, OpenAI **Codex** — via the [agentskills.io](https://agentskills.io) standard. **Not** the chat apps. |
+| **Skill** | A `SKILL.md` capability file (`/edifice`, `/pm`, `/crm` …) | **Only the agent/CLI surfaces**: Claude Code, Gemini **CLI**, OpenAI **Codex** — via the [agentskills.io](https://agentskills.io) standard. **Not** the chat apps. |
 
 The chat apps (claude.ai chat, ChatGPT app, Gemini Enterprise) **cannot install a skill** —
-they only call the connector's tools. The full `/edifice` / `/hal` skill experience lives in
+they only call the connector's tools. The full `/edifice` / `/pm` / `/crm` skill experience lives in
 **Claude Code**. That is our primary, fully-supported target.
 
 ---
@@ -41,12 +41,15 @@ pasted manually.
 
 ```
 /plugin marketplace add BluegReeno/bluegreen-marketplace
-/plugin install hal@bluegreen-marketplace
+/plugin install hal@bluegreen-marketplace          # the connector — required
+/plugin install edifice@bluegreen-marketplace      # then whichever skills you use
+/plugin install pm@bluegreen-marketplace
+/plugin install gtm@bluegreen-marketplace
 ```
 
-Installing the plugin registers **both** the skills (`/edifice`, `/hal …`) **and** the
-`hal-mcp` connector automatically (the bundled `.mcp.json` auto-starts when the plugin is
-enabled). Run `/reload-plugins` if it doesn't appear immediately.
+`hal` registers the `hal-mcp` connector automatically (its bundled `.mcp.json` auto-starts when the
+plugin is enabled); the three others register the skills (`/edifice`, `/pm`, `/crm`, `/linkedin`)
+and call that same connector. Run `/reload-plugins` if something doesn't appear immediately.
 
 The connector authenticates via the `apikey` header. If it isn't already wired, add it once:
 
@@ -185,10 +188,10 @@ symlink them at the repo root:
 ```bash
 # run from the repo root
 mkdir -p .agents/skills
-ln -sf "$(pwd)/plugins/hal/skills/edifice"  .agents/skills/edifice
-ln -sf "$(pwd)/plugins/hal/skills/pm"       .agents/skills/pm
-ln -sf "$(pwd)/plugins/hal/skills/crm"      .agents/skills/crm
-ln -sf "$(pwd)/plugins/hal/skills/linkedin" .agents/skills/linkedin
+ln -sf "$(pwd)/plugins/edifice/skills/edifice" .agents/skills/edifice
+ln -sf "$(pwd)/plugins/pm/skills/pm"          .agents/skills/pm
+ln -sf "$(pwd)/plugins/gtm/skills/crm"        .agents/skills/crm
+ln -sf "$(pwd)/plugins/gtm/skills/linkedin"   .agents/skills/linkedin
 ```
 
 No frontmatter change needed. The chat apps (claude.ai, ChatGPT, Gemini Enterprise) ignore

@@ -20,14 +20,15 @@ import json, os, pathlib, sys
 
 home = pathlib.Path.home()
 
-# 1. env var
+# 1. env var — name kept from the hal monolith on purpose: it is a dev escape hatch
+# already exported in shells and sandboxes, and renaming it would break them for nothing.
 env = os.environ.get('HAL_PLUGIN_DIR', '')
 if env and pathlib.Path(env, 'scripts', 'build_context.py').exists():
     print(env); sys.exit(0)
 
 # 2. Claude Code marketplace cache (bluegreen-marketplace)
 for _mkt in ['bluegreen-marketplace']:
-    cache_root = home / '.claude' / 'plugins' / 'cache' / _mkt / 'hal'
+    cache_root = home / '.claude' / 'plugins' / 'cache' / _mkt / 'edifice'
     if cache_root.exists():
         candidates = sorted(cache_root.glob('*/scripts/build_context.py'), key=lambda p: p.stat().st_mtime, reverse=True)
         if candidates:
@@ -42,9 +43,9 @@ for pat in ['/sessions/*/mnt/.remote-plugins/*/scripts/build_context.py']:
 
 # 4. Known dev paths (Mac + Windows)
 for dev_path in [
-    home / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'hal',
-    home / 'projects' / 'bluegreen-marketplace' / 'plugins' / 'hal',
-    pathlib.Path('C:/Users') / os.environ.get('USERNAME', '') / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'hal',
+    home / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'edifice',
+    home / 'projects' / 'bluegreen-marketplace' / 'plugins' / 'edifice',
+    pathlib.Path('C:/Users') / os.environ.get('USERNAME', '') / 'Projects' / 'bluegreen-marketplace' / 'plugins' / 'edifice',
 ]:
     if dev_path.joinpath('scripts', 'build_context.py').exists():
         print(str(dev_path)); sys.exit(0)

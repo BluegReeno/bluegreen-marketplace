@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch, call
 for _mod in ("docxtpl", "docx", "docx.shared", "PIL", "PIL.Image", "PIL.ImageOps"):
     sys.modules.setdefault(_mod, MagicMock())
 
-sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "plugins/hal/scripts"))
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "plugins/edifice/scripts"))
 import render_diagnostic
 
 

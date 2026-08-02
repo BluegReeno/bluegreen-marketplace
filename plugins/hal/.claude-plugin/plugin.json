@@ -1,6 +1,6 @@
 {
   "name": "hal",
-  "version": "0.11.6",
-  "description": "HAL — second brain and mission workflow for BlueGreen and IC Ingénieurs Conseils.",
+  "version": "0.12.0",
+  "description": "HAL — the BlueGreen connector: carries the hal-mcp server every other BlueGreen plugin calls.",
   "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" }
 }

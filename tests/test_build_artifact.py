@@ -20,7 +20,7 @@ import unittest
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 UI_DIR = REPO / "ui"
-ARTIFACTS_DIR = REPO / "plugins/hal/artifacts"
+ARTIFACTS_DIR = REPO / "plugins/edifice/artifacts"
 BUILD_SCRIPT = UI_DIR / "scripts/build-artifact.mjs"
 
 DEFAULT_DIST_HTML = (

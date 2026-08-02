@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 from io import BytesIO
 from urllib.error import URLError
 
-sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "plugins/hal/scripts"))
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "plugins/edifice/scripts"))
 import build_context
 
 

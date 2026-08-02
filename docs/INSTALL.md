@@ -8,10 +8,18 @@ In Claude Code or Cowork:
 /plugin marketplace add BluegReeno/bluegreen-marketplace
 ```
 
-## Install a plugin
+## Install the connector — required by all the others
 
 ```
 /plugin install hal@bluegreen-marketplace
+```
+
+## Then install what you use
+
+```
+/plugin install edifice@bluegreen-marketplace     # building inspections
+/plugin install pm@bluegreen-marketplace          # projects and sprints
+/plugin install gtm@bluegreen-marketplace         # crm + linkedin
 ```
 
 ## Enable auto-updates
@@ -22,4 +30,7 @@ In Claude Code or Cowork:
 
 | Plugin | Skills | Description |
 |--------|--------|-------------|
-| `hal` | `/edifice`, `/pm`, `/crm`, `/linkedin` | Edifice building-inspection reports (DOCX) + project management, commercial pipeline, and LinkedIn editorial workflows via **hal-mcp** |
+| `hal` | — | The `hal-mcp` connector every other plugin calls. No command of its own; install it first |
+| `edifice` | `/edifice` | Edifice building-inspection missions and DOCX reports |
+| `pm` | `/pm`, `/sprint-planner`, `/sprint-review` | Project management — tasks, sprints, projects, docs — via **hal-mcp** |
+| `gtm` | `/crm`, `/linkedin` | Commercial pipeline and LinkedIn editorial workflow via **hal-mcp** |

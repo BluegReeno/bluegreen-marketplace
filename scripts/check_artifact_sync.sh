@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Rebuild every ui/<name>/ workspace member and fail if the committed
-# plugins/hal/artifacts/<name>.html differs from a fresh rebuild (ignoring the
+# plugins/edifice/artifacts/<name>.html differs from a fresh rebuild (ignoring the
 # non-reproducible build-stamp comment line, which legitimately changes every
 # run — see ui/scripts/build-artifact.mjs).
 # Usage: ./scripts/check_artifact_sync.sh
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ARTIFACTS_DIR="$REPO_ROOT/plugins/hal/artifacts"
+ARTIFACTS_DIR="$REPO_ROOT/plugins/edifice/artifacts"
 ERRORS=0
 
 if [ ! -d "$REPO_ROOT/ui" ]; then
@@ -26,7 +26,7 @@ for app_dir in "$REPO_ROOT"/ui/*/; do
 
   committed="$ARTIFACTS_DIR/$name.html"
   if [ ! -f "$committed" ]; then
-    echo "ERROR    [$name] no committed artifact at plugins/hal/artifacts/$name.html"
+    echo "ERROR    [$name] no committed artifact at plugins/edifice/artifacts/$name.html"
     ERRORS=$((ERRORS + 1))
     continue
   fi
@@ -53,7 +53,7 @@ for app_dir in "$REPO_ROOT"/ui/*/; do
   ( cd "$REPO_ROOT/ui" && pnpm --filter "$name" build ) >/dev/null
 
   if ! diff "$before_file" <(grep -v '^<!-- build:' "$committed") >/dev/null 2>&1; then
-    echo "MISMATCH [$name] committed plugins/hal/artifacts/$name.html differs from a fresh rebuild (excluding build-stamp line)"
+    echo "MISMATCH [$name] committed plugins/edifice/artifacts/$name.html differs from a fresh rebuild (excluding build-stamp line)"
     ERRORS=$((ERRORS + 1))
   else
     echo "OK       [$name] committed artifact matches a fresh rebuild"

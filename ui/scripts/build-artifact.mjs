@@ -9,7 +9,7 @@
  *      annotation-core version) right after <!doctype html>.
  *   4. Branch on ARTIFACT_TARGET (default "cowork"): keep the full document,
  *      or strip the <html>/<head>/<body> wrapper for a "fragment" target.
- *   5. Write the result to <repo-root>/plugins/hal/artifacts/<name>.html.
+ *   5. Write the result to <repo-root>/plugins/edifice/artifacts/<name>.html.
  * Exit 0 = artifact written. Exit 1 = missing input, size ceiling, or bad args.
  */
 
@@ -110,7 +110,7 @@ if (target === "fragment") {
 }
 
 // 5. Write the committed artifact.
-const outDir = path.join(repoRoot, "plugins", "hal", "artifacts");
+const outDir = path.join(repoRoot, "plugins", "edifice", "artifacts");
 fs.mkdirSync(outDir, { recursive: true });
 const outFile = path.join(outDir, `${name}.html`);
 fs.writeFileSync(outFile, output);
