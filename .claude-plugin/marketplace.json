@@ -13,6 +13,15 @@
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
+    },
+    {
+      "name": "edifice",
+      "description": "Edifice — building inspection missions for IC Ingénieurs Conseils (list, pull, improve, report, push).",
+      "source": "./plugins/edifice",
+      "version": "0.0.0",
+      "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
+      "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
+      "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
     }
   ]
 }

@@ -30,7 +30,7 @@ jobs:
         # unlike the other render tests, it can't mock docxtpl/PIL away. This is CI/test
         # tooling only, not a runtime skill script, so it's exempt from the "uv run --with,
         # never pip install" rule (see CLAUDE.md § Plugin Skill Constraint).
-        run: pip install -r plugins/hal/requirements.txt
+        run: pip install -r plugins/edifice/requirements.txt
       - name: Detect ui/ changes
         uses: dorny/paths-filter@v4
         id: ui-changes
@@ -39,7 +39,7 @@ jobs:
           filters: |
             ui:
               - 'ui/**'
-              - 'plugins/hal/artifacts/**'
+              - 'plugins/edifice/artifacts/**'
       - uses: pnpm/action-setup@v4
         if: steps.ui-changes.outputs.ui == 'true'
         with:

@@ -16,7 +16,7 @@ config.json
 .agents/plans/
 
 # Client-specific configs — not for public repo
-plugins/hal/organizations/ic-ingenieurs/
+plugins/edifice/organizations/ic-ingenieurs/
 
 # OS files
 .DS_Store

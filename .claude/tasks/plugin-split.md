@@ -32,7 +32,7 @@ redevient cohérent.
 | # | Session | Contenu | Statut |
 |---|---------|---------|--------|
 | S0 | Cadrage + révision | #66 ouverte, brief vérifié contre les sources | ✅ 2026-08-02 |
-| S1 | **L1 — extraire `edifice`** | la plus lourde : 5 familles de chemins | ⬜ |
+| S1 | **L1 — extraire `edifice`** | la plus lourde : 5 familles de chemins | ✅ 2026-08-02 |
 | S2 | **L2 + L3 — `gtm` et `pm`** | déplacements purs, léger | ⬜ |
 | S3 | **L4 + L5 — vider `hal`, ménage** | léger | ⬜ |
 | S4 | **Versions** | 4 × `release.sh`, compteur top-level | ⬜ |
@@ -107,7 +107,7 @@ git checkout -b refactor/plugin-split
 
 ### Étapes
 
-- [ ] **1.1 — Déplacer le contenu** (`git mv`, pour conserver l'historique) vers
+- [x] **1.1 — Déplacer le contenu** (`git mv`, pour conserver l'historique) vers
       `plugins/edifice/` :
       `skills/edifice/`, `commands/edifice.md`, `scripts/` (11 fichiers : `build_context.py`,
       `create_devis_template.py`, `download_photos.py`, `prepare_diagnostic_template.py`,
@@ -116,10 +116,10 @@ git checkout -b refactor/plugin-split
       `templates/ic-ingenieurs/`, `artifacts/`, `organizations/ic-ingenieurs/`,
       `requirements.txt`, `tests/README.md`.
       Ne pas déplacer `plugins/hal/__pycache__` (invariant : il part au ménage, S3).
-- [ ] **1.2 — Seed du plugin** (invariants 5 et 6) : `plugins/edifice/.claude-plugin/plugin.json`
+- [x] **1.2 — Seed du plugin** (invariants 5 et 6) : `plugins/edifice/.claude-plugin/plugin.json`
       en `0.0.0`, `plugins/edifice/CHANGELOG.md` avec `## [0.0.0] — seed`, entrée `edifice` dans
       `.claude-plugin/marketplace.json` (`"source": "./plugins/edifice"`, version `0.0.0`).
-- [ ] **1.3 — Repointer les 5 familles de chemins** :
+- [x] **1.3 — Repointer les 5 familles de chemins** :
 
 | # | Fichier | Ligne(s) | Changement |
 |---|---------|----------|------------|
@@ -136,6 +136,8 @@ git checkout -b refactor/plugin-split
 | e | `tests/test_render_escaping.py` | 16 | → `plugins/edifice/scripts` |
 | e | `tests/test_edifice_render_smoke.py` | 24, 25 | → `plugins/edifice/scripts` **et** `plugins/edifice/templates/ic-ingenieurs` |
 | e | `tests/test_build_artifact.py` | 23 | → `plugins/edifice/artifacts` |
+| e | `tests/test_xml_escape.py` | 9 | → `plugins/edifice/scripts` — **trouvé en S1**, absent du brief |
+| f | `.gitignore` | 19 | → `plugins/edifice/organizations/ic-ingenieurs/` — **trouvé en S1** |
 
 > **b et e/`test_build_artifact.py` ont été trouvés après l'ouverture de #66** — ils manquaient au
 > brief initial. Voir invariant 3 pour le couplage a ↔ b.
@@ -339,7 +341,15 @@ les skills de `briefing` les rendrait indisponibles.
   `ui/scripts/build-artifact.mjs:113` et `tests/test_build_artifact.py:23`.
 - **2026-08-02 — décision.** `HAL_PLUGIN_DIR` gardé tel quel (Renaud). Le nom survit au découpage :
   échappatoire de dev, pas une interface publique. S1 n'a plus de préalable.
-- ⬜ **S1** — _(à remplir)_
+- **2026-08-02 — S1.** `edifice` extrait, seed 0.0.0, 5 familles repointées. Trois surprises,
+  toutes bénignes : `tests/test_xml_escape.py:9` pointait aussi sur `plugins/hal/scripts` (6ᵉ test,
+  absent du brief) ; `organizations/ic-ingenieurs/` est **gitignoré** (`.gitignore:19`) donc
+  `git mv` a refusé — déplacé au `mv` puis ligne d'ignore repointée, une famille (f) de plus ;
+  `check_artifact_sync.sh` réécrit le build-stamp des deux artefacts en passant, rétabli depuis
+  l'index pour garder le diff propre. Les trois checks verts (75 tests, version-sync sur `hal`
+  0.11.6 + `edifice` 0.0.0, artifact-sync sur les deux artefacts), grep résiduel limité aux deux
+  exceptions attendues. `HAL_PLUGIN_DIR` conservé avec le commentaire qui explique pourquoi.
+- ⬜ **S2** — _(à remplir)_
 
 ---
 

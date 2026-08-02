@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 for _mod in ("docxtpl", "docx", "docx.shared", "PIL", "PIL.Image", "PIL.ImageOps"):
     sys.modules.setdefault(_mod, MagicMock())
 
-SCRIPTS_DIR = pathlib.Path(__file__).parent.parent / "plugins/hal/scripts"
+SCRIPTS_DIR = pathlib.Path(__file__).parent.parent / "plugins/edifice/scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 import render_diagnostic
 import render_devis

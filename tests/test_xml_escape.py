@@ -6,7 +6,7 @@ import pathlib
 import sys
 import unittest
 
-sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "plugins/hal/scripts"))
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "plugins/edifice/scripts"))
 from xml_escape import escape_xml_values
 
 
