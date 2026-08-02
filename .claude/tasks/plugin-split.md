@@ -299,15 +299,21 @@ print(d['version'], {p['name']: p['version'] for p in d['plugins']})"
 
 ### Étapes
 
-- [ ] **5.1 — `CLAUDE.md`, le plus gros morceau** (16 occurrences de `plugins/hal/`) :
+- [x] **5.1 — `CLAUDE.md`, le plus gros morceau** (16 occurrences de `plugins/hal/`) :
       tableau des plugins (l.28), source-of-truth obsidian (l.98 → `plugins/edifice/scripts/obsidian/`),
       section versioning (l.108-124), `schema-contract.json` (l.168-169), section « Artifact
       front-ends » (l.203-221), Common Gotchas (l.232-233). La section « Repo Structure » est à
       réécrire entièrement : quatre plugins, plus un.
-- [ ] **5.2 — `README.md`** : section « Available plugins » (aujourd'hui un plugin unique), plus
+- [x] **5.2 — `README.md`** : section « Available plugins » (aujourd'hui un plugin unique), plus
       les refs `plugins/hal/` l.37 et l.74. Ajouter les **trois chemins d'installation par
       persona** de #66 (IC, Renaud, Cris).
-- [ ] **5.3 — `docs/artifact-front-ends.md`** : `plugins/hal/artifacts/` en l.6, l.30, l.34.
+- [x] **5.3 — `docs/artifact-front-ends.md`** : `plugins/hal/artifacts/` en l.6, l.30, l.34.
+- [x] **5.3 bis — quatre docs vivantes hors liste**, trouvées au grep de sortie : `docs/INSTALL.md`
+      (le one-liner d'install), `docs/connectors-and-skills.md` (installs + symlinks `.agents/skills/`),
+      `docs/skills-mcp-guide.md` (symlinks, validation, **et** deux affirmations devenues fausses :
+      le `version:` par skill et la famille `/hal list|tasks|update`), `docs/cowork-artifact-publishing.md`
+      (2 chemins `SKILL.md`). Laissés tels quels : `docs/_archive/`, `docs/brief.md`,
+      `docs/features/ops-1-purge-ci.md` — des comptes rendus datés, les réécrire falsifierait l'histoire.
 - [ ] **5.4 — Ouvrir la PR** vers `main`, corps reprenant : la rupture `hal` 0.12.0, les quatre
       versions, la note de migration IC, et le fait que la PR `renaud-marketplace` suit.
 
