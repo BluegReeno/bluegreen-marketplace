@@ -1,6 +1,6 @@
 {
   "name": "gtm",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "GTM — Blue Green go-to-market: commercial pipeline (crm) and editorial content (linkedin).",
   "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" }
 }
