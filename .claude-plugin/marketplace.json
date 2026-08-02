@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.12",
+  "version": "0.10.13",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — field work, building inspections, CRM",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
@@ -18,7 +18,7 @@
       "name": "edifice",
       "description": "Edifice — building inspection missions for IC Ingénieurs Conseils (list, pull, improve, report, push).",
       "source": "./plugins/edifice",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"

@@ -12,6 +12,8 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.1.0] — 2026-08-02 — extract edifice from the hal monolith
+
 ## [0.0.0] — seed
 
 Placeholder entry so version-sync stays green while the plugin is being extracted from the
