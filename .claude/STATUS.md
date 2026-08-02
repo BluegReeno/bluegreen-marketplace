@@ -8,7 +8,13 @@ Last updated: 2026-08-02
 
 Le plugin `hal` (0.11.6, seul plugin du dépôt) est un monolithe qui sert trois audiences disjointes. Déclencheur : Cris (The Rosas Laborbe Company, workspace `rosaslaborbe`) a besoin de `/pm` et de rien d'autre — aujourd'hui elle devrait installer aussi `/crm`, `/linkedin`, `/edifice` et leurs 10 scripts Python. Même problème pour IC Ingénieurs Conseils, qui prend le monolithe pour `/edifice`.
 
-Cible : `hal` 0.12.0 réduit au connecteur `.mcp.json`, plus `pm` / `gtm` / `edifice` en 0.1.0. Le découpage suit l'**audience installable**, pas le thème. Lancement : `archon workflow run skill-improve "66"` depuis ce dépôt — une seule PR, les six lots du brief étant un ordre d'exécution interne (tout état où `hal` est vidé avant que `pm` existe est cassé).
+Cible : `hal` 0.12.0 réduit au connecteur `.mcp.json`, plus `pm` / `gtm` / `edifice` en 0.1.0. Le découpage suit l'**audience installable**, pas le thème.
+
+**Exécution — révisée le 2026-08-02, ne pas lancer archon.** `skill-improve` est écarté après lecture du YAML : son node `implement` bump le frontmatter `version:` de chaque `SKILL.md` et `verify-all-versions` le réapplique — or ce champ a été supprimé de la convention, le workflow le réintroduirait. Il lit aussi `plugins/<plugin>/skills/` pour des plugins qui n'existent pas encore, ne sait pas créer un plugin (ni `plugin.json` neuf, ni `CHANGELOG.md`, ni entrée marketplace), ignore `release.sh`, et est mono-dépôt par construction. Le chantier est du `git mv` + repointage + `release.sh` ×4 : **session directe**.
+
+Trois étapes, ordre imposé : (1) PR sur `bluegreen-marketplace` — L1→L6, en **copiant** `sprint-planner`/`sprint-review` depuis `renaud` ; (2) après merge, PR sur `renaud-marketplace` — retrait des deux skills de `briefing`, bump 0.12.0, `generate_improve_map.py` ; (3) purge du cache `~/.claude/plugins/cache/`, test des trois profils, `BLUEGREEN_MAP.md` + les deux `STATUS.md`. La duplication temporaire est sûre ; supprimer avant que `pm` existe ne l'est pas.
+
+**Plan d'exécution découpé en 7 sessions : [`.claude/tasks/plugin-split.md`](tasks/plugin-split.md)** — préconditions, étapes, commandes de vérification et critère de sortie par session, plus 6 invariants et un journal de reprise. Prochaine session : **S1 (extraire `edifice`)**, sans préalable — `HAL_PLUGIN_DIR` garde son nom (tranché le 2026-08-02 : échappatoire de dev, pas une interface publique ; le renommer casserait les shells qui l'exportent pour rien).
 
 Deux faits qui allègent le chantier, vérifiés au cadrage : `hal` gardant son nom et restant porteur unique du connecteur, le préfixe `mcp__plugin_hal_hal-mcp__` ne bouge pas — **aucun `allowed-tools` à réécrire dans les 16 skills du portfolio** ; et `pm`, `crm`, `linkedin` ne référencent aucun script ni template, leur extraction est un déplacement pur. Seul `edifice` porte du lourd.
 
@@ -28,6 +34,12 @@ En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smok
 
 ## Done (2026-08-02)
 
+- [x] **Relecture du brief #66 contre les sources avant lancement — 5 corrections** — 2026-08-02
+  - **L1, le trou qui aurait coûté une CI rouge** : quatre fichiers de `tests/` pointent en dur sur `plugins/hal/scripts` (`test_build_context.py:15`, `test_render_diagnostic.py:16`, `test_render_escaping.py:16`) et sur `plugins/hal/templates/ic-ingenieurs` (`test_edifice_render_smoke.py:24-25`). Le brief disait « les tests restent à la racine » sans dire qu'il fallait les repointer. `test_release.py` mentionne aussi `plugins/hal/` mais sur une fixture tmp qu'il crée lui-même — à ne pas toucher. Le resolver `PLUGIN_DIR` d'`edifice` a **4** points à corriger (env `HAL_PLUGIN_DIR`, cache marketplace, 3 chemins dev), pas 1 ; et `SKILL.md:600` référence `plugins/hal/.mcp.json` — occurrence qui **reste juste**, `hal` garde le connecteur.
+  - **L6** : `CLAUDE.md` décrit `plugins/hal/` en 16 endroits et `docs/artifact-front-ends.md` en 3 — aucun des deux n'était listé. Laisser `CLAUDE.md` périmé invalide la session suivante.
+  - **L3 — une affirmation du brief était fausse** : `sprint-planner` / `sprint-review` n'ont **aucun** resolver `PLUGIN_DIR` (zéro occurrence de `PLUGIN_DIR`, `cache`, `briefing` dans leurs `SKILL.md`). Rien à repointer, migration = déplacement pur. En revanche leurs deux fichiers de commande manquaient, et `sprint-planner` a **deux** dépendances cross-repo : `Skill(jobsearch-vault)` **et** `mcp__plugin_jobsearch_gmail-mcp__search_emails`.
+  - **`skill-improve` écarté** (détail en Current Focus) et **D9 corrigée** : deux dépôts ⇒ deux PR.
+  - **Confirmé au passage** : `briefing` n'a aucun `.mcp.json` — le modèle « un porteur, N consommateurs » est bien en prod ; `release.sh` et `check_version_sync.sh` itèrent sur `plugins/*/`.
 - [x] **Cadrage de la refonte de l'agencement des plugins — #66 ouverte, prête à exécuter** — 2026-08-02
   - **Principe retenu** : découper par **audience installable**, pas par thème. Le découpage actuel suivait l'historique des dépôts. Cible — `hal` 0.12.0 (connecteur `.mcp.json` seul), `pm` 0.1.0 (`pm` + `sprint-planner` + `sprint-review`), `gtm` 0.1.0 (`crm` + `linkedin`), `edifice` 0.1.0 (skill + scripts + templates + artifacts + organizations).
   - **Le dépôt n'est pas un mécanisme de sécurité ici** : les deux marketplaces doivent rester publics (Claude Desktop les lit sans authentification), et le cloisonnement est déjà assuré par la RLS hal (`workspace_members`). Le grain de découpage est donc le **plugin**, pas le dépôt — on reste à deux dépôts.
@@ -40,7 +52,7 @@ En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smok
   - `a0bcc54` — `docs/PROTOCOLE-TESTS-ARTEFACTS-COWORK.md` et `docs/artefact-mcp-etat-des-lieux.md` commitées.
   - Branche `wip/edifice-front-mcp` — exploration `ui/edifice-front/` non aboutie, déplacée sans modification. **Pourquoi ce n'était pas cosmétique** : `check_artifact_sync.sh` reconstruit `ui/<name>/` et compare à l'artifact commité ; avec `ui/` modifié **et** `artifacts/` déplacé dans le même mouvement, la CI serait partie rouge sans cause attribuable.
   - `plugins/edifice-mission-report/` supprimé — vérifié avant : ne contenait que des `.DS_Store` et `__pycache__`, non suivi par git depuis le renommage en `hal` (415ad26).
-  - `edifice-front_2.html` (racine, non suivi) **laissé en place** : ce n'est pas un doublon de l'artifact commité (428 666 o du 28/07 contre 428 987 o du 29/07). À trancher.
+  - `edifice-front_2.html` (racine, non suivi) — **supprimé le 2026-08-02.** Son en-tête le donne comme un build `edifice-front` du 28/07 08:46Z au commit `eff71c1` (#52), présent dans l'historique : reproductible depuis `ui/edifice-front`, rien d'irremplaçable. L'artifact commité porte `2a50396` / 28/07 13:04Z.
 
 ## Done (2026-07-28)
 
