@@ -17,6 +17,8 @@ Entries up to `0.11.6` cover the monolith era, when this plugin also shipped the
 
 ---
 
+## [0.12.0] — 2026-08-02 — reduce hal to the MCP connector — breaking
+
 ## [0.11.6] — 2026-07-30 — edifice-front: publish the live artifact declaring `mcp_tools`
 
 ### Fixed

@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.15",
+  "version": "0.10.16",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — field work, building inspections, CRM",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
@@ -9,7 +9,7 @@
       "name": "hal",
       "description": "HAL — the BlueGreen connector: carries the hal-mcp server every other BlueGreen plugin calls.",
       "source": "./plugins/hal",
-      "version": "0.11.6",
+      "version": "0.12.0",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
