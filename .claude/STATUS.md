@@ -14,11 +14,39 @@ Cible : `hal` 0.12.0 réduit au connecteur `.mcp.json`, plus `pm` / `gtm` / `edi
 
 Trois étapes, ordre imposé : (1) PR sur `bluegreen-marketplace` — L1→L6, en **copiant** `sprint-planner`/`sprint-review` depuis `renaud` ; (2) après merge, PR sur `renaud-marketplace` — retrait des deux skills de `briefing`, bump 0.12.0, `generate_improve_map.py` ; (3) purge du cache `~/.claude/plugins/cache/`, test des trois profils, `BLUEGREEN_MAP.md` + les deux `STATUS.md`. La duplication temporaire est sûre ; supprimer avant que `pm` existe ne l'est pas.
 
-**Plan d'exécution découpé en 7 sessions : [`.claude/tasks/plugin-split.md`](tasks/plugin-split.md)** — préconditions, étapes, commandes de vérification et critère de sortie par session, plus 6 invariants et un journal de reprise. **S1 à S6 faites le 2026-08-02.** Le code est livré des deux côtés : **PR #67 mergée** (en squash) sur ce dépôt, **PR [renaud-marketplace#81](https://github.com/BluegReeno/renaud-marketplace/pull/81) ouverte et CI verte**, en attente de relecture — elle retire `sprint-planner` / `sprint-review` de `briefing` (0.12.0).
+**Plan d'exécution découpé en 7 sessions : [`.claude/tasks/plugin-split.md`](tasks/plugin-split.md)** — préconditions, étapes, commandes de vérification et critère de sortie par session, plus 6 invariants et un journal de reprise. **S1 à S6 faites le 2026-08-02 — le code est livré et publié des deux côtés.** Les deux PR sont **mergées** (en squash) : [#67](https://github.com/BluegReeno/bluegreen-marketplace/pull/67) ici, [renaud-marketplace#81](https://github.com/BluegReeno/renaud-marketplace/pull/81) là-bas, qui retire `sprint-planner` / `sprint-review` de `briefing` (0.12.0). Les deux branches de travail sont supprimées, les deux `main` propres et alignés sur `origin`. **Rien n'est en attente côté code.**
 
-Prochaine session : **S7, validation terrain**, dont une partie ne peut se faire qu'à la main — purger `~/.claude/plugins/cache/bluegreen-marketplace/` (il contient un `hal` vidé), puis tester les trois profils : Cris (`hal` + `pm`, où `sprint-planner` doit s'arrêter en fail-closed sur `sprints_enabled=false` — comportement voulu, pas une régression), IC (`hal` + `edifice`, le seul test qui exerce le resolver `PLUGIN_DIR` repointé), Renaud (les 8 plugins). Puis `BLUEGREEN_MAP.md` — 8 plugins, versions réelles — commité depuis `archon-workflows` (le fichier est un symlink), et la clôture de #66.
+Il ne reste que **S7 — la validation terrain, à faire à la main par Renaud.** Contexte : il a **purgé ses skills et plugins Cowork le 2026-08-02** pour repartir d'une base propre, et testera dans une nouvelle session sur ce dépôt. Donc une commande absente au test signifie « plugin pas installé », pas nécessairement une régression du découpage.
 
-Les quatre plugins sont en place et versionnés : `hal` **0.12.0** réduit à ses quatre fichiers (`plugin.json`, `.mcp.json`, `README.md`, `CHANGELOG.md`), `edifice` / `gtm` / `pm` en **0.1.0**, compteur marketplace à **0.10.16**. Le découpage est terminé, code et versions ; ne reste que la documentation du dépôt, puis la PR (S5).
+**Ce qui est publié et installable** (vérifié sur `origin/main`, pas sur un working tree) :
+
+| Plugin | Version | Commandes | Connecteur |
+|--------|---------|-----------|------------|
+| `hal` | 0.12.0 | aucune | `.mcp.json` — le seul du dépôt |
+| `edifice` | 0.1.0 | `/edifice` | — |
+| `gtm` | 0.1.0 | `/crm`, `/linkedin` | — |
+| `pm` | 0.1.0 | `/pm`, `/sprint-planner`, `/sprint-review` | — |
+
+Compteur marketplace **0.10.16**. Côté `renaud-marketplace` : top-level 0.6.16, `briefing` 0.12.0 réduit à `morning-briefing` + `mail-triage`.
+
+**Protocole de test S7** — `hal` s'installe toujours en premier, c'est lui qui enregistre le connecteur que les trois autres appellent :
+
+```
+/plugin install hal@bluegreen-marketplace
+/plugin install edifice@bluegreen-marketplace
+/plugin install pm@bluegreen-marketplace
+/plugin install gtm@bluegreen-marketplace
+```
+
+1. **Purger `~/.claude/plugins/cache/bluegreen-marketplace/`** avant tout — il peut contenir un `hal` déjà vidé de ses skills, et le test porterait alors sur l'ancien contenu.
+2. **Profil Cris** (`hal` + `pm` seuls) : créer une tâche dans `rosaslaborbe`, et vérifier qu'**aucune commande Blue Green n'apparaît**. `sprint-planner` doit s'arrêter en **fail-closed** sur `sprints_enabled=false` — comportement voulu (D7), pas une régression.
+3. **Profil IC** (`hal` + `edifice` seuls) : générer un rapport de mission de bout en bout. **C'est le seul test qui exerce le resolver `PLUGIN_DIR` repointé** — le morceau le plus risqué du découpage.
+4. **Profil Renaud** : les 8 plugins, `whoami` depuis un skill de chacun des nouveaux plugins.
+5. Les skills changent de namespace (`briefing:sprint-planner` → `pm:sprint-planner`) ; les commandes `/sprint-planner` et `/sprint-review`, elles, ne bougent pas.
+
+Puis **`BLUEGREEN_MAP.md`** — 8 plugins, versions réelles, table des skills — commité et poussé **depuis `archon-workflows`** (le fichier est un symlink), et la **clôture de #66**.
+
+Les quatre plugins sont en place et versionnés : `hal` **0.12.0** réduit à ses quatre fichiers (`plugin.json`, `.mcp.json`, `README.md`, `CHANGELOG.md`), `edifice` / `gtm` / `pm` en **0.1.0**, compteur marketplace à **0.10.16**. Le découpage est terminé de bout en bout — fichiers, versions, documentation, et les deux PR mergées.
 
 Deux faits qui allègent le chantier, vérifiés au cadrage : `hal` gardant son nom et restant porteur unique du connecteur, le préfixe `mcp__plugin_hal_hal-mcp__` ne bouge pas — **aucun `allowed-tools` à réécrire dans les 16 skills du portfolio** ; et `pm`, `crm`, `linkedin` ne référencent aucun script ni template, leur extraction est un déplacement pur. Seul `edifice` porte du lourd.
 

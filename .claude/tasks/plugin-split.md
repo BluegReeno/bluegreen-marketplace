@@ -437,6 +437,7 @@ les skills de `briefing` les rendrait indisponibles.
 ## Completion
 
 - **Started**: 2026-08-02
-- **Completed**: —
-- **PR bluegreen**: —
-- **PR renaud**: —
+- **Completed**: S1→S6 le 2026-08-02 ; **S7 (validation terrain) reste à faire** — protocole dans `.claude/STATUS.md`
+- **PR bluegreen**: [#67](https://github.com/BluegReeno/bluegreen-marketplace/pull/67) — mergée en squash le 2026-08-02
+- **PR renaud**: [renaud-marketplace#81](https://github.com/BluegReeno/renaud-marketplace/pull/81) — mergée en squash le 2026-08-02
+- **Branches de travail**: supprimées des deux `origin` après vérification qu'elles n'avaient rien d'unique
