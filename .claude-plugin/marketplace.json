@@ -1,15 +1,42 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.12",
+  "version": "0.10.16",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — field work, building inspections, CRM",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
   "plugins": [
     {
       "name": "hal",
-      "description": "HAL — second brain and mission workflow for BlueGreen and IC Ingénieurs Conseils.",
+      "description": "HAL — the BlueGreen connector: carries the hal-mcp server every other BlueGreen plugin calls.",
       "source": "./plugins/hal",
-      "version": "0.11.6",
+      "version": "0.12.0",
+      "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
+      "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
+      "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
+    },
+    {
+      "name": "edifice",
+      "description": "Edifice — building inspection missions for IC Ingénieurs Conseils (list, pull, improve, report, push).",
+      "source": "./plugins/edifice",
+      "version": "0.1.0",
+      "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
+      "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
+      "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
+    },
+    {
+      "name": "gtm",
+      "description": "GTM — Blue Green go-to-market: commercial pipeline (crm) and editorial content (linkedin).",
+      "source": "./plugins/gtm",
+      "version": "0.1.0",
+      "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
+      "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
+      "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
+    },
+    {
+      "name": "pm",
+      "description": "PM — project management: tasks, sprints, projects, docs, plus weekly sprint planning and review.",
+      "source": "./plugins/pm",
+      "version": "0.1.0",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"

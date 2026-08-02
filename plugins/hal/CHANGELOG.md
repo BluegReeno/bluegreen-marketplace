@@ -4,17 +4,45 @@ All notable changes to this plugin are documented here.
 
 ## Versioning convention
 
-Per-component versioning (see repo `CLAUDE.md`). Each component (plugin, skill `edifice`,
-skill `hal`, MCP `hal-mcp`) tracks its own SemVer-ish version. Plugin PATCH bumps once per
-release; component PATCH bumps only when that component changes.
+`0.MINOR.PATCH` (pre-1.0):
+- **PATCH** (`0.x.Y+1`) — bugfix, optional field, internal improvement with no interface impact
+- **MINOR** (`0.X+1.0`) — interface change: new required field, renamed command, observable behaviour change
 
-`0.MINOR.PATCH` (pré-1.0) :
-- **PATCH** (`0.x.Y+1`) — bugfix, ajout de champ optionnel, amélioration interne sans impact sur l'interface
-- **MINOR** (`0.X+1.0`) — changement d'interface utilisateur : nouveau champ obligatoire dans le JSON, renommage de commande CLI, changement de comportement observable
+Carries the `hal-mcp` connector every other BlueGreen plugin calls. The MCP server tracks its own
+version in `.mcp.json` — bumped explicitly (`release.sh --mcp-version`), never in sync with the
+plugin version.
 
-Règle : les refactors internes (changement de librairie, restructuration code) qui ne modifient pas l'interface publique → PATCH, pas MINOR.
+Entries up to `0.11.6` cover the monolith era, when this plugin also shipped the `edifice`, `pm`,
+`crm` and `linkedin` skills — since `0.12.0` they belong to the `edifice`, `pm` and `gtm` plugins.
 
 ---
+
+## [0.12.0] — 2026-08-02 — reduce hal to the MCP connector — breaking
+
+### Breaking
+
+- `hal` no longer ships any skill or command. On update, `/edifice`, `/pm`, `/crm` and
+  `/linkedin` disappear from an existing install. The plugin is now the connector alone: it
+  carries `.mcp.json` and nothing else.
+- Nothing else changed: same `hal-mcp` server and URL, same server-side workspace resolution,
+  same tool names. No `allowed-tools` entry anywhere in the portfolio needs rewriting — the
+  `mcp__plugin_hal_hal-mcp__` prefix is unchanged.
+
+### Migration
+
+Keep `hal` installed — it is the mandatory base — then install what you actually use:
+
+| Command you were using | Install |
+|------------------------|---------|
+| `/edifice …`           | `/plugin install edifice@bluegreen-marketplace` |
+| `/pm …`                | `/plugin install pm@bluegreen-marketplace` |
+| `/crm …`, `/linkedin …`| `/plugin install gtm@bluegreen-marketplace` |
+
+`pm` also brings `/sprint-planner` and `/sprint-review`, adopted from the `briefing` plugin of
+`renaud-marketplace`.
+
+IC Ingénieurs Conseils installs `hal` + `edifice` only — the CRM, project-management and
+editorial commands are no longer part of the download.
 
 ## [0.11.6] — 2026-07-30 — edifice-front: publish the live artifact declaring `mcp_tools`
 

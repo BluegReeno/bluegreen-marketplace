@@ -21,8 +21,8 @@ from unittest.mock import patch
 from docx import Document
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent
-SCRIPTS_DIR = REPO_ROOT / "plugins/hal/scripts"
-TEMPLATES_DIR = REPO_ROOT / "plugins/hal/templates/ic-ingenieurs"
+SCRIPTS_DIR = REPO_ROOT / "plugins/edifice/scripts"
+TEMPLATES_DIR = REPO_ROOT / "plugins/edifice/templates/ic-ingenieurs"
 FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures/edifice"
 
 sys.path.insert(0, str(SCRIPTS_DIR))

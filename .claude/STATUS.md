@@ -8,7 +8,17 @@ Last updated: 2026-08-02
 
 Le plugin `hal` (0.11.6, seul plugin du dépôt) est un monolithe qui sert trois audiences disjointes. Déclencheur : Cris (The Rosas Laborbe Company, workspace `rosaslaborbe`) a besoin de `/pm` et de rien d'autre — aujourd'hui elle devrait installer aussi `/crm`, `/linkedin`, `/edifice` et leurs 10 scripts Python. Même problème pour IC Ingénieurs Conseils, qui prend le monolithe pour `/edifice`.
 
-Cible : `hal` 0.12.0 réduit au connecteur `.mcp.json`, plus `pm` / `gtm` / `edifice` en 0.1.0. Le découpage suit l'**audience installable**, pas le thème. Lancement : `archon workflow run skill-improve "66"` depuis ce dépôt — une seule PR, les six lots du brief étant un ordre d'exécution interne (tout état où `hal` est vidé avant que `pm` existe est cassé).
+Cible : `hal` 0.12.0 réduit au connecteur `.mcp.json`, plus `pm` / `gtm` / `edifice` en 0.1.0. Le découpage suit l'**audience installable**, pas le thème.
+
+**Exécution — révisée le 2026-08-02, ne pas lancer archon.** `skill-improve` est écarté après lecture du YAML : son node `implement` bump le frontmatter `version:` de chaque `SKILL.md` et `verify-all-versions` le réapplique — or ce champ a été supprimé de la convention, le workflow le réintroduirait. Il lit aussi `plugins/<plugin>/skills/` pour des plugins qui n'existent pas encore, ne sait pas créer un plugin (ni `plugin.json` neuf, ni `CHANGELOG.md`, ni entrée marketplace), ignore `release.sh`, et est mono-dépôt par construction. Le chantier est du `git mv` + repointage + `release.sh` ×4 : **session directe**.
+
+Trois étapes, ordre imposé : (1) PR sur `bluegreen-marketplace` — L1→L6, en **copiant** `sprint-planner`/`sprint-review` depuis `renaud` ; (2) après merge, PR sur `renaud-marketplace` — retrait des deux skills de `briefing`, bump 0.12.0, `generate_improve_map.py` ; (3) purge du cache `~/.claude/plugins/cache/`, test des trois profils, `BLUEGREEN_MAP.md` + les deux `STATUS.md`. La duplication temporaire est sûre ; supprimer avant que `pm` existe ne l'est pas.
+
+**Plan d'exécution découpé en 7 sessions : [`.claude/tasks/plugin-split.md`](tasks/plugin-split.md)** — préconditions, étapes, commandes de vérification et critère de sortie par session, plus 6 invariants et un journal de reprise. **S1 à S5 faites le 2026-08-02** — le travail sur ce dépôt est terminé et tient dans la **PR [#67](https://github.com/BluegReeno/bluegreen-marketplace/pull/67)** (branche `refactor/plugin-split` → `main`), qui attend **une relecture humaine**. ⚠️ Ne pas merger sans avoir lu le diff de `CLAUDE.md` : c'est lui qui pilote les sessions suivantes.
+
+Prochaine session : **S6, et seulement après le merge de #67** — PR sur `renaud-marketplace` (retrait de `sprint-planner` / `sprint-review` de `briefing`, bump 0.12.0, `generate_improve_map.py`, vérifier que `morning-briefing` et `mail-triage` ne renvoient pas vers les deux skills partis). L'ordre est contraint : retirer les copies avant que `pm` existe publiquement les rendrait indisponibles. Puis **S7** — purge du cache `~/.claude/plugins/cache/`, test des trois profils d'installation, `BLUEGREEN_MAP.md` et clôture de #66.
+
+Les quatre plugins sont en place et versionnés : `hal` **0.12.0** réduit à ses quatre fichiers (`plugin.json`, `.mcp.json`, `README.md`, `CHANGELOG.md`), `edifice` / `gtm` / `pm` en **0.1.0**, compteur marketplace à **0.10.16**. Le découpage est terminé, code et versions ; ne reste que la documentation du dépôt, puis la PR (S5).
 
 Deux faits qui allègent le chantier, vérifiés au cadrage : `hal` gardant son nom et restant porteur unique du connecteur, le préfixe `mcp__plugin_hal_hal-mcp__` ne bouge pas — **aucun `allowed-tools` à réécrire dans les 16 skills du portfolio** ; et `pm`, `crm`, `linkedin` ne référencent aucun script ni template, leur extraction est un déplacement pur. Seul `edifice` porte du lourd.
 
@@ -28,6 +38,39 @@ En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smok
 
 ## Done (2026-08-02)
 
+- [x] **S5 — documentation repointée, PR [#67](https://github.com/BluegReeno/bluegreen-marketplace/pull/67) ouverte (#66)** — 2026-08-02
+  - **`CLAUDE.md`**, le plus gros morceau : table des quatre plugins **par audience installable**, « Repo Structure » réécrite de fond en comble, section versioning passée au per-plugin (le check itère sur `plugins/*/`, un plugin cassé bloque **toutes** les releases), chemins artefacts sur `plugins/edifice/`. Deux règles que le découpage rend critiques y sont désormais écrites noir sur blanc : **créer un plugin = créer ses trois fichiers d'un coup**, et **`hal` est le seul porteur d'un `.mcp.json`** (en ajouter un ailleurs créerait un second préfixe d'outils, que tous les `allowed-tools` contredisent).
+  - **`README.md`** et **`docs/INSTALL.md`** : `hal` en socle requis, puis les trois installs, avec la table par persona (IC / projets-sprints / Blue Green complet) et un encart de migration 0.11.x.
+  - **Quatre docs vivantes hors périmètre du plan**, trouvées au grep de sortie : `connectors-and-skills.md` (installs + symlinks `.agents/skills/`), `skills-mcp-guide.md`, `cowork-artifact-publishing.md`, `artifact-front-ends.md`. `skills-mcp-guide.md` portait en plus **deux affirmations devenues fausses** — le `version:` par skill (champ supprimé de la convention, exactement ce qui a fait écarter `skill-improve`) et la famille `/hal list|tasks|update` qui n'existe plus. Corrigées.
+  - **Laissés tels quels** : `docs/_archive/`, `docs/brief.md`, `docs/features/ops-1-purge-ci.md` — comptes rendus datés, les réécrire falsifierait l'histoire. Le grep de sortie du plan les ignorait, d'où un résidu attendu et non un écart.
+  - **Un constat à trancher, pas tranché ici** : le bundle `scripts/obsidian/` a suivi `edifice` parce qu'il vivait sous `plugins/hal/scripts/`, mais **aucun skill du dépôt ne le référence** — les seules mentions restantes sont ses propres fichiers et une archive. Noté dans `CLAUDE.md` avec la consigne de ne pas le supprimer sur cette seule base.
+  - **Vérifié avant la PR** : `check_version_sync.sh` vert, `check_artifact_sync.sh` vert sur les deux artefacts (build-stamp rétabli depuis l'index, comme en S1), 75 tests OK.
+- [x] **S4 — les quatre versions posées (#66)** — 2026-08-02
+  - `release.sh` passé quatre fois dans l'ordre du plan : `edifice`, `gtm`, `pm` en **0.1.0**, `hal` en **0.12.0**. Compteur marketplace 0.10.12 → **0.10.16**, exactement l'attendu (chaque release l'incrémente d'un PATCH). Un commit `chore(<plugin>): release v<version>` par release.
+  - **Note de migration 0.12.0 collée** sous l'entrée écrite par `release.sh` et commitée à part : rupture (les quatre commandes disparaissent d'un install existant, le reste — serveur, résolution de workspace, noms d'outils — est inchangé) et table « commande → plugin à installer ».
+  - **Aucun refus, aucune surprise** : le seed 0.0.0 a joué son rôle exactement comme prévu, et `check_version_sync.sh` — que chaque release relance sur **tous** les plugins avant d'écrire quoi que ce soit — est resté vert du premier au dernier appel.
+- [x] **S3 — `hal` réduit au connecteur (#66)** — 2026-08-02
+  - `plugins/hal/` ne contient plus que ses quatre fichiers : `plugin.json`, `.mcp.json`, `README.md`, `CHANGELOG.md`. `templates/blue-green/.gitkeep` supprimé (seule référence : une ligne de CHANGELOG de 2026-05), `skills/` et `commands/` retirés du disque, résidus `__pycache__` et `.DS_Store` nettoyés — tous gitignorés, aucun n'était suivi.
+  - **README réécrit** : `hal` n'est plus décrit comme un cerveau second mais comme le socle connecteur, avec la table des trois plugins qui prennent la suite, les commandes d'installation par plugin et un encart « Upgrading from 0.11.x ».
+  - **Deux corrections hors liste, l'une et l'autre devenues fausses avec le découpage** : le bloc « Versioning convention » du CHANGELOG de `hal` décrivait un versionnage par skill (le champ `version:` n'existe plus dans les `SKILL.md`) et était rédigé en français dans un document anglais — réécrit sur le modèle des trois autres plugins ; la `description` de `hal` (« second brain and mission workflow ») remplacée par celle du connecteur **dans `plugin.json` et dans l'entrée marketplace**, les deux devant rester identiques.
+  - **Note de migration 0.12.0 rédigée** et posée dans le plan sous S4.5 (rupture, table « commande → plugin à installer », mention IC), prête à coller sous l'entrée que `release.sh` écrira.
+  - **Vérifié** : les 4 fichiers attendus, `check_version_sync.sh` vert sur les quatre plugins, 75 tests OK.
+- [x] **S2 — `gtm` et `pm` créés (#66)** — 2026-08-02 — commit `afb2058`
+  - `git mv` de `crm` + `linkedin` (skills + commandes) vers `plugins/gtm/`, de `pm` vers `plugins/pm/`, les deux seedés en **0.0.0** (plugin.json + `## [0.0.0]` + entrée marketplace). `plugins/pm/` adopte en plus `sprint-planner` et `sprint-review`, **copiés** depuis `briefing` (`renaud-marketplace`) — la suppression côté `renaud` n'a lieu qu'en S6, après merge de la PR #1 : retirer avant que `pm` existe publiquement les rendrait indisponibles.
+  - **Les deux vérifications annoncées par le brief se confirment** : aucun des six skills ne référence de script, de template ni de `PLUGIN_DIR` — extraction = déplacement pur — et le préfixe `mcp__plugin_hal_hal-mcp__` est intact partout (D1).
+  - **Une nuance au brief** : `Skill(jobsearch-vault)` est déclaré par les **deux** skills sprint, pas seulement `sprint-planner` ; le second couplage, `mcp__plugin_jobsearch_gmail-mcp__search_emails`, lui, reste propre à `sprint-planner`. Les deux sont documentés en tête de `plugins/pm/CHANGELOG.md`, non résolus (D8), tracés dans #65.
+  - **Vérifié** : `check_version_sync.sh` vert sur les quatre plugins, 75 tests OK, `plugins/hal/skills/` et `plugins/hal/commands/` vides — leur suppression est S3.1.
+- [x] **S1 — `edifice` extrait dans son propre plugin (#66)** — 2026-08-02
+  - `git mv` du skill, de la commande, des 11 scripts (dont `obsidian/`), templates `ic-ingenieurs`, `artifacts/` et `tests/README.md` vers `plugins/edifice/`, seedé en **0.0.0** (plugin.json + `## [0.0.0]` + entrée marketplace) — `release.sh` le promeut en 0.1.0 en S4. Commit `refactor(edifice): extract edifice into its own plugin`.
+  - **Trois écarts au plan, tous consignés au journal du plan.** `tests/test_xml_escape.py:9` pointait aussi sur `plugins/hal/scripts` — 6ᵉ fichier de tests, absent de la table du brief. `organizations/ic-ingenieurs/` est **gitignoré** (config client hors dépôt public) : `git mv` refuse un répertoire source vide au sens de git — déplacé au `mv`, `.gitignore:19` repointé, c'est une famille de chemins (f) que le plan ne prévoyait pas. `check_artifact_sync.sh` réécrit le build-stamp des deux artefacts en passant (par conception : le build écrit dans le fichier que le check diffe) — rétabli depuis l'index.
+  - **Vérifié** : 75 tests OK, `check_version_sync.sh` vert sur `hal` 0.11.6 + `edifice` 0.0.0, `check_artifact_sync.sh` vert sur les deux artefacts. Le grep résiduel de `plugins/hal` ne renvoie que les deux exceptions attendues — `tests/test_release.py` (fixture tmp) et `SKILL.md:601` (`.mcp.json`, `hal` garde le connecteur).
+  - `HAL_PLUGIN_DIR` conservé, avec le commentaire en place qui explique pourquoi — sans quoi la prochaine session le « corrige ».
+- [x] **Relecture du brief #66 contre les sources avant lancement — 5 corrections** — 2026-08-02
+  - **L1, le trou qui aurait coûté une CI rouge** : quatre fichiers de `tests/` pointent en dur sur `plugins/hal/scripts` (`test_build_context.py:15`, `test_render_diagnostic.py:16`, `test_render_escaping.py:16`) et sur `plugins/hal/templates/ic-ingenieurs` (`test_edifice_render_smoke.py:24-25`). Le brief disait « les tests restent à la racine » sans dire qu'il fallait les repointer. `test_release.py` mentionne aussi `plugins/hal/` mais sur une fixture tmp qu'il crée lui-même — à ne pas toucher. Le resolver `PLUGIN_DIR` d'`edifice` a **4** points à corriger (env `HAL_PLUGIN_DIR`, cache marketplace, 3 chemins dev), pas 1 ; et `SKILL.md:600` référence `plugins/hal/.mcp.json` — occurrence qui **reste juste**, `hal` garde le connecteur.
+  - **L6** : `CLAUDE.md` décrit `plugins/hal/` en 16 endroits et `docs/artifact-front-ends.md` en 3 — aucun des deux n'était listé. Laisser `CLAUDE.md` périmé invalide la session suivante.
+  - **L3 — une affirmation du brief était fausse** : `sprint-planner` / `sprint-review` n'ont **aucun** resolver `PLUGIN_DIR` (zéro occurrence de `PLUGIN_DIR`, `cache`, `briefing` dans leurs `SKILL.md`). Rien à repointer, migration = déplacement pur. En revanche leurs deux fichiers de commande manquaient, et `sprint-planner` a **deux** dépendances cross-repo : `Skill(jobsearch-vault)` **et** `mcp__plugin_jobsearch_gmail-mcp__search_emails`.
+  - **`skill-improve` écarté** (détail en Current Focus) et **D9 corrigée** : deux dépôts ⇒ deux PR.
+  - **Confirmé au passage** : `briefing` n'a aucun `.mcp.json` — le modèle « un porteur, N consommateurs » est bien en prod ; `release.sh` et `check_version_sync.sh` itèrent sur `plugins/*/`.
 - [x] **Cadrage de la refonte de l'agencement des plugins — #66 ouverte, prête à exécuter** — 2026-08-02
   - **Principe retenu** : découper par **audience installable**, pas par thème. Le découpage actuel suivait l'historique des dépôts. Cible — `hal` 0.12.0 (connecteur `.mcp.json` seul), `pm` 0.1.0 (`pm` + `sprint-planner` + `sprint-review`), `gtm` 0.1.0 (`crm` + `linkedin`), `edifice` 0.1.0 (skill + scripts + templates + artifacts + organizations).
   - **Le dépôt n'est pas un mécanisme de sécurité ici** : les deux marketplaces doivent rester publics (Claude Desktop les lit sans authentification), et le cloisonnement est déjà assuré par la RLS hal (`workspace_members`). Le grain de découpage est donc le **plugin**, pas le dépôt — on reste à deux dépôts.
@@ -40,7 +83,7 @@ En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smok
   - `a0bcc54` — `docs/PROTOCOLE-TESTS-ARTEFACTS-COWORK.md` et `docs/artefact-mcp-etat-des-lieux.md` commitées.
   - Branche `wip/edifice-front-mcp` — exploration `ui/edifice-front/` non aboutie, déplacée sans modification. **Pourquoi ce n'était pas cosmétique** : `check_artifact_sync.sh` reconstruit `ui/<name>/` et compare à l'artifact commité ; avec `ui/` modifié **et** `artifacts/` déplacé dans le même mouvement, la CI serait partie rouge sans cause attribuable.
   - `plugins/edifice-mission-report/` supprimé — vérifié avant : ne contenait que des `.DS_Store` et `__pycache__`, non suivi par git depuis le renommage en `hal` (415ad26).
-  - `edifice-front_2.html` (racine, non suivi) **laissé en place** : ce n'est pas un doublon de l'artifact commité (428 666 o du 28/07 contre 428 987 o du 29/07). À trancher.
+  - `edifice-front_2.html` (racine, non suivi) — **supprimé le 2026-08-02.** Son en-tête le donne comme un build `edifice-front` du 28/07 08:46Z au commit `eff71c1` (#52), présent dans l'historique : reproductible depuis `ui/edifice-front`, rien d'irremplaçable. L'artifact commité porte `2a50396` / 28/07 13:04Z.
 
 ## Done (2026-07-28)
 
@@ -79,16 +122,13 @@ En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smok
 
 ## In Progress
 
-- [ ] **#66 — éclatement du plugin `hal` en `hal`/`pm`/`gtm`/`edifice`** — brief complet dans l'issue, `main` propre, prêt à lancer :
-  ```bash
-  archon workflow run skill-improve "66"
-  ```
-  Une seule PR : les six lots du brief sont un ordre d'exécution interne (L1 `edifice` → L2 `gtm` → L3 `pm` → L4 vider `hal` → L5 ménage → L6 doc), pas six chantiers — vider `hal` avant d'avoir extrait ses skills les perdrait. Garde-fou : si le workflow décroche sur L1 (10 scripts, `ci.yml`, `check_artifact_sync.sh`), reprendre L1 en session directe et lui laisser L2→L6.
+- [ ] **#66 — éclatement du plugin `hal` en `hal`/`pm`/`gtm`/`edifice`** — **en cours, branche `refactor/plugin-split`. S1 et S2 faites, reprendre en S3.** Ne pas lancer archon (`skill-improve` réintroduirait le champ `version:` des `SKILL.md` — détail en Current Focus) : le chantier se conduit en session directe, session par session, en suivant [`.claude/tasks/plugin-split.md`](tasks/plugin-split.md) — c'est lui qui porte les préconditions, les invariants et le journal de reprise.
+  L'ordre des lots est contraint (L1 `edifice` → L2 `gtm` → L3 `pm` → L4 vider `hal` → L5 ménage → L6 doc) : vider `hal` avant d'avoir extrait ses skills les perdrait. La PR ne s'ouvre qu'en S5.
   Suites à ne pas oublier hors de ce dépôt : `python3 scripts/generate_improve_map.py` dans `renaud-marketplace` (la CI y rejette une table périmée), `briefing` 0.12.0 (il perd `sprint-planner` et `sprint-review`), et `BLUEGREEN_MAP.md`.
 
 - [ ] **D1 — #27 `update_interaction`** — deux PRs séquentielles :
   1. **hal repo d'abord** : ajouter tool MCP `update_interaction(interaction_id, ...champs partiels)` dans `hal-mcp/index.ts`, sur le modèle de `update_task`/`update_sprint`. Deploy Edge Function après merge.
-  2. **Ce repo ensuite** : documenter dans `plugins/hal/skills/crm/SKILL.md` le chemin lookup-par-contact+date → `update_interaction`. Lancer via Archon après deploy hal :
+  2. **Ce repo ensuite** : documenter dans `plugins/gtm/skills/crm/SKILL.md` (déplacé depuis `plugins/hal/` en S2 de #66) le chemin lookup-par-contact+date → `update_interaction`. Lancer via Archon après deploy hal :
      ```bash
      archon workflow run skill-improve "27"
      ```
