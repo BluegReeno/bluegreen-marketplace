@@ -35,7 +35,7 @@ redevient cohérent.
 | S1 | **L1 — extraire `edifice`** | la plus lourde : 5 familles de chemins | ✅ 2026-08-02 |
 | S2 | **L2 + L3 — `gtm` et `pm`** | déplacements purs, léger | ✅ 2026-08-02 |
 | S3 | **L4 + L5 — vider `hal`, ménage** | léger | ✅ 2026-08-02 |
-| S4 | **Versions** | 4 × `release.sh`, compteur top-level | ⬜ |
+| S4 | **Versions** | 4 × `release.sh`, compteur top-level | ✅ 2026-08-02 |
 | S5 | **L6 doc + PR #1** | `CLAUDE.md`, README, docs → PR `bluegreen` | ⬜ |
 | S6 | **PR #2 — `renaud-marketplace`** | après merge de la PR #1 | ⬜ |
 | S7 | **Validation terrain** | 3 profils, `BLUEGREEN_MAP`, `STATUS` ×2 | ⬜ |
@@ -237,11 +237,11 @@ Compteur top-level actuel : **0.10.12** → attendu **0.10.16** après les quatr
 
 ### Étapes
 
-- [ ] **4.1** `bash scripts/release.sh edifice 0.1.0 "extract edifice from the hal monolith"`
-- [ ] **4.2** `bash scripts/release.sh gtm 0.1.0 "extract crm and linkedin from the hal monolith"`
-- [ ] **4.3** `bash scripts/release.sh pm 0.1.0 "extract pm, adopt sprint-planner and sprint-review"`
-- [ ] **4.4** `bash scripts/release.sh hal 0.12.0 "reduce hal to the MCP connector — breaking"`
-- [ ] **4.5** Compléter à la main la note de migration (rédigée en S3.4, ci-dessous) sous l'entrée
+- [x] **4.1** `bash scripts/release.sh edifice 0.1.0 "extract edifice from the hal monolith"`
+- [x] **4.2** `bash scripts/release.sh gtm 0.1.0 "extract crm and linkedin from the hal monolith"`
+- [x] **4.3** `bash scripts/release.sh pm 0.1.0 "extract pm, adopt sprint-planner and sprint-review"`
+- [x] **4.4** `bash scripts/release.sh hal 0.12.0 "reduce hal to the MCP connector — breaking"`
+- [x] **4.5** Compléter à la main la note de migration (rédigée en S3.4, ci-dessous) sous l'entrée
       `## [0.12.0]` de `plugins/hal/CHANGELOG.md`, puis commiter séparément.
 
 #### Note de migration `hal` 0.12.0 — à coller telle quelle
@@ -403,6 +403,12 @@ les skills de `briefing` les rendrait indisponibles.
   par celle du connecteur, dans `plugin.json` **et** dans l'entrée marketplace, les deux devant
   rester identiques. Note de migration 0.12.0 rédigée et posée dans ce document sous S4.5, prête à
   coller. Checks verts : 4 fichiers, version-sync sur les 4 plugins, 75 tests OK.
+- **2026-08-02 — S4.** Les quatre `release.sh` passés dans l'ordre du plan, sans un seul refus :
+  `edifice` / `gtm` / `pm` en 0.1.0, `hal` en 0.12.0, compteur top-level 0.10.12 → **0.10.16**,
+  exactement la valeur attendue. Un commit `chore(<plugin>): release v<version>` chacun, puis la
+  note de migration collée sous `## [0.12.0]` et commitée à part (`docs(hal): migration note…`).
+  Aucune surprise : le seed 0.0.0 a joué son rôle, `check_version_sync.sh` — relancé par chaque
+  release avant d'écrire — est resté vert du premier au dernier appel.
 
 ---
 
