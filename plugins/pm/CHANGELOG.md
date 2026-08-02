@@ -26,6 +26,8 @@ plugin is absent, which is the expected shape for an installer who only wants `/
 
 ---
 
+## [0.1.0] — 2026-08-02 — extract pm, adopt sprint-planner and sprint-review
+
 ## [0.0.0] — seed
 
 Placeholder entry so version-sync stays green while `pm` is being extracted from the `hal`
