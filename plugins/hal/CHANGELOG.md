@@ -19,6 +19,31 @@ Entries up to `0.11.6` cover the monolith era, when this plugin also shipped the
 
 ## [0.12.0] — 2026-08-02 — reduce hal to the MCP connector — breaking
 
+### Breaking
+
+- `hal` no longer ships any skill or command. On update, `/edifice`, `/pm`, `/crm` and
+  `/linkedin` disappear from an existing install. The plugin is now the connector alone: it
+  carries `.mcp.json` and nothing else.
+- Nothing else changed: same `hal-mcp` server and URL, same server-side workspace resolution,
+  same tool names. No `allowed-tools` entry anywhere in the portfolio needs rewriting — the
+  `mcp__plugin_hal_hal-mcp__` prefix is unchanged.
+
+### Migration
+
+Keep `hal` installed — it is the mandatory base — then install what you actually use:
+
+| Command you were using | Install |
+|------------------------|---------|
+| `/edifice …`           | `/plugin install edifice@bluegreen-marketplace` |
+| `/pm …`                | `/plugin install pm@bluegreen-marketplace` |
+| `/crm …`, `/linkedin …`| `/plugin install gtm@bluegreen-marketplace` |
+
+`pm` also brings `/sprint-planner` and `/sprint-review`, adopted from the `briefing` plugin of
+`renaud-marketplace`.
+
+IC Ingénieurs Conseils installs `hal` + `edifice` only — the CRM, project-management and
+editorial commands are no longer part of the download.
+
 ## [0.11.6] — 2026-07-30 — edifice-front: publish the live artifact declaring `mcp_tools`
 
 ### Fixed
