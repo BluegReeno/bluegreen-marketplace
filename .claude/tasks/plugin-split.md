@@ -36,8 +36,8 @@ redevient cohérent.
 | S2 | **L2 + L3 — `gtm` et `pm`** | déplacements purs, léger | ✅ 2026-08-02 |
 | S3 | **L4 + L5 — vider `hal`, ménage** | léger | ✅ 2026-08-02 |
 | S4 | **Versions** | 4 × `release.sh`, compteur top-level | ✅ 2026-08-02 |
-| S5 | **L6 doc + PR #1** | `CLAUDE.md`, README, docs → PR `bluegreen` | ⬜ |
-| S6 | **PR #2 — `renaud-marketplace`** | après merge de la PR #1 | ⬜ |
+| S5 | **L6 doc + PR #1** | `CLAUDE.md`, README, docs → PR `bluegreen` | ✅ 2026-08-02 |
+| S6 | **PR #2 — `renaud-marketplace`** | après merge de la PR #1 | ✅ 2026-08-02 |
 | S7 | **Validation terrain** | 3 profils, `BLUEGREEN_MAP`, `STATUS` ×2 | ⬜ |
 
 S2 et S3 sont courtes — enchaînables dans une même session si le temps le permet.
@@ -314,7 +314,7 @@ print(d['version'], {p['name']: p['version'] for p in d['plugins']})"
       le `version:` par skill et la famille `/hal list|tasks|update`), `docs/cowork-artifact-publishing.md`
       (2 chemins `SKILL.md`). Laissés tels quels : `docs/_archive/`, `docs/brief.md`,
       `docs/features/ops-1-purge-ci.md` — des comptes rendus datés, les réécrire falsifierait l'histoire.
-- [ ] **5.4 — Ouvrir la PR** vers `main`, corps reprenant : la rupture `hal` 0.12.0, les quatre
+- [x] **5.4 — Ouvrir la PR** vers `main`, corps reprenant : la rupture `hal` 0.12.0, les quatre
       versions, la note de migration IC, et le fait que la PR `renaud-marketplace` suit.
 
 ### Vérification
@@ -340,15 +340,15 @@ les skills de `briefing` les rendrait indisponibles.
 
 ### Étapes
 
-- [ ] **6.1** Supprimer `plugins/briefing/skills/sprint-planner/`, `skills/sprint-review/`,
+- [x] **6.1** Supprimer `plugins/briefing/skills/sprint-planner/`, `skills/sprint-review/`,
       `commands/sprint-planner.md`, `commands/sprint-review.md`.
-- [ ] **6.2** `briefing` 0.11.0 → **0.12.0** (perdre deux skills est un changement fonctionnel) —
+- [x] **6.2** `briefing` 0.11.0 → **0.12.0** (perdre deux skills est un changement fonctionnel) —
       via le `release.sh` du dépôt s'il en a un, sinon les trois fichiers à la main.
-- [ ] **6.3** `python3 scripts/generate_improve_map.py` — la CI rejette une table périmée.
-- [ ] **6.4** Vérifier que `morning-briefing` et `mail-triage` ne référencent pas les deux skills
+- [x] **6.3** `python3 scripts/generate_improve_map.py` — la CI rejette une table périmée.
+- [x] **6.4** Vérifier que `morning-briefing` et `mail-triage` ne référencent pas les deux skills
       partis (`grep -rn "sprint-planner\|sprint-review" plugins/`). **Non vérifié à ce jour** —
       si un renvoi existe, le repointer vers `pm@bluegreen-marketplace` ou le retirer.
-- [ ] **6.5** PR + CI verte.
+- [x] **6.5** PR + CI verte.
 
 ---
 
@@ -415,6 +415,22 @@ les skills de `briefing` les rendrait indisponibles.
   note de migration collée sous `## [0.12.0]` et commitée à part (`docs(hal): migration note…`).
   Aucune surprise : le seed 0.0.0 a joué son rôle, `check_version_sync.sh` — relancé par chaque
   release avant d'écrire — est resté vert du premier au dernier appel.
+
+- **2026-08-02 — S5.** `CLAUDE.md` (table par audience, « Repo Structure » réécrite, versioning per-plugin),
+  `README.md` et `docs/INSTALL.md` (socle `hal` + trois installs + table par persona), plus cinq docs
+  repointées. Deux trouvailles hors liste : `skills-mcp-guide.md` documentait encore le `version:`
+  par skill et la famille `/hal list|tasks|update` — corrigées ; et le bundle `scripts/obsidian/`,
+  parti avec `edifice`, n'est référencé par **aucun** skill du dépôt (constat noté dans `CLAUDE.md`,
+  pas tranché). Archives et briefs datés laissés tels quels. PR #67 ouverte, CI verte au premier
+  passage (dont artifact-sync), **mergée en squash** par Renaud le jour même.
+- **2026-08-02 — S6.** `briefing` 0.12.0 sur `renaud-marketplace` : les deux skills sprint et leurs
+  commandes supprimés, PR #81 ouverte. Vérifié avant suppression que les quatre fichiers étaient
+  **identiques** aux copies de S2 — aucun delta à reporter. Aucun renvoi à repointer dans
+  `morning-briefing` / `mail-triage` (6.4 était « non vérifié à ce jour » : c'est vérifié, il n'y en a
+  pas). **Une vraie surprise** : `generate_improve_map.py` mourait sur le 404 de `plugins/hal/skills`
+  — un plugin sans skills n'était pas prévu — ce qui aurait rendu la CI rouge quoi qu'il arrive ;
+  corrigé (404 → zéro ligne, tout autre échec abortant toujours) avec deux tests. Signalé sans le
+  corriger : `test_release.sh` échoue déjà sur `main`, même famille de défaut, hors CI.
 
 ---
 
