@@ -34,7 +34,7 @@ redevient cohérent.
 | S0 | Cadrage + révision | #66 ouverte, brief vérifié contre les sources | ✅ 2026-08-02 |
 | S1 | **L1 — extraire `edifice`** | la plus lourde : 5 familles de chemins | ✅ 2026-08-02 |
 | S2 | **L2 + L3 — `gtm` et `pm`** | déplacements purs, léger | ✅ 2026-08-02 |
-| S3 | **L4 + L5 — vider `hal`, ménage** | léger | ⬜ |
+| S3 | **L4 + L5 — vider `hal`, ménage** | léger | ✅ 2026-08-02 |
 | S4 | **Versions** | 4 × `release.sh`, compteur top-level | ⬜ |
 | S5 | **L6 doc + PR #1** | `CLAUDE.md`, README, docs → PR `bluegreen` | ⬜ |
 | S6 | **PR #2 — `renaud-marketplace`** | après merge de la PR #1 | ⬜ |
@@ -204,13 +204,13 @@ grep -rn "allowed-tools" plugins/pm/skills/*/SKILL.md plugins/gtm/skills/*/SKILL
 
 ### Étapes
 
-- [ ] **3.1 — Ne laisser dans `plugins/hal/`** que : `.claude-plugin/plugin.json`, `.mcp.json`,
+- [x] **3.1 — Ne laisser dans `plugins/hal/`** que : `.claude-plugin/plugin.json`, `.mcp.json`,
       `README.md`, `CHANGELOG.md`. Supprimer les dossiers vides résiduels.
-- [ ] **3.2 — Réécrire `plugins/hal/README.md`** : plugin de connexion, socle obligatoire, et
+- [x] **3.2 — Réécrire `plugins/hal/README.md`** : plugin de connexion, socle obligatoire, et
       la liste des trois plugins qui prennent la suite.
-- [ ] **3.3 — Ménage** : `plugins/hal/templates/blue-green/.gitkeep` (suivi par git, jamais
+- [x] **3.3 — Ménage** : `plugins/hal/templates/blue-green/.gitkeep` (suivi par git, jamais
       référencé hors CHANGELOG), `plugins/hal/__pycache__`, les `.DS_Store`.
-- [ ] **3.4 — Note de migration** — rédiger le bloc destiné au `CHANGELOG` de `hal` 0.12.0 :
+- [x] **3.4 — Note de migration** — rédiger le bloc destiné au `CHANGELOG` de `hal` 0.12.0 :
       ce que voient les installés (`/pm`, `/crm`, `/linkedin`, `/edifice` disparaissent) et quoi
       réinstaller. Il sera posé par `release.sh` en S4 via son argument `<changelog line>`, ou
       complété à la main juste après.
@@ -241,8 +241,40 @@ Compteur top-level actuel : **0.10.12** → attendu **0.10.16** après les quatr
 - [ ] **4.2** `bash scripts/release.sh gtm 0.1.0 "extract crm and linkedin from the hal monolith"`
 - [ ] **4.3** `bash scripts/release.sh pm 0.1.0 "extract pm, adopt sprint-planner and sprint-review"`
 - [ ] **4.4** `bash scripts/release.sh hal 0.12.0 "reduce hal to the MCP connector — breaking"`
-- [ ] **4.5** Compléter à la main la note de migration (S3.4) sous l'entrée `## [0.12.0]` de
-      `plugins/hal/CHANGELOG.md`, puis commiter séparément.
+- [ ] **4.5** Compléter à la main la note de migration (rédigée en S3.4, ci-dessous) sous l'entrée
+      `## [0.12.0]` de `plugins/hal/CHANGELOG.md`, puis commiter séparément.
+
+#### Note de migration `hal` 0.12.0 — à coller telle quelle
+
+`release.sh` écrit la ligne de titre (`## [0.12.0] — <date> — reduce hal to the MCP connector — breaking`).
+Coller ce bloc **juste en dessous**, avant l'entrée `## [0.11.6]` :
+
+```markdown
+### Breaking
+
+- `hal` no longer ships any skill or command. On update, `/edifice`, `/pm`, `/crm` and
+  `/linkedin` disappear from an existing install. The plugin is now the connector alone: it
+  carries `.mcp.json` and nothing else.
+- Nothing else changed: same `hal-mcp` server and URL, same server-side workspace resolution,
+  same tool names. No `allowed-tools` entry anywhere in the portfolio needs rewriting — the
+  `mcp__plugin_hal_hal-mcp__` prefix is unchanged.
+
+### Migration
+
+Keep `hal` installed — it is the mandatory base — then install what you actually use:
+
+| Command you were using | Install |
+|------------------------|---------|
+| `/edifice …`           | `/plugin install edifice@bluegreen-marketplace` |
+| `/pm …`                | `/plugin install pm@bluegreen-marketplace` |
+| `/crm …`, `/linkedin …`| `/plugin install gtm@bluegreen-marketplace` |
+
+`pm` also brings `/sprint-planner` and `/sprint-review`, adopted from the `briefing` plugin of
+`renaud-marketplace`.
+
+IC Ingénieurs Conseils installs `hal` + `edifice` only — the CRM, project-management and
+editorial commands are no longer part of the download.
+```
 
 > Chaque `release.sh` lance `check_version_sync.sh` **sur tous les plugins** avant de commiter :
 > si un seed est incomplet, la première release échoue et rien n'est écrit. C'est le filet.
@@ -359,7 +391,18 @@ les skills de `briefing` les rendrait indisponibles.
   propre à `sprint-planner`. Les deux copies depuis `renaud-marketplace` sont faites telles quelles
   (suppression côté `renaud` en S6). Checks verts : version-sync sur les 4 plugins, 75 tests OK.
   `plugins/hal/skills/` et `plugins/hal/commands/` sont vides — leur suppression est S3.1.
-- ⬜ **S3** — _(à remplir)_
+- **2026-08-02 — S3.** `hal` réduit à ses 4 fichiers (`plugin.json`, `.mcp.json`, `README.md`,
+  `CHANGELOG.md`) : `.gitkeep` supprimé au `git rm` — qui a emporté les dossiers vides au passage —
+  puis `skills/` et `commands/` retirés du disque. Aucun `__pycache__` sous `hal` (il avait suivi
+  `edifice` en S1, supprimé là-bas avec les trois `.DS_Store`, tous gitignorés). README réécrit :
+  socle connecteur, table des trois plugins qui prennent la suite, chemins d'installation, encart
+  « Upgrading from 0.11.x ». Deux ajouts hors liste, tous deux devenus faux avec le découpage :
+  le bloc « Versioning convention » du CHANGELOG de `hal` décrivait un versionnage par skill
+  (`version:` n'existe plus) et était en français dans un doc anglais — réécrit et aligné sur les
+  trois autres plugins ; la `description` de `hal` (« second brain and mission workflow ») remplacée
+  par celle du connecteur, dans `plugin.json` **et** dans l'entrée marketplace, les deux devant
+  rester identiques. Note de migration 0.12.0 rédigée et posée dans ce document sous S4.5, prête à
+  coller. Checks verts : 4 fichiers, version-sync sur les 4 plugins, 75 tests OK.
 
 ---
 
