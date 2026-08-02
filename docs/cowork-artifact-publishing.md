@@ -2,7 +2,7 @@
 
 > **Source**: diagnostic run in a real **local** Cowork session on 2026-07-30, read-only
 > (nothing was republished). It answers the questions left open as `TODO: verify in Cowork`
-> in `plugins/hal/skills/edifice/SKILL.md`, and closes the last unknown of
+> in `plugins/edifice/skills/edifice/SKILL.md`, and closes the last unknown of
 > BluegReeno/bluegreen-marketplace#60.
 >
 > Everything below is **observed**, not inferred. Where an instrument could not measure
@@ -196,7 +196,7 @@ failure B. Any consumer must pass an explicit small width until B is fixed.
 
 ---
 
-## 5. What this invalidates in `plugins/hal/skills/edifice/SKILL.md`
+## 5. What this invalidates in `plugins/edifice/skills/edifice/SKILL.md`
 
 | Location | Claim in the file | Reality |
 |---|---|---|

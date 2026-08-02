@@ -1,6 +1,6 @@
 # Skills & MCP — Best Practices
 
-Reference guide for maintaining and extending the `hal` plugin. Covers the
+Reference guide for maintaining and extending the plugins of this repo. Covers the
 skill vs command architecture, MCP detection, and cross-platform compatibility.
 
 ---
@@ -14,12 +14,13 @@ Claude Code has two separate invocation systems:
 | **Skills** | `skills/<name>/SKILL.md` | Semantic trigger (description match) OR `plugin:skill` menu |
 | **Commands** | `commands/<name>.md` | Explicit `/command-name` slash syntax |
 
-Skills are always namespaced: a skill `hal` in plugin `hal` → `hal:hal` in the menu.
-Typing `/hal` raw looks for a **command** named `hal`, not a skill. Without `commands/hal.md`,
+Skills are always namespaced by their plugin: the skill `pm` in plugin `pm` → `pm:pm` in the menu.
+Typing `/pm` raw looks for a **command** named `pm`, not a skill. Without `commands/pm.md`,
 Claude Code returns "compétence inconnue".
 
-**Fix**: `commands/hal.md` and `commands/edifice.md` register `/hal` and `/edifice` as
-first-class slash commands (auto-discovered from the `commands/` directory, no manifest entry needed).
+**Fix**: each plugin ships a `commands/<name>.md` per skill (auto-discovered from the `commands/`
+directory, no manifest entry needed) — that is what registers `/pm`, `/edifice`, `/crm`, `/linkedin`,
+`/sprint-planner` and `/sprint-review` as first-class slash commands.
 
 ### Command file format
 
@@ -57,8 +58,8 @@ Add a pre-flight check at the top of every skill section and command body that
 requires MCP tools.
 
 ```
-1. Call whoami (hal skill — no args) or list_edifice_missions (edifice skill) with workspace_slug: "blue-green"
-2. Success → proceed normally. For the hal skill, cache the whoami payload
+1. Call whoami (pm / crm skills — no args) or list_edifice_missions (edifice skill) with workspace_slug: "blue-green"
+2. Success → proceed normally. For the pm / crm skills, cache the whoami payload
    (default_workspace_slug, workspaces, user_email) for the current command.
 3. Failure (tool not found / connection refused / timeout) → show reconnection message, stop
 ```
@@ -79,10 +80,10 @@ not by the user's shell.
 
 | Command | MCP needed | Check tool |
 |---------|-----------|-----------|
-| `/hal list` | ✅ | `whoami` |
-| `/hal tasks` | ✅ | `whoami` |
-| `/hal update` | ✅ | `whoami` |
-| `/hal devis` | ❌ (script only) | skip |
+| `/pm …` | ✅ | `whoami` |
+| `/crm …` | ✅ | `whoami` |
+| `/linkedin …` | ✅ | `whoami` |
+| `/sprint-planner`, `/sprint-review` | ✅ | `whoami` |
 | `/edifice list` | ✅ | `list_edifice_missions` |
 | `/edifice pull` | ✅ | `list_edifice_missions` |
 | `/edifice improve` | ❌ (local files) | skip |
@@ -98,10 +99,10 @@ for skills. Our SKILL.md files already comply:
 
 | Field | Spec | Our SKILL.md |
 |-------|------|-------------|
-| `name` | required — matches directory name | ✅ `hal` / `edifice` |
+| `name` | required — matches directory name | ✅ `edifice` / `pm` / `crm` … |
 | `description` | required | ✅ present |
 | `allowed-tools` | optional, experimental | ✅ used |
-| `version` | not in spec (use `metadata.version`) | custom — accepted by Claude Code |
+| `version` | not in spec (use `metadata.version`) | **not used** — skills carry no version, see §4 |
 
 ### Cross-client discovery paths
 
@@ -121,8 +122,8 @@ plugin system:
 
 ```bash
 mkdir -p .agents/skills
-ln -sf "$(pwd)/plugins/hal/skills/hal" .agents/skills/hal
-ln -sf "$(pwd)/plugins/hal/skills/edifice" .agents/skills/edifice
+ln -sf "$(pwd)/plugins/edifice/skills/edifice" .agents/skills/edifice
+ln -sf "$(pwd)/plugins/pm/skills/pm" .agents/skills/pm
 ```
 
 The SKILL.md frontmatter requires no changes — it already complies with the spec.
@@ -134,14 +135,15 @@ The SKILL.md frontmatter requires no changes — it already complies with the sp
 Commands (`commands/*.md`) are NOT versioned separately. They are part of the plugin
 and their changes are covered by the plugin version bump.
 
-Skills (`skills/*/SKILL.md`) are versioned independently via `version:` frontmatter.
+Skills (`skills/*/SKILL.md`) are **not** versioned either — the `version:` frontmatter field was
+dropped from the convention. The plugin version is the only one that moves.
 
 | What changed | Bump |
 |-------------|------|
 | New command file added | Plugin MINOR |
 | Command body updated | Plugin PATCH |
-| Skill new command/subcommand | Skill MINOR |
-| Skill MCP check / guardrail added | Skill PATCH |
+| Skill new command/subcommand | Plugin MINOR |
+| Skill MCP check / guardrail added | Plugin PATCH |
 
 See `CLAUDE.md` → Versioning Policy for the full bump table.
 
@@ -151,17 +153,11 @@ See `CLAUDE.md` → Versioning Policy for the full bump table.
 
 ```bash
 # Frontmatter compliance (agentskills.io)
-npx skills-ref validate ./plugins/hal/skills/hal
-npx skills-ref validate ./plugins/hal/skills/edifice
+npx skills-ref validate ./plugins/edifice/skills/edifice
+npx skills-ref validate ./plugins/pm/skills/pm
 
-# Version sync
-python3 -c "
-import json, pathlib
-p = json.loads(pathlib.Path('plugins/hal/.claude-plugin/plugin.json').read_text())
-m = json.loads(pathlib.Path('.claude-plugin/marketplace.json').read_text())
-assert p['version'] == m['plugins'][0]['version']
-print(f'Sync OK: {p[\"version\"]}')
-"
+# Version sync — every plugin at once, same check CI runs
+bash scripts/check_version_sync.sh
 ```
 
 `skills-ref` CLI: `npm install -g skills-ref`
