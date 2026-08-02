@@ -33,7 +33,7 @@ redevient cohérent.
 |---|---------|---------|--------|
 | S0 | Cadrage + révision | #66 ouverte, brief vérifié contre les sources | ✅ 2026-08-02 |
 | S1 | **L1 — extraire `edifice`** | la plus lourde : 5 familles de chemins | ✅ 2026-08-02 |
-| S2 | **L2 + L3 — `gtm` et `pm`** | déplacements purs, léger | ⬜ |
+| S2 | **L2 + L3 — `gtm` et `pm`** | déplacements purs, léger | ✅ 2026-08-02 |
 | S3 | **L4 + L5 — vider `hal`, ménage** | léger | ⬜ |
 | S4 | **Versions** | 4 × `release.sh`, compteur top-level | ⬜ |
 | S5 | **L6 doc + PR #1** | `CLAUDE.md`, README, docs → PR `bluegreen` | ⬜ |
@@ -165,23 +165,24 @@ connues. Commit : `refactor(edifice): extract edifice into its own plugin`.
 
 ### Étapes
 
-- [ ] **2.1 — `gtm`** : `git mv` de `skills/crm/`, `skills/linkedin/`, `commands/crm.md`,
+- [x] **2.1 — `gtm`** : `git mv` de `skills/crm/`, `skills/linkedin/`, `commands/crm.md`,
       `commands/linkedin.md` vers `plugins/gtm/`. Aucun script, aucun template — vérifié :
       ces skills ne référencent ni `PLUGIN_DIR`, ni `scripts/`, ni `templates/`, ni `.py`.
-- [ ] **2.2 — Seed `gtm`** en 0.0.0 (les trois fichiers, invariant 6).
-- [ ] **2.3 — `pm` depuis `hal`** : `git mv` de `skills/pm/` et `commands/pm.md` vers
+- [x] **2.2 — Seed `gtm`** en 0.0.0 (les trois fichiers, invariant 6).
+- [x] **2.3 — `pm` depuis `hal`** : `git mv` de `skills/pm/` et `commands/pm.md` vers
       `plugins/pm/`.
-- [ ] **2.4 — `pm` depuis `renaud-marketplace`** : **copier** (`cp`, pas `git mv` — dépôt
+- [x] **2.4 — `pm` depuis `renaud-marketplace`** : **copier** (`cp`, pas `git mv` — dépôt
       différent, et la suppression côté `renaud` n'a lieu qu'en S6) :
       `plugins/briefing/skills/sprint-planner/`, `plugins/briefing/skills/sprint-review/`,
       `plugins/briefing/commands/sprint-planner.md`, `plugins/briefing/commands/sprint-review.md`.
       **Vérifié** : ces skills n'ont aucun resolver `PLUGIN_DIR` à repointer (contrairement à ce
       qu'annonçait le brief initial) — copie telle quelle.
-- [ ] **2.5 — Seed `pm`** en 0.0.0.
-- [ ] **2.6 — Documenter les deux couplages cross-repo** en tête de `plugins/pm/CHANGELOG.md` :
+- [x] **2.5 — Seed `pm`** en 0.0.0.
+- [x] **2.6 — Documenter les deux couplages cross-repo** en tête de `plugins/pm/CHANGELOG.md` :
       `sprint-planner` déclare `Skill(jobsearch-vault)` **et**
       `mcp__plugin_jobsearch_gmail-mcp__search_emails`, tous deux portés par `renaud-marketplace`.
-      Non résolus ici (D8), tracés dans #65.
+      Non résolus ici (D8), tracés dans #65. **Correction S2** : `Skill(jobsearch-vault)` est
+      déclaré par `sprint-planner` **et** `sprint-review` — le CHANGELOG le dit ainsi.
 
 ### Vérification
 
@@ -349,7 +350,16 @@ les skills de `briefing` les rendrait indisponibles.
   l'index pour garder le diff propre. Les trois checks verts (75 tests, version-sync sur `hal`
   0.11.6 + `edifice` 0.0.0, artifact-sync sur les deux artefacts), grep résiduel limité aux deux
   exceptions attendues. `HAL_PLUGIN_DIR` conservé avec le commentaire qui explique pourquoi.
-- ⬜ **S2** — _(à remplir)_
+- **2026-08-02 — S2.** `gtm` (crm + linkedin) et `pm` (pm + sprint-planner + sprint-review) créés,
+  seeds 0.0.0. Sans surprise : les deux vérifications annoncées par le plan se confirment — aucun
+  des six skills ne référence de script, de template ou de `PLUGIN_DIR`, et le préfixe
+  `mcp__plugin_hal_hal-mcp__` est intact. Une seule nuance : `Skill(jobsearch-vault)` est déclaré
+  par les **deux** skills sprint, pas seulement `sprint-planner` (le brief ne citait que
+  `sprint-planner`) ; le second couplage, `mcp__plugin_jobsearch_gmail-mcp__search_emails`, reste
+  propre à `sprint-planner`. Les deux copies depuis `renaud-marketplace` sont faites telles quelles
+  (suppression côté `renaud` en S6). Checks verts : version-sync sur les 4 plugins, 75 tests OK.
+  `plugins/hal/skills/` et `plugins/hal/commands/` sont vides — leur suppression est S3.1.
+- ⬜ **S3** — _(à remplir)_
 
 ---
 
