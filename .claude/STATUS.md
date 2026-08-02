@@ -1,10 +1,20 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-07-28
+Last updated: 2026-08-02
 
 ## Current Focus
 
-**`/edifice front` ne fonctionne toujours pas — reprise cadrée dans [#60](https://github.com/BluegReeno/bluegreen-marketplace/issues/60).**
+**Refonte de l'agencement des plugins — brief complet dans [#66](https://github.com/BluegReeno/bluegreen-marketplace/issues/66), prêt à lancer.**
+
+Le plugin `hal` (0.11.6, seul plugin du dépôt) est un monolithe qui sert trois audiences disjointes. Déclencheur : Cris (The Rosas Laborbe Company, workspace `rosaslaborbe`) a besoin de `/pm` et de rien d'autre — aujourd'hui elle devrait installer aussi `/crm`, `/linkedin`, `/edifice` et leurs 10 scripts Python. Même problème pour IC Ingénieurs Conseils, qui prend le monolithe pour `/edifice`.
+
+Cible : `hal` 0.12.0 réduit au connecteur `.mcp.json`, plus `pm` / `gtm` / `edifice` en 0.1.0. Le découpage suit l'**audience installable**, pas le thème. Lancement : `archon workflow run skill-improve "66"` depuis ce dépôt — une seule PR, les six lots du brief étant un ordre d'exécution interne (tout état où `hal` est vidé avant que `pm` existe est cassé).
+
+Deux faits qui allègent le chantier, vérifiés au cadrage : `hal` gardant son nom et restant porteur unique du connecteur, le préfixe `mcp__plugin_hal_hal-mcp__` ne bouge pas — **aucun `allowed-tools` à réécrire dans les 16 skills du portfolio** ; et `pm`, `crm`, `linkedin` ne référencent aucun script ni template, leur extraction est un déplacement pur. Seul `edifice` porte du lourd.
+
+**`/edifice front` (#60) reste ouvert et non résolu**, en pause derrière la refonte. Attention : l'exploration `ui/edifice-front/` non aboutie (415 insertions sur `cowork-mcp.ts`, `mcp-data-adapter.ts`, `ErrorBanner`, `MissionDetail`) a été déplacée telle quelle sur la branche **`wip/edifice-front-mcp`** pour rendre `main` propre — elle n'est pas perdue, elle n'est plus dans le working tree.
+
+### Détail #60 — `/edifice front` (en pause, non résolu)
 
 La route est publiée depuis v0.11.0 et n'a jamais chargé une seule mission. Quatre correctifs livrés le 2026-07-28 (v0.11.2 → v0.11.4), chacun réel, aucun suffisant : l'artefact charge, résout ses ids, émet l'appel — et Cowork le refuse (`Tool "mcp__…__list_edifice_missions" is not in this artifact's mcp_tools allowlist`).
 
@@ -15,6 +25,22 @@ Recette complète, état d'avancement et inconnue restante (signature de l'outil
 Le reste du chantier #50 est acquis : socle `ui/` (#51/PR #52), artefact lecture seule (#50/PR #53), toolchain et CI en place. Phase 2 (écriture — `push_mission_context` depuis l'artefact, #49) reste bloquée derrière #60.
 
 En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smoke test de rendu (#44), Gemini Enterprise (#13 manuel), projet↔opportunité (#21 migration).
+
+## Done (2026-08-02)
+
+- [x] **Cadrage de la refonte de l'agencement des plugins — #66 ouverte, prête à exécuter** — 2026-08-02
+  - **Principe retenu** : découper par **audience installable**, pas par thème. Le découpage actuel suivait l'historique des dépôts. Cible — `hal` 0.12.0 (connecteur `.mcp.json` seul), `pm` 0.1.0 (`pm` + `sprint-planner` + `sprint-review`), `gtm` 0.1.0 (`crm` + `linkedin`), `edifice` 0.1.0 (skill + scripts + templates + artifacts + organizations).
+  - **Le dépôt n'est pas un mécanisme de sécurité ici** : les deux marketplaces doivent rester publics (Claude Desktop les lit sans authentification), et le cloisonnement est déjà assuré par la RLS hal (`workspace_members`). Le grain de découpage est donc le **plugin**, pas le dépôt — on reste à deux dépôts.
+  - **Un seul porteur du connecteur MCP** (décision Renaud) : le plugin `hal`, sans déduplication. Comme il garde son nom, le préfixe `mcp__plugin_hal_hal-mcp__` est inchangé et **aucun `allowed-tools` n'est à réécrire**. Modèle déjà en production : `briefing` (renaud-marketplace) consomme ce connecteur sans porter de `.mcp.json`.
+  - **Rupture nette assumée** : `hal` 0.12.0 fait disparaître `/edifice`, `/pm`, `/crm`, `/linkedin` chez les installés (Renaud, IC). Deux installations concernées, note de migration à écrire.
+  - **Relevé au cadrage** : `pm`, `crm` et `linkedin` ne référencent aucun script, template ou artifact — extraction = déplacement pur. Seul `edifice` porte du lourd, avec trois chemins codés en dur à repointer (`check_artifact_sync.sh`, `ci.yml` ×2, resolver `PLUGIN_DIR`). `release.sh` et `check_version_sync.sh` itèrent sur `plugins/*/` — génériques, rien à changer, mais chaque nouveau plugin a besoin de son `CHANGELOG.md` dès sa création sinon `release.sh` refuse de tourner.
+  - **Direction actée, hors périmètre** : `jobsearch` est une **verticale métier** au même titre qu'`edifice` est la verticale BET terrain — la différence est qu'`edifice` est isolée alors que `jobsearch` fuit dans des skills génériques. Cible à terme : un `pm` générique que des verticales étendent. Tracé dans **#65**, bloqué par #66.
+  - **`sprints_enabled=false` sur `rosaslaborbe` est correct et conservé** — le sprint est une notion professionnelle. `sprint-planner`/`sprint-review` s'y arrêtent en fail-closed, c'est le comportement voulu.
+- [x] **Dépôt assaini avant lancement** — 2026-08-02
+  - `a0bcc54` — `docs/PROTOCOLE-TESTS-ARTEFACTS-COWORK.md` et `docs/artefact-mcp-etat-des-lieux.md` commitées.
+  - Branche `wip/edifice-front-mcp` — exploration `ui/edifice-front/` non aboutie, déplacée sans modification. **Pourquoi ce n'était pas cosmétique** : `check_artifact_sync.sh` reconstruit `ui/<name>/` et compare à l'artifact commité ; avec `ui/` modifié **et** `artifacts/` déplacé dans le même mouvement, la CI serait partie rouge sans cause attribuable.
+  - `plugins/edifice-mission-report/` supprimé — vérifié avant : ne contenait que des `.DS_Store` et `__pycache__`, non suivi par git depuis le renommage en `hal` (415ad26).
+  - `edifice-front_2.html` (racine, non suivi) **laissé en place** : ce n'est pas un doublon de l'artifact commité (428 666 o du 28/07 contre 428 987 o du 29/07). À trancher.
 
 ## Done (2026-07-28)
 
@@ -52,6 +78,13 @@ En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smok
   - **Issue #39 ouverte** : aucune des 4 skills ne déclare d'outil MCP dans son `allowed-tools`, donc aucun appel n'est pré-approuvé → une demande de permission par appel.
 
 ## In Progress
+
+- [ ] **#66 — éclatement du plugin `hal` en `hal`/`pm`/`gtm`/`edifice`** — brief complet dans l'issue, `main` propre, prêt à lancer :
+  ```bash
+  archon workflow run skill-improve "66"
+  ```
+  Une seule PR : les six lots du brief sont un ordre d'exécution interne (L1 `edifice` → L2 `gtm` → L3 `pm` → L4 vider `hal` → L5 ménage → L6 doc), pas six chantiers — vider `hal` avant d'avoir extrait ses skills les perdrait. Garde-fou : si le workflow décroche sur L1 (10 scripts, `ci.yml`, `check_artifact_sync.sh`), reprendre L1 en session directe et lui laisser L2→L6.
+  Suites à ne pas oublier hors de ce dépôt : `python3 scripts/generate_improve_map.py` dans `renaud-marketplace` (la CI y rejette une table périmée), `briefing` 0.12.0 (il perd `sprint-planner` et `sprint-review`), et `BLUEGREEN_MAP.md`.
 
 - [ ] **D1 — #27 `update_interaction`** — deux PRs séquentielles :
   1. **hal repo d'abord** : ajouter tool MCP `update_interaction(interaction_id, ...champs partiels)` dans `hal-mcp/index.ts`, sur le modèle de `update_task`/`update_sprint`. Deploy Edge Function après merge.
