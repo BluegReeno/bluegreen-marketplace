@@ -20,11 +20,27 @@ declare two dependencies owned by that repo:
 - `mcp__plugin_jobsearch_gmail-mcp__search_emails` — declared by `sprint-planner` only; the MCP
   server is carried by the same `jobsearch` plugin.
 
-Neither is resolved here (decision D8 of #66): both skills degrade gracefully when the `jobsearch`
-plugin is absent, which is the expected shape for an installer who only wants `/pm`. Tracked in
+Neither dependency is removed here — `Skill(jobsearch-vault)` and the gmail-mcp tool stay in
+`allowed-tools` — but as of 0.1.1 both skills degrade gracefully (`jobsearch:DOWN`, mirroring the
+pre-existing `gmail:DOWN` pattern) instead of silently showing misleading zero-activity metrics
+when the `jobsearch` plugin is absent, which is the expected shape for an installer who only wants
+`/pm`. A generic vertical-extension mechanism (so `pm` can declare optional verticals — `edifice`,
+`jobsearch` — instead of hardcoding tool/skill names per skill) is still undesigned; Claude Code
+has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked in
 [#65](https://github.com/BluegReeno/bluegreen-marketplace/issues/65).
 
 ---
+
+## [0.1.1] — 2026-08-08 — graceful degradation when jobsearch is absent
+
+- `sprint-planner`, `sprint-review`: added `jobsearch:DOWN` handling (mirrors `gmail:DOWN`) so both
+  skills skip their jobsearch-dependent sections cleanly — instead of silently rendering
+  zero-activity metrics — when the vault isn't mounted or the `jobsearch:jobsearch-vault` skill
+  isn't available. Sprint-critical date computation (`SPRINT_STATUS`, `NEXT_MON`, `NEXT_FRI`) no
+  longer lives inside the vault-dependent branch, so it still runs when jobsearch is down.
+- `commands/sprint-planner.md`, `commands/sprint-review.md`: fixed a stale reference to the
+  `briefing` plugin (leftover from the #66 adoption) — both commands now correctly point at the
+  `pm` plugin skill.
 
 ## [0.1.0] — 2026-08-02 — extract pm, adopt sprint-planner and sprint-review
 

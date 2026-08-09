@@ -2,9 +2,10 @@
 name: sprint-planner
 description: >
   Planifie le sprint de la semaine prochaine pour Renaud Laborbe. Sources :
-  hal-mcp (tâches + sprints), vault Obsidian (jobsearch CRM), les calendriers
-  déclarés par tes workspaces, Gmail alertes LinkedIn (Gmail perso via gmail-mcp
-  du plugin jobsearch). En mode conversationnel : reporte ou abandonne les tâches non
+  hal-mcp (tâches + sprints), les calendriers déclarés par tes workspaces, et,
+  si le plugin jobsearch est co-installé, le vault Obsidian (jobsearch CRM) et
+  les alertes LinkedIn (Gmail perso via gmail-mcp du plugin jobsearch) — sinon
+  ces deux sections sont sautées sans bloquer le reste. En mode conversationnel : reporte ou abandonne les tâches non
   finies, pose des questions ciblées sur les contraintes calendrier détectées.
   En mode schedule (vendredi après-midi automatique) : s'exécute de façon
   autonome avec des décisions par défaut et présente un plan à valider avant
@@ -124,12 +125,20 @@ Si aucune tâche non terminée : sauter à l'étape 2 directement.
 
 ---
 
-## ÉTAPE 2 — Métriques jobsearch de la semaine écoulée
+## ÉTAPE 2 — Métriques jobsearch de la semaine écoulée (optionnel — plugin `jobsearch`)
+
+Cette étape requiert le plugin `jobsearch` co-installé (skill `jobsearch:jobsearch-vault` + vault
+Obsidian monté) — exactement comme l'ÉTAPE 3 requiert `gmail-mcp`. <!-- TODO: verify in Cowork —
+comportement exact de Skill(jobsearch-vault) quand le plugin jobsearch n'est pas installé
+(refus de permission vs échec silencieux de résolution) --> Si le skill n'est pas disponible ou
+si le vault n'est pas monté, marquer `jobsearch:DOWN` et sauter directement à l'ÉTAPE 3 — ne
+jamais bloquer le sprint planning pour un workspace qui n'a pas cette verticale.
 
 Invoquer `jobsearch-vault` pour les candidatures actives + entretiens prévus. En parallèle, exécuter :
 
 ```bash
-VAULT="$(find /sessions /Users -path "*/SynologyDrive-MyAssistant/SecondLife-vault/SecondLife" -maxdepth 8 2>/dev/null | head -1)"
+# Ces dates servent aussi aux étapes suivantes (5, 6) — calculées inconditionnellement,
+# jamais dépendantes du vault jobsearch.
 WEEK_START=$(date -d "last monday" +%Y-%m-%d 2>/dev/null || date -v-1w -v+monday +%Y-%m-%d 2>/dev/null || date -v-7d +%Y-%m-%d 2>/dev/null)
 TODAY=$(date +%Y-%m-%d)
 NEXT_MON=$(date -d "next monday" +%Y-%m-%d 2>/dev/null || date -v+1w -v+monday +%Y-%m-%d 2>/dev/null)
@@ -137,29 +146,35 @@ NEXT_FRI=$(date -d "next friday" +%Y-%m-%d 2>/dev/null || date -v+1w -v+friday +
 
 if [ "$NEXT_MON" \<= "$TODAY" ]; then SPRINT_STATUS="actuel"; else SPRINT_STATUS="suivant"; fi
 echo "SPRINT_STATUS=$SPRINT_STATUS"
-
 echo "WEEK_START=$WEEK_START"
 echo "NEXT_MON=$NEXT_MON"
 echo "NEXT_FRI=$NEXT_FRI"
 
-echo "=== Candidatures cette semaine ==="
-find "$VAULT/CRM-JobSearch/Opportunites" -name "*.md" 2>/dev/null | while IFS= read -r f; do
-  dc=$(grep "^date_candidature:" "$f" | head -1 | sed 's/.*: *//;s/"//g;s/null//' | tr -d ' ')
-  [ -n "$dc" ] && [ "$dc" \>= "$WEEK_START" ] && [ "$dc" \<= "$TODAY" ] && \
-    printf "  %s — %s\n" "$dc" "$(grep "^entreprise:" "$f" | head -1 | sed 's/.*: *//;s/\[\[//g;s/\]\]//g')"
-done | sort
+VAULT="$(find /sessions /Users -path "*/SynologyDrive-MyAssistant/SecondLife-vault/SecondLife" -maxdepth 8 2>/dev/null | head -1)"
+if [ -z "$VAULT" ]; then
+  echo "jobsearch:DOWN — vault Obsidian introuvable"
+else
+  echo "=== Candidatures cette semaine ==="
+  find "$VAULT/CRM-JobSearch/Opportunites" -name "*.md" 2>/dev/null | while IFS= read -r f; do
+    dc=$(grep "^date_candidature:" "$f" | head -1 | sed 's/.*: *//;s/"//g;s/null//' | tr -d ' ')
+    [ -n "$dc" ] && [ "$dc" \>= "$WEEK_START" ] && [ "$dc" \<= "$TODAY" ] && \
+      printf "  %s — %s\n" "$dc" "$(grep "^entreprise:" "$f" | head -1 | sed 's/.*: *//;s/\[\[//g;s/\]\]//g')"
+  done | sort
 
-echo "=== Relances semaine prochaine ==="
-find "$VAULT/CRM-JobSearch/Opportunites" -name "*.md" 2>/dev/null | while IFS= read -r f; do
-  dr=$(grep "^date_relance:" "$f" | head -1 | sed 's/.*: *//;s/"//g;s/null//' | tr -d ' ')
-  statut=$(grep "^statut:" "$f" | head -1)
-  echo "$statut" | grep -qi "Refus\|Abandonné\|Archivé" && continue
-  [ -n "$dr" ] && [ "$dr" \>= "$NEXT_MON" ] && [ "$dr" \<= "$NEXT_FRI" ] && \
-    printf "  %s — %s\n" "$dr" "$(grep "^entreprise:" "$f" | head -1 | sed 's/.*: *//;s/\[\[//g;s/\]\]//g')"
-done | sort
+  echo "=== Relances semaine prochaine ==="
+  find "$VAULT/CRM-JobSearch/Opportunites" -name "*.md" 2>/dev/null | while IFS= read -r f; do
+    dr=$(grep "^date_relance:" "$f" | head -1 | sed 's/.*: *//;s/"//g;s/null//' | tr -d ' ')
+    statut=$(grep "^statut:" "$f" | head -1)
+    echo "$statut" | grep -qi "Refus\|Abandonné\|Archivé" && continue
+    [ -n "$dr" ] && [ "$dr" \>= "$NEXT_MON" ] && [ "$dr" \<= "$NEXT_FRI" ] && \
+      printf "  %s — %s\n" "$dr" "$(grep "^entreprise:" "$f" | head -1 | sed 's/.*: *//;s/\[\[//g;s/\]\]//g')"
+  done | sort
+fi
 ```
 
-Afficher :
+Si `jobsearch:DOWN` : afficher `↷ Métriques jobsearch — plugin jobsearch absent, section sautée.` et continuer directement à l'ÉTAPE 3 (`SPRINT_STATUS`/`NEXT_MON`/`NEXT_FRI` restent valides pour la suite).
+
+Sinon, afficher :
 
 ```
 ## Métriques jobsearch — semaine du [WEEK_START]
@@ -189,7 +204,7 @@ Pour chaque offre extraite, scorer selon le profil de Renaud (Solution Architect
 - 🟡 : CTO, Eng Manager, Senior AI Engineer — selon contexte et localisation
 - ❌ : hors Paris IDF, hors IA, ou budget estimé < 80K€
 
-Vérifier si l'entreprise est déjà dans `CRM-JobSearch/Opportunites/` avec statut actif (via jobsearch-vault).
+Si `jobsearch:DOWN` n'a pas été levé à l'ÉTAPE 2, vérifier si l'entreprise est déjà dans `CRM-JobSearch/Opportunites/` avec statut actif (via jobsearch-vault). Si `jobsearch:DOWN`, laisser la colonne « Déjà dans le vault » à `?` — ne pas deviner.
 
 Afficher :
 
@@ -254,7 +269,7 @@ Buffer 40% : (22 - X) × 0.4h
 Intégrer dans le sprint :
 1. Tâches reportées depuis le sprint actuel (décidées à l'étape 1)
 2. Tâches hal non sprintées en retard (list_tasks sans sprint_id)
-3. Relances jobsearch dues semaine prochaine (étape 2)
+3. Relances jobsearch dues semaine prochaine (étape 2 — si `jobsearch:DOWN`, sauter cet item)
 4. Offres LinkedIn 🔥 à postuler (étape 3)
 5. Nouvelles tâches si nécessaire
 

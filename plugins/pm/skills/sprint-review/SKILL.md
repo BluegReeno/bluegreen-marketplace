@@ -1,9 +1,11 @@
 ---
 name: sprint-review
 description: >
-  Bilan du sprint de la semaine pour Renaud Laborbe. Métriques jobsearch
-  (candidatures, taux de conversion, profil performance, patterns de refus).
-  Bilan Blue Green (projets en cours). Shortlist pour le sprint suivant.
+  Bilan du sprint de la semaine pour Renaud Laborbe. Bilan Blue Green (projets
+  en cours). Shortlist pour le sprint suivant. Si le plugin jobsearch est
+  co-installé, inclut aussi les métriques jobsearch (candidatures, taux de
+  conversion, profil performance, patterns de refus) — sinon cette section est
+  sautée sans bloquer le reste du bilan.
   Ne crée pas le sprint suivant — c'est le sprint-planner qui s'en charge.
   Clôture le sprint dans hal uniquement après validation explicite.
   Utiliser quand Renaud dit "sprint review", "bilan du sprint", "bilan de la
@@ -125,7 +127,14 @@ Afficher (une section `###` par workspace retenu, dans l'ordre de `whoami`, labe
 
 ---
 
-## ÉTAPE 2 — Métriques jobsearch (section la plus importante)
+## ÉTAPE 2 — Métriques jobsearch (optionnel — plugin `jobsearch`)
+
+Cette étape requiert le plugin `jobsearch` co-installé (skill `jobsearch:jobsearch-vault` + vault
+Obsidian monté). <!-- TODO: verify in Cowork — comportement exact de Skill(jobsearch-vault) quand
+le plugin jobsearch n'est pas installé (refus de permission vs échec silencieux de résolution) -->
+Si le skill n'est pas disponible ou si le vault n'est pas monté, marquer `jobsearch:DOWN`,
+afficher `↷ Métriques jobsearch — plugin jobsearch absent, section sautée.` et sauter
+directement à l'ÉTAPE 3 — ne jamais bloquer le bilan pour un workspace sans cette verticale.
 
 Invoquer `jobsearch-vault` pour compter les candidatures actives. En parallèle, exécuter les scripts bash ci-dessous.
 
@@ -133,6 +142,9 @@ Invoquer `jobsearch-vault` pour compter les candidatures actives. En parallèle,
 
 ```bash
 VAULT="$(find /sessions /Users -path "*/SynologyDrive-MyAssistant/SecondLife-vault/SecondLife" -maxdepth 8 2>/dev/null | head -1)"
+if [ -z "$VAULT" ]; then
+  echo "jobsearch:DOWN — vault Obsidian introuvable"
+fi
 TODAY=$(date +%Y-%m-%d)
 WEEK_START=$(date -d "last monday" +%Y-%m-%d 2>/dev/null || date -v-1w -v+monday +%Y-%m-%d 2>/dev/null || date -v-7d +%Y-%m-%d 2>/dev/null)
 PREV_WEEK_START=$(date -d "2 weeks ago monday" +%Y-%m-%d 2>/dev/null || date -v-14d +%Y-%m-%d 2>/dev/null || echo "")
@@ -202,7 +214,10 @@ done | sort
 
 ### 2e. Tableau métriques
 
-Afficher :
+Si `jobsearch:DOWN` (2a) : sauter les sections 2b–2f, ne pas afficher le tableau ci-dessous, et
+passer directement à l'ÉTAPE 3.
+
+Sinon, afficher :
 
 ```
 ## Métriques jobsearch — semaine du [WEEK_START]
@@ -273,7 +288,9 @@ mcp__claude_ai_Google_Calendar__list_events(
 )
 ```
 
-Afficher la shortlist avec les relances dues et les entretiens détectés via jobsearch-vault :
+Afficher la shortlist avec les relances dues et les entretiens détectés via jobsearch-vault — si
+`jobsearch:DOWN` (ÉTAPE 2), sauter les deux premières lignes 🔴 ci-dessous (aucune donnée jobsearch
+à afficher) plutôt que de les laisser vides ou inventées :
 
 ```
 ## Shortlist sprint suivant — semaine du $NEXT_D0_LABEL
