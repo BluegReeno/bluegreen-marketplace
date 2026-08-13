@@ -155,11 +155,11 @@ while IFS= read -r f; do
   dc=$(grep "^date_candidature:" "$f" | head -1 | sed 's/.*: *//;s/"//g;s/null//' | tr -d ' ')
   statut=$(grep "^statut:" "$f" | head -1 | sed 's/.*: *//;s/"//g' | tr -d ' ')
   [ -z "$dc" ] && continue
-  if [ "$dc" \>= "$WEEK_START" ] && [ "$dc" \<= "$TODAY" ]; then
+  if [[ ! "$dc" < "$WEEK_START" ]] && [[ ! "$dc" > "$TODAY" ]]; then
     count_week=$((count_week+1))
     echo "$statut" | grep -qi "refus" && refus_week=$((refus_week+1))
   fi
-  [ -n "$PREV_WEEK_START" ] && [ "$dc" \>= "$PREV_WEEK_START" ] && [ "$dc" \< "$WEEK_START" ] && \
+  [ -n "$PREV_WEEK_START" ] && [[ ! "$dc" < "$PREV_WEEK_START" ]] && [[ "$dc" < "$WEEK_START" ]] && \
     count_prev=$((count_prev+1))
 done < <(find "$VAULT/CRM-JobSearch/Opportunites" -name "*.md" 2>/dev/null)
 
@@ -191,7 +191,7 @@ find "$VAULT/CRM-JobSearch/Opportunites" -name "*.md" 2>/dev/null | while IFS= r
   dc=$(grep "^date_candidature:" "$f" | head -1 | sed 's/.*: *//;s/"//g' | tr -d ' ')
   echo "$statut" | grep -qi "refus" || continue
   [ -z "$dc" ] && continue
-  [ "$dc" \< "$WEEK_START_VAR" ] && continue
+  [[ "$dc" < "$WEEK_START_VAR" ]] && continue
   entreprise=$(grep "^entreprise:" "$f" | head -1 | sed 's/.*: *//;s/\[\[//g;s/\]\]//g')
   echo "  ❌ $entreprise"
 done
@@ -207,7 +207,7 @@ find "$VAULT/CRM-JobSearch/Opportunites" -name "*.md" 2>/dev/null | while IFS= r
   dr=$(grep "^date_relance:" "$f" | head -1 | sed 's/.*: *//;s/"//g;s/null//' | tr -d ' ')
   statut=$(grep "^statut:" "$f" | head -1)
   echo "$statut" | grep -qi "Refus\|Abandonné\|Archivé" && continue
-  [ -n "$dr" ] && [ "$dr" \>= "$NEXT_MON" ] && [ "$dr" \<= "$NEXT_FRI" ] && \
+  [ -n "$dr" ] && [[ ! "$dr" < "$NEXT_MON" ]] && [[ ! "$dr" > "$NEXT_FRI" ]] && \
     printf "  %s — %s\n" "$dr" "$(grep "^entreprise:" "$f" | head -1 | sed 's/.*: *//;s/\[\[//g;s/\]\]//g')"
 done | sort
 ```

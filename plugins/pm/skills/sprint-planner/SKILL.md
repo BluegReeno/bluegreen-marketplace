@@ -144,7 +144,7 @@ TODAY=$(date +%Y-%m-%d)
 NEXT_MON=$(date -d "next monday" +%Y-%m-%d 2>/dev/null || date -v+1w -v+monday +%Y-%m-%d 2>/dev/null)
 NEXT_FRI=$(date -d "next friday" +%Y-%m-%d 2>/dev/null || date -v+1w -v+friday +%Y-%m-%d 2>/dev/null)
 
-if [ "$NEXT_MON" \<= "$TODAY" ]; then SPRINT_STATUS="actuel"; else SPRINT_STATUS="suivant"; fi
+if [[ ! "$NEXT_MON" > "$TODAY" ]]; then SPRINT_STATUS="actuel"; else SPRINT_STATUS="suivant"; fi
 echo "SPRINT_STATUS=$SPRINT_STATUS"
 echo "WEEK_START=$WEEK_START"
 echo "NEXT_MON=$NEXT_MON"
@@ -157,7 +157,7 @@ else
   echo "=== Candidatures cette semaine ==="
   find "$VAULT/CRM-JobSearch/Opportunites" -name "*.md" 2>/dev/null | while IFS= read -r f; do
     dc=$(grep "^date_candidature:" "$f" | head -1 | sed 's/.*: *//;s/"//g;s/null//' | tr -d ' ')
-    [ -n "$dc" ] && [ "$dc" \>= "$WEEK_START" ] && [ "$dc" \<= "$TODAY" ] && \
+    [ -n "$dc" ] && [[ ! "$dc" < "$WEEK_START" ]] && [[ ! "$dc" > "$TODAY" ]] && \
       printf "  %s — %s\n" "$dc" "$(grep "^entreprise:" "$f" | head -1 | sed 's/.*: *//;s/\[\[//g;s/\]\]//g')"
   done | sort
 
@@ -166,7 +166,7 @@ else
     dr=$(grep "^date_relance:" "$f" | head -1 | sed 's/.*: *//;s/"//g;s/null//' | tr -d ' ')
     statut=$(grep "^statut:" "$f" | head -1)
     echo "$statut" | grep -qi "Refus\|Abandonné\|Archivé" && continue
-    [ -n "$dr" ] && [ "$dr" \>= "$NEXT_MON" ] && [ "$dr" \<= "$NEXT_FRI" ] && \
+    [ -n "$dr" ] && [[ ! "$dr" < "$NEXT_MON" ]] && [[ ! "$dr" > "$NEXT_FRI" ]] && \
       printf "  %s — %s\n" "$dr" "$(grep "^entreprise:" "$f" | head -1 | sed 's/.*: *//;s/\[\[//g;s/\]\]//g')"
   done | sort
 fi
