@@ -1,6 +1,6 @@
 {
   "name": "pm",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "PM — project management: tasks, sprints, projects, docs, plus weekly sprint planning and review.",
   "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" }
 }
