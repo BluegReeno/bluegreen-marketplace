@@ -33,15 +33,21 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ## [0.1.3] — 2026-08-14 — normalize `priority` against a closed vocabulary
 
-`priority` was written and read as free text — the backend (`hal-mcp`) applies no
-enum validation, unlike `tags`. Real workspace data mixed `"normal"`, `"high"`,
-`"medium"`, `"Haute"` (French, capitalized), and `null` on the same board, so the
-`⚡` kanban marker (strict match on `priority=high`) silently missed tasks. `/pm
+`priority` was written and read as free text. Real workspace data mixed `"normal"`,
+`"high"`, `"medium"`, `"Haute"` (French, capitalized), and `null` on the same board, so
+the `⚡` kanban marker (strict match on `priority=high`) silently missed tasks. `/pm
 task`, `/pm update`, and `/pm tasks` now normalize `priority` against a closed
-`low`/`medium`/`high`/`urgent` vocabulary — on write via a lookup table (unknown
-input → ask, never write free text) and on read (tolerates existing unnormalized
-values already in the database). Server-side enum validation on `create_task` /
-`update_task` remains a `hal-mcp` fix, out of scope for this repo.
+`urgent`/`high`/`medium`/`low` vocabulary — on write via a lookup table (unknown input →
+ask, never write free text) and on read.
+
+**This is the skill half of a two-repo fix, and the server half landed first.** Since
+2026-08-14, `hal#97` (hal-mcp **v60**) rejects any non-conforming `priority` on
+`create_task` / `update_task` with `Priority '<value>' not allowed. Valid: urgent, high,
+medium, low`, backed by a CHECK constraint that binds every other client too; the same
+migration normalized the 39 non-conforming rows (`normal` → `medium`, `Haute`/`haute` →
+`high`). So this skill does not stand in for a missing server guard — it normalizes French
+input ahead of a server that only speaks the canonical form, and surfaces the server's
+message unchanged when something slips through.
 
 ## [0.1.2] — 2026-08-13 — fix sprint-planner/sprint-review date comparisons — >= / <= inside [ ] silently failed in bash and zsh, all jobsearch metrics read 0
 

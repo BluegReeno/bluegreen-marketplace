@@ -63,11 +63,20 @@ cache la réponse `whoami`. Résoudre dans cet ordre :
 
 ## Priority normalization (s'applique à `/pm task`, `/pm update`, `/pm tasks`)
 
-`priority` n'est **pas validé côté serveur** (contrairement à `tags`, qui rejette
-les valeurs hors `allowed_tags` avec un message explicite) — la base contient un
-mélange de valeurs (`"high"`, `"normal"`, `"medium"`, `"Haute"`, `null`). Ce skill
-applique donc sa propre normalisation, en écriture et en lecture, vers un
-vocabulaire fermé à quatre valeurs : **`low` | `medium` | `high` | `urgent`**.
+`priority` **est validé côté serveur** depuis le 2026-08-14 (`hal#97`, hal-mcp v60) :
+`create_task` et `update_task` rejettent toute valeur hors
+**`urgent` | `high` | `medium` | `low`** avec le message
+`Priority '<valeur>' not allowed. Valid: urgent, high, medium, low`, et une contrainte
+CHECK en base impose la même chose à tout autre client. `null` reste légal et reste le
+défaut — ne jamais inventer de valeur.
+
+Ce skill normalise **en amont** de cet appel, pour deux raisons :
+
+- l'utilisateur parle français (« priorité haute ») et le serveur, lui, refuse `Haute` —
+  normaliser ici transforme un refus serveur en écriture correcte ;
+- en lecture, la normalisation reste un filet : la migration du 2026-08-14 a nettoyé
+  l'existant (`normal` → `medium`, `Haute`/`haute` → `high`), mais tolérer une valeur
+  inattendue coûte moins cher que de la laisser casser un tri ou un marker.
 
 **Table de normalisation** (valeur brute → canonique, insensible à la casse) :
 
@@ -92,10 +101,10 @@ vocabulaire fermé à quatre valeurs : **`low` | `medium` | `high` | `urgent`**.
   `⚡`, tri, filtre) — tolère les valeurs historiques déjà en base non normalisées.
 - `null` reste `null` (pas de marker).
 
-> **Limite connue** : ce garde-fou est côté skill uniquement. `create_task` /
-> `update_task` (hal-mcp) n'appliquent aujourd'hui aucune validation d'énumération
-> sur `priority` — un autre client MCP peut toujours écrire une valeur libre. Fix
-> serveur nécessaire côté `hal-mcp` (voir issue liée).
+> **Le serveur est la garde ultime, pas ce skill.** Si une valeur non canonique passe
+> malgré tout, `create_task` / `update_task` la refusent — remonter le message d'erreur
+> tel quel à l'utilisateur, il nomme la valeur et liste les quatre valides. Ne jamais
+> réessayer avec une valeur devinée.
 
 ---
 
