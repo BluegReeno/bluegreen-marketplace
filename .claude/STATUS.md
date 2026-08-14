@@ -25,9 +25,11 @@ Il ne reste que **S7 — la validation terrain, à faire à la main par Renaud.*
 | `hal` | 0.12.0 | aucune | `.mcp.json` — le seul du dépôt |
 | `edifice` | 0.1.0 | `/edifice` | — |
 | `gtm` | 0.1.0 | `/crm`, `/linkedin` | — |
-| `pm` | 0.1.2 | `/pm`, `/sprint-planner`, `/sprint-review` | — |
+| `pm` | 0.1.3 | `/pm`, `/sprint-planner`, `/sprint-review` | — |
 
-Compteur marketplace **0.10.18** (relu dans `marketplace.json` le 2026-08-14 ; ce bloc annonçait encore 0.10.16 et `pm` 0.1.0, figés au 2026-08-02 — `pm` a bougé deux fois depuis, dont #73). Côté `renaud-marketplace` : top-level 0.6.16, `briefing` 0.12.0 réduit à `morning-briefing` + `mail-triage`.
+Compteur marketplace **0.10.19** (relu dans `marketplace.json` après les merges du 2026-08-14 ; `gtm` **0.2.0** via #76, `pm` **0.1.3** via #75).
+
+⚠️ **Deux publications tiennent dans un seul incrément, et rien ne l'a signalé.** #75 et #76 partaient toutes deux de 0.10.18 et écrivaient toutes deux 0.10.19 : git a fusionné sans conflit, puisque la modification était *identique*. La convention du dépôt est +1 par publication (0.10.16 → .17 → .18). Le contenu de 0.10.19 est juste — il porte les deux changements — donc rien n'a été rebumpé, mais **deux `skill-improve` en vol simultané produisent cette fusion silencieuse à chaque fois**. `check_version_sync.sh` ne la voit pas : il contrôle les versions de plugin contre leur CHANGELOG, pas le compteur top-level. Côté `renaud-marketplace` : top-level 0.6.16, `briefing` 0.12.0 réduit à `morning-briefing` + `mail-triage`.
 
 **Protocole de test S7** — `hal` s'installe toujours en premier, c'est lui qui enregistre le connecteur que les trois autres appellent :
 
@@ -65,6 +67,15 @@ Le reste du chantier #50 est acquis : socle `ui/` (#51/PR #52), artefact lecture
 En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smoke test de rendu (#44), Gemini Enterprise (#13 manuel), projet↔opportunité (#21 migration).
 
 ## Done (2026-08-14)
+
+- [x] **#27 — `/crm log update` : corriger une interaction loguée** — PR [#76](https://github.com/BluegReeno/bluegreen-marketplace/pull/76) mergée — 2026-08-14
+  - Moitié skill de [hal#100](https://github.com/BluegReeno/hal/issues/100), déployée le matin même (hal-mcp **v60**, 32ᵉ tool). `gtm` 0.1.0 → **0.2.0**.
+  - `allowed-tools` vérifié **contre les 32 `registerTool` du bundle déployé**, pas de mémoire — c'est le piège `rm#88` : la CI contrôle que `allowed-tools` est présent, jamais que ses noms résolvent.
+  - ⚠️ **Trou fonctionnel confirmé, non comblé** : il n'existe aucun `list_interactions`. Une interaction n'est donc corrigeable que dans la session qui l'a loguée — or corriger *après coup* est le cas d'usage même de #27. Contournement livré : `/crm log` affiche désormais l'`interaction_id`, et `/crm log update` refuse de deviner un id absent du contexte. Une issue `hal` (`list_interactions`) reste à ouvrir.
+
+- [x] **#70 — `priority` validée contre un vocabulaire fermé** — PR [#75](https://github.com/BluegReeno/bluegreen-marketplace/pull/75) mergée — 2026-08-14
+  - Moitié skill de [hal#97](https://github.com/BluegReeno/hal/issues/97), déployée le matin même. `pm` 0.1.2 → **0.1.3**. Le skill normalise le français (« priorité haute » → `high`) **en amont** d'un serveur qui n'accepte que la forme canonique.
+  - ⚠️ **Le run a documenté un état du monde périmé de six heures** — « pas de validation serveur », « fix hal-mcp hors scope » — parce qu'il a lu le corps de l'issue, écrit avant le déploiement. Corrigé dans `b538795`. **Leçon : `skill-improve` prend un numéro d'issue, pas un prompt — le corps de l'issue est le seul canal. Le corriger avant de lancer n'est pas optionnel.** `bgm#27`, dont le corps avait été remis à jour d'abord, est sorti juste du premier coup.
 
 - [x] **#73 — les comparaisons de dates de `sprint-planner` / `sprint-review` échouaient en silence** — PR [#74](https://github.com/BluegReeno/bluegreen-marketplace/pull/74) mergée — 2026-08-14
   - `[ "$a" \>= "$b" ]` n'est pas un opérateur : `test` recevait `">="` comme troisième argument et la comparaison ne matchait jamais. 12 occurrences sur 6 lignes, dans les deux skills. Remplacées par la vraie négation `[[ ! "$a" < "$b" ]]`.
