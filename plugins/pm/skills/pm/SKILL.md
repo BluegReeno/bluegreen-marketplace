@@ -61,6 +61,44 @@ cache la réponse `whoami`. Résoudre dans cet ordre :
 
 ---
 
+## Priority normalization (s'applique à `/pm task`, `/pm update`, `/pm tasks`)
+
+`priority` n'est **pas validé côté serveur** (contrairement à `tags`, qui rejette
+les valeurs hors `allowed_tags` avec un message explicite) — la base contient un
+mélange de valeurs (`"high"`, `"normal"`, `"medium"`, `"Haute"`, `null`). Ce skill
+applique donc sa propre normalisation, en écriture et en lecture, vers un
+vocabulaire fermé à quatre valeurs : **`low` | `medium` | `high` | `urgent`**.
+
+**Table de normalisation** (valeur brute → canonique, insensible à la casse) :
+
+| Valeur rencontrée | Canonique |
+|--------------------|-----------|
+| `low`, `basse` | `low` |
+| `medium`, `normal` | `medium` |
+| `high`, `haute` | `high` |
+| `urgent`, `urgente` | `urgent` |
+| `null` / absent | `null` (ne jamais inventer de valeur) |
+
+**En écriture** (`create_task`, `update_task`) :
+- Normaliser la valeur donnée par l'utilisateur via la table ci-dessus avant
+  l'appel MCP.
+- Valeur hors table → ne pas écrire de texte libre. Demander :
+  > Priorité non reconnue : `<valeur>`. Valeurs valides : `low`, `medium`, `high`, `urgent`.
+- Toujours écrire la forme canonique anglaise minuscule, jamais le mot tel que
+  prononcé par l'utilisateur (ex. "priorité haute" → `high`, jamais `"Haute"`).
+
+**En lecture** (`list_tasks`, kanban `/pm tasks`) :
+- Normaliser chaque `priority` reçue via la même table avant tout usage (marker
+  `⚡`, tri, filtre) — tolère les valeurs historiques déjà en base non normalisées.
+- `null` reste `null` (pas de marker).
+
+> **Limite connue** : ce garde-fou est côté skill uniquement. `create_task` /
+> `update_task` (hal-mcp) n'appliquent aujourd'hui aucune validation d'énumération
+> sur `priority` — un autre client MCP peut toujours écrire une valeur libre. Fix
+> serveur nécessaire côté `hal-mcp` (voir issue liée).
+
+---
+
 ## /pm list `[workspace]`
 
 Affiche les projets du workspace en kanban texte groupé par stage.
@@ -146,6 +184,8 @@ ajoute `assignee_email: <user_email du cache whoami>` (jamais demander).
 
 Avec `workspace_slug` (+ filtres résolus).
 
+**3bis. Normaliser `priority`** sur chaque tâche retournée — voir § Priority normalization.
+
 **4. Grouper et afficher**
 
 Ligne de scope en tête :
@@ -175,7 +215,7 @@ Format d'affichage :
 ```
 
 Ligne par tâche :
-`{⚡ si priority=high}{title} · {assignee short ou "—"} · {due_date ou "—"} {[S] si sprint_id non null} {#tag1 #tag2 si tags non vide}`
+`{⚡ si priority normalisée=high ou urgent}{title} · {assignee short ou "—"} · {due_date ou "—"} {[S] si sprint_id non null} {#tag1 #tag2 si tags non vide}`
 
 - `assignee short` : partie locale de `assignee_email` (avant `@`). `—` si null.
 - `[S]` : marker si `sprint_id` non null.
@@ -220,7 +260,8 @@ Créer une tâche dans le contexte courant.
      contexte, résoudre via `list_projects` (fuzzy match sur le nom/ref)
    - `due_date` (optionnel) — si une date est mentionnée
    - `assignee_email` (optionnel) — si une assignation est mentionnée
-   - `priority` (optionnel) — `high` | `normal`
+   - `priority` (optionnel) — normaliser vers `low` / `medium` / `high` / `urgent`,
+     voir § Priority normalization
    - `sprint_id` (optionnel) — si "dans le sprint actuel" → résoudre via
      `list_sprints(status="actuel")`
 3. Appeler `create_task` avec `workspace_slug` et les champs collectés.
@@ -317,7 +358,7 @@ sans exécuter.
 |-------------------|-------------|
 | "mes tâches", "todo list", "qu'est-ce que j'ai à faire" | `list_tasks` (workspace default) |
 | "ajouter tâche X", "nouvelle tâche Y", "todo : Z", "créer une tâche" | `create_task` |
-| "repousse X à lundi", "change l'échéance de X", "renomme X en Y", "réassigne X à [email]", "X priorité haute" | `list_tasks` → fuzzy match → `update_task` (attributs : `title`, `description`, `due_date`, `project_id`, `assignee_email`, `priority`, `external_ref` — **pas** `status`/`sprint`) |
+| "repousse X à lundi", "change l'échéance de X", "renomme X en Y", "réassigne X à [email]", "X priorité haute" | `list_tasks` → fuzzy match → `update_task` (attributs : `title`, `description`, `due_date`, `project_id`, `assignee_email`, `priority` — normalisé, voir § Priority normalization —, `external_ref` — **pas** `status`/`sprint`) |
 | "tâche X faite", "X → done", "X terminé", "c'est fait" | `list_tasks` → fuzzy match → `update_task_status` (done) |
 | "X → in progress", "je commence X", "en cours : X" | `list_tasks` → fuzzy match → `update_task_status` (in_progress) |
 | "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |
@@ -343,8 +384,9 @@ Seuils : score **> 80** → match direct ; **50–80** → lister les candidats,
     `todo`/`in_progress`/`done`/`blocked`)
   - **sprint** → `assign_task_to_sprint` (`workspace_slug`, `task_id`, `sprint_id`)
   - **tout le reste** → `update_task` (attributs uniquement : `title`,
-    `description`, `due_date`, `project_id`, `assignee_email`, `priority`,
-    `external_ref` — **pas** `status` ni `sprint`)
+    `description`, `due_date`, `project_id`, `assignee_email`, `priority` —
+    normalisé, voir § Priority normalization —, `external_ref` — **pas**
+    `status` ni `sprint`)
   - Toujours passer `workspace_slug`. N'envoyer que les attributs nommés par l'utilisateur.
 - Ne jamais auto-créer sur un match ambigu. Score < 50 → proposer création.
 - "c'est fait" / "done" / "next" après une action décrite → proposer l'écriture MCP,

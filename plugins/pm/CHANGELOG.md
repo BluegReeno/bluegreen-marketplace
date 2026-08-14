@@ -31,6 +31,18 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.1.3] — 2026-08-14 — normalize `priority` against a closed vocabulary
+
+`priority` was written and read as free text — the backend (`hal-mcp`) applies no
+enum validation, unlike `tags`. Real workspace data mixed `"normal"`, `"high"`,
+`"medium"`, `"Haute"` (French, capitalized), and `null` on the same board, so the
+`⚡` kanban marker (strict match on `priority=high`) silently missed tasks. `/pm
+task`, `/pm update`, and `/pm tasks` now normalize `priority` against a closed
+`low`/`medium`/`high`/`urgent` vocabulary — on write via a lookup table (unknown
+input → ask, never write free text) and on read (tolerates existing unnormalized
+values already in the database). Server-side enum validation on `create_task` /
+`update_task` remains a `hal-mcp` fix, out of scope for this repo.
+
 ## [0.1.2] — 2026-08-13 — fix sprint-planner/sprint-review date comparisons — >= / <= inside [ ] silently failed in bash and zsh, all jobsearch metrics read 0
 
 ## [0.1.1] — 2026-08-08 — graceful degradation when jobsearch is absent
