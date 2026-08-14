@@ -31,6 +31,8 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.1.2] — 2026-08-13 — fix sprint-planner/sprint-review date comparisons — >= / <= inside [ ] silently failed in bash and zsh, all jobsearch metrics read 0
+
 ## [0.1.1] — 2026-08-08 — graceful degradation when jobsearch is absent
 
 - `sprint-planner`, `sprint-review`: added `jobsearch:DOWN` handling (mirrors `gmail:DOWN`) so both
