@@ -1,6 +1,6 @@
 ---
 description: CRM — pipeline commercial Blue Green (opportunités, contacts, CRs, propales)
-argument-hint: "list [workspace] | new <nom> | qualify <nom> | log <note ou CR> | update <texte libre> | contact new <nom> | contact update <nom> | doc <url>"
+argument-hint: "list [workspace] | new <nom> | qualify <nom> | log <note ou CR> | log update <interaction> | update <texte libre> | contact new <nom> | contact update <nom> | doc <url>"
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -116,7 +116,27 @@ Logger un CR de meeting ou une note commerciale.
 - Après le log : tenter extraction BANT automatique ; si des infos sont identifiables →
   mettre à jour la description via `update_project` (même logique que `qualify`)
 - Si opportunité introuvable (score < 50) → logger quand même, mettre le nom dans `summary`
-- Output : `✅ CR logué sur <opportunité>` (+ `✅ BANT mis à jour` si extraction réussie)
+- Output : `✅ CR logué sur <opportunité> (id: <interaction_id>)` (+ `✅ BANT mis à jour` si
+  extraction réussie). Afficher l'id — c'est le seul moyen de retrouver l'interaction
+  ensuite pour la corriger (pas de listing côté MCP).
+
+---
+
+### `log update <interaction>`
+
+Corriger une interaction déjà loguée (`summary`, `transcript`, `channel`, `occurred_at`,
+`contact_id`, `project_id`, `tags`) — pas de suppression, aucun outil MCP ne l'expose.
+
+- Résoudre workspace
+- **`interaction_id`** ne peut venir que du contexte conversation (confirmation d'un
+  `log` précédent dans la session, ou id collé par l'utilisateur) — hal-mcp n'expose
+  aucun `list_interactions`. Sans id identifiable, demander de reloguer ou de fournir l'id.
+- Collecter uniquement les champs à corriger, mentionnés par l'utilisateur ; les champs
+  omis restent inchangés côté serveur
+- `tags` **remplace** le tableau existant (ne fusionne pas) — pour ajouter un tag,
+  relire les tags actuels et renvoyer le tableau complet
+- Appeler `update_interaction(workspace_slug, interaction_id, <champs partiels>)`
+- Output : `✅ Interaction mise à jour : <opportunité ou contact> · <champ(s) modifié(s)>`
 
 ---
 

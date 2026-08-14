@@ -2,12 +2,12 @@
 name: crm
 description: >
   CRM commercial Blue Green — opportunités, contacts, entreprises, CRs de
-  meeting. Déclencher sur : /crm new, /crm qualify, /crm log, /crm update,
-  /crm list, /crm contact, /crm doc, ou toute demande NL : "nouvelle
-  opportunité", "qualifier le lead", "logger un CR commercial", "pipeline
-  commercial", "attacher une propale".
+  meeting. Déclencher sur : /crm new, /crm qualify, /crm log, /crm log update,
+  /crm update, /crm list, /crm contact, /crm doc, ou toute demande NL :
+  "nouvelle opportunité", "qualifier le lead", "logger un CR commercial",
+  "corriger une interaction", "pipeline commercial", "attacher une propale".
   NE PAS déclencher pour : projets internes, tâches, sprints (→ /pm).
-allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__update_project mcp__plugin_hal_hal-mcp__list_stages mcp__plugin_hal_hal-mcp__update_project_stage mcp__plugin_hal_hal-mcp__list_companies mcp__plugin_hal_hal-mcp__create_company mcp__plugin_hal_hal-mcp__list_contacts mcp__plugin_hal_hal-mcp__create_contact mcp__plugin_hal_hal-mcp__update_contact mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__save_document"
+allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__update_project mcp__plugin_hal_hal-mcp__list_stages mcp__plugin_hal_hal-mcp__update_project_stage mcp__plugin_hal_hal-mcp__list_companies mcp__plugin_hal_hal-mcp__create_company mcp__plugin_hal_hal-mcp__list_contacts mcp__plugin_hal_hal-mcp__create_contact mcp__plugin_hal_hal-mcp__update_contact mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__update_interaction mcp__plugin_hal_hal-mcp__save_document"
 ---
 
 # CRM — Pipeline commercial Blue Green via hal-mcp (Claude Code)
@@ -220,10 +220,42 @@ Enregistrer un CR de meeting ou une note commerciale liée à une opportunité.
    - Si des infos BANT sont identifiables → appeler `update_project` pour mettre à jour
      la description (même logique que `/crm qualify`).
    - Si rien n'est extractable → ne pas mettre à jour la description, ne pas signaler.
-7. Output : `✅ CR logué sur <opportunité>` (+ `✅ BANT mis à jour` si extraction réussie).
+7. Output : `✅ CR logué sur <opportunité> (id: <interaction_id>)` (+ `✅ BANT mis à jour` si
+   extraction réussie). Afficher `interaction_id` — c'est la seule façon de retrouver
+   l'interaction pour la corriger ensuite via `/crm log update` (pas de listing côté MCP).
 
 **Règle** : ne jamais bloquer un log. Si l'opportunité est introuvable (score < 50),
 logger quand même en incluant le nom de l'opportunité dans `summary`.
+
+---
+
+## /crm log update `<interaction>`
+
+Corriger une interaction déjà loguée (`summary`, `transcript`, `channel`, `occurred_at`,
+`contact_id`, `project_id`, `tags`). Une interaction loguée n'est pas immuable : ce
+chemin permet de la corriger sans créer de doublon via `/crm log`.
+
+### Étapes
+
+1. **Résoudre workspace** — règle standard.
+2. **Retrouver `interaction_id`** — hal-mcp n'expose aucun outil de listing des
+   interactions (pas de `list_interactions`). L'identifiant ne peut donc venir que du
+   **contexte conversation en cours** : la confirmation `✅ CR logué sur <opportunité>`
+   d'un `/crm log` précédent dans la même session, ou un identifiant collé par
+   l'utilisateur. Si aucun `interaction_id` n'est identifiable dans le contexte,
+   répondre que l'interaction visée doit être reloguée ou son identifiant fourni —
+   ne jamais deviner ou appeler `update_interaction` sans `interaction_id` confirmé.
+3. Collecter uniquement les champs à corriger, mentionnés par l'utilisateur :
+   - `summary`, `transcript`, `channel`, `occurred_at`, `contact_id`, `project_id`, `tags`
+   - Les champs omis restent inchangés côté serveur — ne jamais envoyer un champ non
+     mentionné avec une valeur devinée.
+   - `tags` **remplace** le tableau existant, il ne fusionne pas — si l'utilisateur veut
+     ajouter un tag, relire les tags actuels et renvoyer le tableau complet.
+4. Appeler `update_interaction(workspace_slug, interaction_id, <champs partiels>)`.
+5. Output : `✅ Interaction mise à jour : <opportunité ou contact> · <champ(s) modifié(s)>`
+
+**Hors scope** : suppression d'une interaction — aucun outil MCP ne l'expose, ne pas
+en proposer.
 
 ---
 
