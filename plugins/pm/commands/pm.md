@@ -136,11 +136,18 @@ Voir/créer/mettre à jour les sprints.
 
 - Résoudre workspace
 - Pas de sous-argument → `list_sprints(workspace_slug, status="actuel")` ; afficher nom, dates, statut
+  (au plus un sprint `actuel` par workspace depuis hal-mcp v61 ; zéro reste possible — ne
+  jamais en choisir un autre par défaut, afficher le message d'absence)
 - "nouveau sprint S<N>", "créer sprint" → collecter `name`, `starts_at`, `ends_at` (optionnels),
   appeler `create_sprint`
-- "renomme le sprint", "change le statut du sprint en X" → `list_sprints` → match →
+- "renomme le sprint", "change le statut du sprint en X" (X ≠ `actuel`) → `list_sprints` → match →
   `update_sprint(workspace_slug, sprint_id, ...)` ; valeurs `status` valides :
   `passes` / `dernier` / `actuel` / `suivant` / `a_venir`
+- "le sprint est actuel", "passe le sprint X en actuel" → `list_sprints` → match →
+  `transition_sprint(workspace_slug, incoming_sprint_id)` — **jamais** `update_sprint` pour ce
+  cas : un index unique partiel interdit un second `actuel`, et `update_sprint` refuse
+  l'écriture. `transition_sprint` rétrograde l'`actuel` sortant en `dernier` et promeut
+  l'entrant en `actuel`, en une seule transaction.
 
 ---
 
@@ -156,7 +163,8 @@ Voir/créer/mettre à jour les sprints.
 | "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |
 | "X → todo", "remettre X en attente" | `list_tasks` → fuzzy match → `update_task_status` (todo) |
 | "nouveau sprint S<N>" | `create_sprint` |
-| "renomme le sprint", "statut du sprint → X" | `list_sprints` → match → `update_sprint` |
+| "renomme le sprint", "statut du sprint → X" (X ≠ actuel) | `list_sprints` → match → `update_sprint` |
+| "le sprint est actuel" | `list_sprints` → match → `transition_sprint` |
 | "assigne tâche X au sprint Y" | `list_tasks` → match → `assign_task_to_sprint` |
 | "nouveau projet interne [nom]" | `create_project` |
 | "logger une note sur [projet]" | `log_interaction` (channel: meeting) |

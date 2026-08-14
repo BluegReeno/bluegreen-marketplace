@@ -13,7 +13,7 @@ description: >
   Utiliser quand Renaud dit "sprint planning", "planifier la semaine",
   "plan my week", "sprint de la semaine prochaine", "weekly planning",
   "priorités de la semaine", "organiser ma semaine" — ou en mode schedule.
-allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__get_document mcp__claude_ai_Google_Calendar__list_events mcp__plugin_jobsearch_gmail-mcp__search_emails Skill(jobsearch-vault) Bash"
+allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__transition_sprint mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__get_document mcp__claude_ai_Google_Calendar__list_events mcp__plugin_jobsearch_gmail-mcp__search_emails Skill(jobsearch-vault) Bash"
 ---
 
 # Sprint Planner — Renaud Laborbe
@@ -72,15 +72,20 @@ Le probe hal est déjà fait (ÉTAPE 0). Pour **chaque** workspace retenu `w`, e
 
 ```
 mcp__plugin_hal_hal-mcp__list_sprints(workspace_slug=w.workspace_slug, status="actuel")
-  → sprint_id[w], sprint_name[w], sprint_number[w] (premier élément de la liste)
+  → sprint_id[w], sprint_name[w] (au plus un élément — hal-mcp v61 garantit l'unicité de "actuel" par workspace)
 ```
 
-Si aucun sprint actif dans un workspace → `sprint_id[w] = null`, `sprint_number[w] = 0`.
+Si aucun sprint actif dans un workspace → `sprint_id[w] = null` (zéro sprint `actuel` reste
+possible même avec la contrainte — ne jamais en choisir un arbitrairement).
 
 ```
 mcp__plugin_hal_hal-mcp__list_tasks(workspace_slug=w.workspace_slug, sprint_id=<sprint_id[w]>)
   (sans sprint_id si aucun sprint actif)
 ```
+
+Le **numéro** du prochain sprint est calculé séparément en ÉTAPE 6a, à partir de **tous** les
+sprints du workspace — jamais depuis `sprint_id[w]` ci-dessus (voir la note sur les trous de
+numérotation en ÉTAPE 6a).
 
 ### 1b. Calculer le taux de complétion
 
@@ -335,80 +340,96 @@ Terminer par :
 
 Les étapes 6a–6e itèrent sur **chaque workspace retenu** `w` (ÉTAPE 0) — jamais deux appels figés. Un slug ne doit apparaître nulle part.
 
-### 6a. Vérifier si un sprint suivant existe déjà (idempotence)
+### 6a. Résoudre le numéro de sprint + repérer le sprint cible (idempotence)
 
 Pour chaque workspace retenu `w`, en parallèle :
 
 ```
-mcp__plugin_hal_hal-mcp__list_sprints(workspace_slug=w.workspace_slug, status=<SPRINT_STATUS>)
+mcp__plugin_hal_hal-mcp__list_sprints(workspace_slug=w.workspace_slug)
+  # sans filtre status — tous les sprints du workspace
+  → all_sprints[w]
+  → max_sprint_number[w] = max(s.sprint_number pour s dans all_sprints[w]), 0 si vide
+  → target[w] = sprint de all_sprints[w] avec status == SPRINT_STATUS,
+                sinon un sprint suivant/a_venir déjà créé pour la même semaine
+                (starts_at == NEXT_MON) — à corriger en 6b plutôt qu'à dupliquer
+  → existing_actuel[w] = sprint de all_sprints[w] avec status == "actuel" (peut être absent)
 ```
 
-Si un sprint avec le statut cible existe déjà dans `w` → utiliser son `sprint_id` sans en créer un nouveau. Si absent → créer avec `sprint_number = sprint_number[w] + 1`.
+> **Ne jamais dériver le prochain numéro du sprint courant + 1.** Des dédoublonnages passés de
+> `sprint_number` ont renuméroté des sprints en double vers des numéros libres au lieu de
+> resequencer toute la suite (le numéro figure dans le nom, ex. `BG-31` — un décalage en
+> cascade aurait rendu tous les noms faux). La séquence a donc des trous : `blue-green` passe
+> de 31 à 33, `renaud` de 7 à 8-9. Le seul numéro sûr est `max_sprint_number[w] + 1`, calculé
+> sur **tous** les sprints du workspace — jamais `sprint_number` du seul sprint `actuel`.
 
-Si un sprint existe avec le **mauvais statut** (ex : `status="suivant"` alors que `SPRINT_STATUS="actuel"`), corriger via :
+### 6b. Créer, corriger ou promouvoir le sprint
 
-```
-mcp__plugin_hal_hal-mcp__update_sprint(
-  workspace_slug=w.workspace_slug,
-  sprint_id=<sprint_id_existant>,
-  status=<SPRINT_STATUS>
-)
-```
+**`target[w]` existe déjà avec `status == SPRINT_STATUS`** → rien à faire, réutiliser son
+`sprint_id`.
 
-Ne recréer le sprint que si aucun sprint n'est trouvé avec le statut cible ni avec un statut corrigeable.
+**`target[w]` existe avec un statut différent** (créé par une planification précédente, ex.
+`status="suivant"` alors que `SPRINT_STATUS="actuel"` au rattrapage) :
+- `SPRINT_STATUS != "actuel"` → corriger via
+  `mcp__plugin_hal_hal-mcp__update_sprint(workspace_slug=w.workspace_slug, sprint_id=target[w].sprint_id, status=SPRINT_STATUS)`
+- `SPRINT_STATUS == "actuel"` → promouvoir via
+  `mcp__plugin_hal_hal-mcp__transition_sprint(workspace_slug=w.workspace_slug, incoming_sprint_id=target[w].sprint_id)`
+  (fonctionne que `existing_actuel[w]` soit présent ou non)
 
-### 6b. Clôturer les sprints actuel existants (si SPRINT_STATUS = "actuel")
+**`target[w]` n'existe pas** → créer :
+- `SPRINT_STATUS == "suivant"` (planification normale, aucun conflit possible) — créer directement :
+  ```
+  mcp__plugin_hal_hal-mcp__create_sprint(
+    workspace_slug=w.workspace_slug,
+    name="<name du workspace> — semaine [NEXT_MON_SHORT]-[NEXT_FRI_SHORT]",
+    sprint_number=<max_sprint_number[w] + 1>,
+    status="suivant",
+    starts_at="[NEXT_MON]",
+    ends_at="[NEXT_FRI]"
+  )
+  ```
+- `SPRINT_STATUS == "actuel"` et `existing_actuel[w]` **absent** (zéro sprint `actuel` — cas
+  fréquent, reste possible même avec la contrainte d'unicité) — créer directement avec
+  `status="actuel"`, mêmes champs que ci-dessus.
+- `SPRINT_STATUS == "actuel"` et `existing_actuel[w]` **présent** — l'index unique partiel
+  interdit un second `actuel`, donc créer avec un statut temporaire sans conflit puis
+  promouvoir en une transaction unique :
+  ```
+  mcp__plugin_hal_hal-mcp__create_sprint(
+    workspace_slug=w.workspace_slug,
+    name="<name du workspace> — semaine [NEXT_MON_SHORT]-[NEXT_FRI_SHORT]",
+    sprint_number=<max_sprint_number[w] + 1>,
+    status="suivant",
+    starts_at="[NEXT_MON]",
+    ends_at="[NEXT_FRI]"
+  )
+  mcp__plugin_hal_hal-mcp__transition_sprint(
+    workspace_slug=w.workspace_slug,
+    incoming_sprint_id=<sprint_id créé ci-dessus>
+  )
+  ```
 
-Si `SPRINT_STATUS = "actuel"` uniquement : avant de créer le nouveau sprint, clôturer tous les sprints encore en "actuel" pour éviter les doublons. Pour chaque workspace retenu `w`, en parallèle :
-
-```
-mcp__plugin_hal_hal-mcp__list_sprints(workspace_slug=w.workspace_slug, status="actuel")
-  → sprints_a_clore[w] (liste)
-```
-
-Pour chaque sprint retourné (tous les workspaces retenus) :
-
-```
-mcp__plugin_hal_hal-mcp__update_sprint(
-  workspace_slug=w.workspace_slug,
-  sprint_id=<sprint_id>,
-  status="passes"
-)
-```
-
-Si la liste est vide pour un workspace → rien à faire, continuer.
+`transition_sprint` rétrograde `existing_actuel[w]` en `dernier` et promeut le sprint entrant
+en `actuel`, dans une seule transaction — remplace l'ancienne boucle
+`list_sprints(status="actuel")` + `update_sprint(status="passes")` : celle-ci démotait vers le
+mauvais statut sémantique (`passes` au lieu de `dernier`) et deux appels `update_sprint`
+séparés collisionnent désormais avec la contrainte d'unicité.
 
 ---
 
-### 6c. Créer les sprints
+### 6c. Assigner les tâches reportées au nouveau sprint
 
-```
-# SPRINT_STATUS = "actuel" si NEXT_MON <= TODAY (lundi matin / rattrapage), sinon "suivant"
-
-pour chaque workspace retenu w :
-mcp__plugin_hal_hal-mcp__create_sprint(
-  workspace_slug=w.workspace_slug,
-  name="<name du workspace> — semaine [NEXT_MON_SHORT]-[NEXT_FRI_SHORT]",
-  sprint_number=<sprint_number[w] + 1>,
-  status=<SPRINT_STATUS>,
-  starts_at="[NEXT_MON]",
-  ends_at="[NEXT_FRI]"
-)
-```
-
-### 6d. Assigner les tâches reportées au nouveau sprint
-
-Pour chaque tâche non terminée reportée depuis l'étape 1c, dans le sprint fraîchement créé de **son propre** workspace :
+Pour chaque tâche non terminée reportée depuis l'étape 1c, dans le sprint résolu en 6b (créé
+ou promu) de **son propre** workspace :
 
 ```
 mcp__plugin_hal_hal-mcp__assign_task_to_sprint(
   workspace_slug=<workspace d'origine de la tâche>,
   task_id=<id>,
-  sprint_id=<nouveau_sprint_id de ce workspace>
+  sprint_id=<sprint_id de ce workspace, résolu en 6b>
 )
 ```
 
-### 6e. Créer les nouvelles tâches
+### 6d. Créer les nouvelles tâches
 
 Router chaque nouvelle tâche vers le workspace qui la porte, jamais vers un slug figé. Les offres LinkedIn 🔥 et relances jobsearch vont dans le workspace **dont les `allowed_tags` contiennent `jobsearch`** ; les autres nouvelles tâches vont dans le workspace concerné. N'utiliser que des tags présents dans les `allowed_tags` de ce workspace.
 
@@ -423,7 +444,7 @@ mcp__plugin_hal_hal-mcp__create_task(
 )
 ```
 
-### 6f. Confirmer
+### 6e. Confirmer
 
 ```
 ✅ Sprint créé.
