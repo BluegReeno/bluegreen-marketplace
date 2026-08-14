@@ -1,6 +1,6 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-08-02
+Last updated: 2026-08-14
 
 ## Current Focus
 
@@ -25,9 +25,9 @@ Il ne reste que **S7 — la validation terrain, à faire à la main par Renaud.*
 | `hal` | 0.12.0 | aucune | `.mcp.json` — le seul du dépôt |
 | `edifice` | 0.1.0 | `/edifice` | — |
 | `gtm` | 0.1.0 | `/crm`, `/linkedin` | — |
-| `pm` | 0.1.0 | `/pm`, `/sprint-planner`, `/sprint-review` | — |
+| `pm` | 0.1.2 | `/pm`, `/sprint-planner`, `/sprint-review` | — |
 
-Compteur marketplace **0.10.16**. Côté `renaud-marketplace` : top-level 0.6.16, `briefing` 0.12.0 réduit à `morning-briefing` + `mail-triage`.
+Compteur marketplace **0.10.18** (relu dans `marketplace.json` le 2026-08-14 ; ce bloc annonçait encore 0.10.16 et `pm` 0.1.0, figés au 2026-08-02 — `pm` a bougé deux fois depuis, dont #73). Côté `renaud-marketplace` : top-level 0.6.16, `briefing` 0.12.0 réduit à `morning-briefing` + `mail-triage`.
 
 **Protocole de test S7** — `hal` s'installe toujours en premier, c'est lui qui enregistre le connecteur que les trois autres appellent :
 
@@ -63,6 +63,14 @@ Recette complète, état d'avancement et inconnue restante (signature de l'outil
 Le reste du chantier #50 est acquis : socle `ui/` (#51/PR #52), artefact lecture seule (#50/PR #53), toolchain et CI en place. Phase 2 (écriture — `push_mission_context` depuis l'artefact, #49) reste bloquée derrière #60.
 
 En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smoke test de rendu (#44), Gemini Enterprise (#13 manuel), projet↔opportunité (#21 migration).
+
+## Done (2026-08-14)
+
+- [x] **#73 — les comparaisons de dates de `sprint-planner` / `sprint-review` échouaient en silence** — PR [#74](https://github.com/BluegReeno/bluegreen-marketplace/pull/74) mergée — 2026-08-14
+  - `[ "$a" \>= "$b" ]` n'est pas un opérateur : `test` recevait `">="` comme troisième argument et la comparaison ne matchait jamais. 12 occurrences sur 6 lignes, dans les deux skills. Remplacées par la vraie négation `[[ ! "$a" < "$b" ]]`.
+  - **Vérifié fonctionnellement, pas seulement relu** : rejoué contre les 102 notes réelles du vault sur la fenêtre 07-27 → 08-02, l'ancienne forme retourne **0** candidature, la nouvelle **7** (OpenAI, Celonis, Arcom, OWKIN, OCDE, Streem, Kpler).
+  - `pm` 0.1.1 → **0.1.2**, marketplace top-level 0.10.17 → **0.10.18**, CHANGELOG à jour (three-file sync vérifié).
+  - Le champ `version:` dans le frontmatter des `SKILL.md` n'existe plus dans la convention du dépôt — ce n'était pas un oubli du run.
 
 ## Done (2026-08-02)
 
@@ -217,5 +225,5 @@ En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smok
 ## Backlog
 
 - [ ] **#13 — Gemini Enterprise** — étapes console manuelles (desktop requis). Checklist complète dans l'issue #13. Ref projet Supabase : `zgkvbjqlvebttbnkklpo`.
-- [ ] **#21 — projets ↔ opportunités** — décision Option A/B/C non prise. **Recommandation : Option A** (FK `parent_project_id` nullable dans `halcrm_projects`). Nécessite migration Supabase + expose dans hal-mcp + update skills `/crm` et `/pm`. Planifier en session dédiée.
+- [ ] **#21 — projets ↔ opportunités** — **décision prise le 2026-07-29 : Option A** (FK `parent_project_id` nullable, self-referencing), actée en commentaire sur [#21](https://github.com/BluegReeno/bluegreen-marketplace/issues/21) lors de la revue du portfolio plan (`archon-workflows#10`), B et C écartées avec leurs raisons. Cette ligne a dit « décision non prise » pendant deux semaines de plus — corrigé le 2026-08-14. La moitié backend est **filée** ([hal#86](https://github.com/BluegReeno/hal/issues/86), scope + acceptance criteria complets), donc la paire n'est plus bloquée : elle attend seulement d'être exécutée, hal d'abord. Restent deux choix internes, tous deux déjà recommandés dans l'issue : `ON DELETE SET NULL` et un seul niveau d'imbrication.
 - [ ] schema-contract.json — cross-repo sync anchor (hal v0.3.0+)
