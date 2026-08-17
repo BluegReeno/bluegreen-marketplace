@@ -1,6 +1,6 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-08-14
+Last updated: 2026-08-17
 
 ## Current Focus
 
@@ -25,9 +25,9 @@ Il ne reste que **S7 — la validation terrain, à faire à la main par Renaud.*
 | `hal` | 0.12.0 | aucune | `.mcp.json` — le seul du dépôt |
 | `edifice` | 0.1.0 | `/edifice` | — |
 | `gtm` | 0.1.0 | `/crm`, `/linkedin` | — |
-| `pm` | 0.1.3 | `/pm`, `/sprint-planner`, `/sprint-review` | — |
+| `pm` | 0.1.5 | `/pm`, `/sprint-planner`, `/sprint-review` | — |
 
-Compteur marketplace **0.10.19** (relu dans `marketplace.json` après les merges du 2026-08-14 ; `gtm` **0.2.0** via #76, `pm` **0.1.3** via #75).
+Compteur marketplace **0.10.21** (relu dans `marketplace.json` après les merges du 2026-08-14 ; `gtm` **0.2.0** via #76, `pm` **0.1.3** via #75).
 
 ⚠️ **Deux publications tiennent dans un seul incrément, et rien ne l'a signalé.** #75 et #76 partaient toutes deux de 0.10.18 et écrivaient toutes deux 0.10.19 : git a fusionné sans conflit, puisque la modification était *identique*. La convention du dépôt est +1 par publication (0.10.16 → .17 → .18). Le contenu de 0.10.19 est juste — il porte les deux changements — donc rien n'a été rebumpé, mais **deux `skill-improve` en vol simultané produisent cette fusion silencieuse à chaque fois**. `check_version_sync.sh` ne la voit pas : il contrôle les versions de plugin contre leur CHANGELOG, pas le compteur top-level. Côté `renaud-marketplace` : top-level 0.6.16, `briefing` 0.12.0 réduit à `morning-briefing` + `mail-triage`.
 
@@ -65,6 +65,20 @@ Recette complète, état d'avancement et inconnue restante (signature de l'outil
 Le reste du chantier #50 est acquis : socle `ui/` (#51/PR #52), artefact lecture seule (#50/PR #53), toolchain et CI en place. Phase 2 (écriture — `push_mission_context` depuis l'artefact, #49) reste bloquée derrière #60.
 
 En arrière-plan : triage — `update_interaction` (#27 dual-PR hal+skill), smoke test de rendu (#44), Gemini Enterprise (#13 manuel), projet↔opportunité (#21 migration).
+
+## Done (2026-08-17)
+
+- [x] **#68 — unicité du sprint courant, côté skill** — PR [#78](https://github.com/BluegReeno/bluegreen-marketplace/pull/78) mergée — 2026-08-17
+  - Moitié skill de [hal#99](https://github.com/BluegReeno/hal/issues/99) (hal-mcp **v61**). `pm` 0.1.4 → **0.1.5**, compteur **0.10.21**.
+  - Le rollover passe désormais par `transition_sprint` (une transaction) au lieu de deux `update_sprint` — que la contrainte d'unicité rejetterait maintenant. Au passage, le run a trouvé que l'ancienne boucle démotait le sprint sortant vers **`passes`** au lieu de `dernier` : sémantiquement faux, invisible jusqu'ici.
+  - ⚠️ **Le prochain numéro de sprint vient de `MAX(sprint_number) + 1`, jamais du sprint courant + 1.** Le dédoublonnage du 2026-08-14 a renuméroté vers des numéros libres plutôt que resequencé (le numéro figure dans le nom : `BG-31`), donc la suite a un trou : `blue-green` saute de 31 à **33**, `renaud` a 8 et 9 pris.
+
+- [x] **#69 — distinguer une tâche annulée d'une tâche faite** — PR [#77](https://github.com/BluegReeno/bluegreen-marketplace/pull/77) mergée — 2026-08-17
+  - Moitié skill de [hal#98](https://github.com/BluegReeno/hal/issues/98). `pm` 0.1.3 → **0.1.4**.
+  - **Trois buckets, pas deux** : `cancelled` est exclu du **dénominateur** du taux de complétion dans `sprint-review` *et* `sprint-planner`, affiché sur une ligne à part, et **jamais reporté** au sprint suivant. Mesuré en production : `done` est passé de 158 à 128 une fois les 30 annulations migrées — un cinquième du chiffre annoncé.
+  - La convention `❌ ANNULÉ (date, motif) — ` n'est **pas** documentée : elle est explicitement interdite dans le SKILL.md. La migration l'a supprimée des 30 titres ; la redocumenter l'aurait fait renaître en doublon du vrai statut.
+
+- [x] **Les quatre issues du plan d'intégrité sont livrées** — `#70`, `#27`, `#69`, `#68`, chacune après le déploiement de sa moitié backend. Reste le re-run d'`issue-portfolio-plan`.
 
 ## Done (2026-08-14)
 
