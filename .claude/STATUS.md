@@ -24,10 +24,10 @@ Il ne reste que **S7 — la validation terrain, à faire à la main par Renaud.*
 |--------|---------|-----------|------------|
 | `hal` | 0.12.0 | aucune | `.mcp.json` — le seul du dépôt |
 | `edifice` | 0.1.0 | `/edifice` | — |
-| `gtm` | 0.1.0 | `/crm`, `/linkedin` | — |
+| `gtm` | 0.2.0 | `/crm`, `/linkedin` | — |
 | `pm` | 0.1.5 | `/pm`, `/sprint-planner`, `/sprint-review` | — |
 
-Compteur marketplace **0.10.21** (relu dans `marketplace.json` après les merges du 2026-08-14 ; `gtm` **0.2.0** via #76, `pm` **0.1.3** via #75).
+Compteur marketplace **0.10.21** (relu dans `marketplace.json` après les merges du 2026-08-17 ; `gtm` **0.2.0** via #76, `pm` **0.1.5** via #75 → #77 → #78).
 
 ⚠️ **Deux publications tiennent dans un seul incrément, et rien ne l'a signalé.** #75 et #76 partaient toutes deux de 0.10.18 et écrivaient toutes deux 0.10.19 : git a fusionné sans conflit, puisque la modification était *identique*. La convention du dépôt est +1 par publication (0.10.16 → .17 → .18). Le contenu de 0.10.19 est juste — il porte les deux changements — donc rien n'a été rebumpé, mais **deux `skill-improve` en vol simultané produisent cette fusion silencieuse à chaque fois**. `check_version_sync.sh` ne la voit pas : il contrôle les versions de plugin contre leur CHANGELOG, pas le compteur top-level. Côté `renaud-marketplace` : top-level 0.6.16, `briefing` 0.12.0 réduit à `morning-briefing` + `mail-triage`.
 
