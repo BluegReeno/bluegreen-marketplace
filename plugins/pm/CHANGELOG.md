@@ -31,7 +31,40 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
-## [0.1.4] — 2026-08-14 — distinguish a cancelled task from a done one
+## [0.1.5] — 2026-08-17 — route sprint rollover through `transition_sprint`, derive sprint number from MAX
+
+**Skill half of a two-repo fix; the server half (`hal#99`, hal-mcp v61) landed first.** The
+backend now enforces `UNIQUE (workspace_slug, sprint_number)`, a CHECK on `status`, and a
+partial unique index guaranteeing at most one sprint `status="actuel"` per workspace —
+`update_sprint` rejects any attempt to set a second `actuel`. A new tool,
+`transition_sprint(workspace_slug, incoming_sprint_id)`, demotes the outgoing `actuel` to
+`dernier` and promotes the incoming sprint to `actuel` in one transaction; it is now the only
+correct rollover path.
+
+- `pm`, `sprint-planner`: added `mcp__plugin_hal_hal-mcp__transition_sprint` to `allowed-tools`.
+- `pm` (SKILL + `commands/pm.md`): routing a sprint to `status="actuel"` ("le sprint est
+  actuel", "passe le sprint X en actuel") now calls `transition_sprint`, never `update_sprint`.
+  All other status/field changes keep using `update_sprint` unchanged.
+- `sprint-planner`: ÉTAPE 6 no longer derives the next sprint number from the current sprint's
+  `sprint_number + 1` — three past duplicate-number cleanups renumbered sprints to free slots
+  instead of resequencing the whole series (the number is embedded in the sprint name), leaving
+  gaps (`blue-green` 31→33, `renaud` 7→8-9). The next number now comes from
+  `MAX(sprint_number)` across **all** sprints in the workspace (any status), computed in the
+  same `list_sprints` call ÉTAPE 6a already needed for idempotence. ÉTAPE 6b's old
+  close-then-create sequence (`list_sprints(status="actuel")` + a loop of
+  `update_sprint(status="passes")`, which also demoted to the wrong semantic status —
+  `passes` instead of `dernier`) is replaced by `transition_sprint` when a conflicting
+  `actuel` sprint already exists.
+
+Not changed, per explicit backend-scope decision on 2026-08-14: no automatic closure of expired
+sprints, `starts_at`/`ends_at` stay nullable, `status` stays explicit rather than derived from
+dates. A skill must still surface the absence of a current sprint explicitly rather than picking
+one arbitrarily — zero sprints in `status="actuel"` remains possible even though at most one now
+is.
+
+Closes [#68](https://github.com/BluegReeno/bluegreen-marketplace/issues/68).
+
+## [0.1.4] — 2026-08-17 — distinguish a cancelled task from a done one
 
 `update_task_status` gained a fifth value on the server side (`hal#98`, hal-mcp **v61**):
 `cancelled`, plus an optional `cancelled_reason` accepted only when `status="cancelled"`,
