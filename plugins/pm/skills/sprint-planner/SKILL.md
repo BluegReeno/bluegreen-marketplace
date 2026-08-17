@@ -92,9 +92,14 @@ numérotation en ÉTAPE 6a).
 ```
 pour chaque workspace retenu w :
   terminées[w]     = tasks[w] où status == "done"
-  non_terminées[w] = tasks[w] où status != "done"
-taux_global = somme_w(len(terminées[w])) / somme_w(len(all[w])) * 100
+  annulées[w]      = tasks[w] où status == "cancelled"
+  non_terminées[w] = tasks[w] où status ∈ {todo, in_progress, blocked}
+taux_global = somme_w(len(terminées[w])) / somme_w(len(terminées[w]) + len(non_terminées[w])) * 100
 ```
+
+`cancelled` est exclu du dénominateur du taux — une tâche annulée n'est ni faite ni
+ouverte. Elle est aussi exclue de `non_terminées[w]` par construction : **une tâche
+`cancelled` n'est jamais reportée** (voir § 1c).
 
 ### 1c. Décision report/abandon pour les tâches non terminées
 
@@ -110,9 +115,16 @@ Score : X/Y terminées (Z%)
 
 ⏳ Non terminées — à reporter dans le sprint suivant
 - [titre] [<nom du workspace>] — priorité [low|medium|high] — status : [status]
+
+🚫 Annulées cette semaine (non reportées) : N
 ```
 
 Le label entre crochets est le `name` du workspace (fallback `workspace_slug`) — jamais un label figé `[business]`/`[perso]`.
+
+`🚫 Annulées cette semaine (non reportées) : N` est une ligne à part, toujours affichée
+(même à 0) — jamais fondue dans `✅ Terminées` ni dans `⏳ Non terminées`. Une tâche
+`cancelled` ne fait l'objet d'aucune question de report/abandon (§ 1c ci-dessous) et ne
+réapparaît jamais dans un sprint suivant — c'est un état terminal, distinct de `done`.
 
 **En mode conversationnel :** Pour chaque tâche non terminée, demander à Renaud :
 ```

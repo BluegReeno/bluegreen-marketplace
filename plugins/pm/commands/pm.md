@@ -62,7 +62,7 @@ Tâches en kanban texte groupé par statut. **Scope par défaut : le sprint actu
   - **Mode requête explicite** (si `--status`, `--project`, `--all` ou `--tag`) → pas de
     scoping sprint, interroger le workspace directement. Flags en AND,
     sauf `--all` ignoré si un autre filtre est présent :
-    - `--status <value>` → filtrer (`todo` | `in_progress` | `done` | `blocked`)
+    - `--status <value>` → filtrer (`todo` | `in_progress` | `done` | `blocked` | `cancelled`)
     - `--project <ref>` → `list_projects` pour résoudre `project_id`, puis filtrer
     - `--all` → aucun filtre, toutes les tâches du workspace
     - `--tag <value>` → passer `tags=["<value>"]` à `list_tasks`
@@ -74,9 +74,11 @@ Tâches en kanban texte groupé par statut. **Scope par défaut : le sprint actu
 - Appeler `list_tasks` avec `workspace_slug` (+ filtres résolus)
 - Ligne de scope en tête : `**<nom sprint>** · workspace <slug>`
   (ou `**Toutes les tâches**`, `**Statut : <s>**`, `**Tag : <valeur>**`, ou le ⚠️ du fallback)
-- Grouper par `status` dans l'ordre fixe : `todo` → `in_progress` → `blocked` → `done`
+- Grouper par `status` dans l'ordre fixe : `todo` → `in_progress` → `blocked` → `done` → `cancelled`
 - `done` est terminal → préfixer `✓ ` (omis dans le fallback sans sprint)
+- `cancelled` a sa propre colonne, toujours en dernier, jamais fusionnée avec `done` → préfixer `🚫 `
 - Ligne : `{⚡ si priority=high}{title} · {assignee short ou "—"} · {due_date ou "—"} {[S] si sprint_id non null} {#tag1 #tag2 si tags non vide}`
+- Ligne pour une tâche `cancelled` : `{title} · {assignee short ou "—"} · {due_date ou "—"}{ — motif : <cancelled_reason> si non vide}` — jamais de marker `⚡`/`[S]`/`✓`
 - Aucune tâche → `Aucune tâche dans le workspace <slug>.` ; sprint actuel vide → `Aucune tâche dans le sprint « <nom> ».`
 
 ---
@@ -162,6 +164,7 @@ Voir/créer/mettre à jour les sprints.
 | "X → in progress", "je commence X" | `list_tasks` → fuzzy match → `update_task_status` (in_progress) |
 | "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |
 | "X → todo", "remettre X en attente" | `list_tasks` → fuzzy match → `update_task_status` (todo) |
+| "annule X", "X annulée", "abandonne X" | `list_tasks` → fuzzy match → `update_task_status` (cancelled, `cancelled_reason` si motif donné) |
 | "nouveau sprint S<N>" | `create_sprint` |
 | "renomme le sprint", "statut du sprint → X" (X ≠ actuel) | `list_sprints` → match → `update_sprint` |
 | "le sprint est actuel" | `list_sprints` → match → `transition_sprint` |
