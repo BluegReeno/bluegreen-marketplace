@@ -108,6 +108,27 @@ Ce skill normalise **en amont** de cet appel, pour deux raisons :
 
 ---
 
+## Status vocabulary — `cancelled` (s'applique à `/pm task`, `/pm tasks`, `/pm update`)
+
+`status` accepte cinq valeurs côté serveur depuis le 2026-08-14 (`hal#98`, hal-mcp v61) :
+`todo` | `in_progress` | `done` | `blocked` | `cancelled`. Une tâche `cancelled` n'est **ni
+faite ni ouverte** — c'est un troisième bucket, jamais un synonyme de `done` (l'ancien
+contournement par préfixe de titre `❌ ANNULÉ (...)` puis `status=done` est abandonné ; ne
+jamais le reproduire).
+
+- `cancelled_reason` (texte libre, optionnel) n'a de sens que si `status="cancelled"`. Le
+  passer sur `update_task_status` quand l'utilisateur donne un motif ("annule X, motif :
+  Y"). Le serveur ne l'efface jamais sur une ré-annulation sans motif ; il n'est remis à
+  `null` qu'en sortant de `cancelled`.
+- `completed_at` n'est jamais posé sur une tâche `cancelled` — c'est un signal réservé à
+  `done`.
+- **Écriture** : "annule X", "X annulée", "abandonne X" → `update_task_status` (`status="cancelled"`,
+  `cancelled_reason` si un motif est donné).
+- **Lecture / kanban** : voir § `/pm tasks` ci-dessous — `cancelled` a sa propre colonne,
+  jamais fusionnée avec `done`.
+
+---
+
 ## /pm list `[workspace]`
 
 Affiche les projets du workspace en kanban texte groupé par stage.
@@ -171,7 +192,7 @@ Deux modes selon les flags présents :
 - **Mode requête explicite** — déclenché par `--status`, `--project`, `--all` ou
   `--tag`. Pas de scoping sprint ; interroger le workspace directement. Les flags
   se combinent en AND, sauf `--all` ignoré si un autre filtre est présent :
-  - `--status <value>` → filtre `status` (`todo` | `in_progress` | `done` | `blocked`)
+  - `--status <value>` → filtre `status` (`todo` | `in_progress` | `done` | `blocked` | `cancelled`)
   - `--project <ref>` → `list_projects` pour résoudre `project_id` par nom/ref,
     puis filtre `project_id`
   - `--all` → aucun filtre ; toutes les tâches du workspace
@@ -204,8 +225,10 @@ Ligne de scope en tête :
 - Filtre `--tag` → `**Tag : <value>** · workspace <slug>`
 - Fallback (aucun sprint) → le ⚠️ ci-dessus tient lieu de scope line
 
-Grouper par `status`. Ordre fixe : `todo` → `in_progress` → `blocked` → `done`.
-`done` est terminal — préfixer `✓ ` (omis dans le fallback sans sprint).
+Grouper par `status`. Ordre fixe : `todo` → `in_progress` → `blocked` → `done` → `cancelled`.
+`done` est terminal — préfixer `✓ ` (omis dans le fallback sans sprint). `cancelled` a sa
+**propre colonne, toujours en dernier** — jamais fusionnée avec `done` (voir § Status
+vocabulary) — préfixer `🚫 `.
 
 Format d'affichage :
 
@@ -221,10 +244,17 @@ Format d'affichage :
 
 ### ✓ done (2)
 - Bump versions 0.8.0 · renaud · 2026-06-17
+
+### 🚫 cancelled (1)
+- Migration ancien CRM · renaud · — — motif : remplacé par hal
 ```
 
 Ligne par tâche :
 `{⚡ si priority normalisée=high ou urgent}{title} · {assignee short ou "—"} · {due_date ou "—"} {[S] si sprint_id non null} {#tag1 #tag2 si tags non vide}`
+
+Ligne par tâche `cancelled` (remplace le format ci-dessus pour ce groupe) :
+`{title} · {assignee short ou "—"} · {due_date ou "—"}{ — motif : <cancelled_reason> si non vide}`
+— jamais de marker `⚡`, `[S]` ni `✓` sur une tâche annulée.
 
 - `assignee short` : partie locale de `assignee_email` (avant `@`). `—` si null.
 - `[S]` : marker si `sprint_id` non null.
@@ -372,6 +402,7 @@ sans exécuter.
 | "X → in progress", "je commence X", "en cours : X" | `list_tasks` → fuzzy match → `update_task_status` (in_progress) |
 | "X bloqué", "X → blocked" | `list_tasks` → fuzzy match → `update_task_status` (blocked) |
 | "X → todo", "remettre X en attente" | `list_tasks` → fuzzy match → `update_task_status` (todo) |
+| "annule X", "X annulée", "abandonne X" | `list_tasks` → fuzzy match → `update_task_status` (cancelled, `cancelled_reason` si motif donné) |
 | "nouveau sprint S<N>", "créer sprint" | `create_sprint` |
 | "renomme le sprint", "change le statut du sprint en X", "le sprint est actuel" | `list_sprints` → match → `update_sprint` |
 | "assigne tâche X au sprint Y", "tâche X dans sprint Y" | `list_tasks` → match → `assign_task_to_sprint` |
@@ -390,7 +421,8 @@ Seuils : score **> 80** → match direct ; **50–80** → lister les candidats,
 - Ambiguïté : plusieurs tâches au même score → lister, demander.
 - **Trois writers à responsabilité unique** :
   - **status** → `update_task_status` (`workspace_slug`, `task_id`, `status` ∈
-    `todo`/`in_progress`/`done`/`blocked`)
+    `todo`/`in_progress`/`done`/`blocked`/`cancelled`, + `cancelled_reason` optionnel
+    quand `status="cancelled"`)
   - **sprint** → `assign_task_to_sprint` (`workspace_slug`, `task_id`, `sprint_id`)
   - **tout le reste** → `update_task` (attributs uniquement : `title`,
     `description`, `due_date`, `project_id`, `assignee_email`, `priority` —

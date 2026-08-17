@@ -31,6 +31,32 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.1.4] — 2026-08-14 — distinguish a cancelled task from a done one
+
+`update_task_status` gained a fifth value on the server side (`hal#98`, hal-mcp **v61**):
+`cancelled`, plus an optional `cancelled_reason` accepted only when `status="cancelled"`,
+and a `completed_at` column stamped on transitions to `done` (never on `cancelled`). The
+skill-side gap this closes: `pm`, `sprint-planner`, and `sprint-review` previously only
+knew `done` vs. everything-else, so an abandoned task had no honest home — the workaround
+in production was prefixing the title with `❌ ANNULÉ (date, motif) — ` and marking it
+`done`, which silently counted backlog cleanup as delivered work (measured impact: `done`
+dropped from 158 to 128 once 30 such tasks were properly migrated to `cancelled`, a fifth
+of the reported completion count). That title-prefix convention is retired, not
+documented — this fix makes the three-bucket distinction (`done` / open / `cancelled`)
+structural instead of a naming discipline:
+
+- `pm`: `/pm tasks` kanban gets a dedicated `cancelled` column (always last, never merged
+  into `done`), showing `cancelled_reason` when present. `/pm update` and the intent→tool
+  table route "annule X" / "X annulée" to `update_task_status(cancelled, cancelled_reason?)`.
+  `--status cancelled` is a valid filter. Task-resolution writers document the five-value
+  `status` enum.
+- `sprint-review`: completion counters (`taux`, `X/Y`) exclude `cancelled` from both
+  numerator and denominator — a cancelled task is neither done nor open. Cancelled tasks
+  render on their own `🚫 Annulées : N` line, always shown, never folded into `✅`/`⏳`.
+- `sprint-planner`: `taux_global` excludes `cancelled` the same way. A `cancelled` task is
+  never asked about at ÉTAPE 1c (report/abandon) and never carried into the next sprint —
+  it's a terminal state, distinct from `done`.
+
 ## [0.1.3] — 2026-08-14 — normalize `priority` against a closed vocabulary
 
 `priority` was written and read as free text. Real workspace data mixed `"normal"`,

@@ -99,8 +99,13 @@ mcp__plugin_hal_hal-mcp__list_tasks(workspace_slug=w.workspace_slug, sprint_id=<
 
 Calculer par workspace :
 - `done` = tasks avec `status == "done"`
-- `non_terminées` = tasks avec `status != "done"` (todo | in_progress | blocked)
-- `taux` = `len(done) / len(all) * 100` (0% si aucune tâche)
+- `cancelled` = tasks avec `status == "cancelled"`
+- `non_terminées` = tasks avec `status` ∈ `todo` | `in_progress` | `blocked`
+- `taux` = `len(done) / (len(done) + len(non_terminées)) * 100` (0% si `done` et
+  `non_terminées` vides) — **`cancelled` exclu du dénominateur** : une tâche annulée
+  n'est ni faite ni ouverte, la compter dans un sens ou l'autre fausse le taux. `X/Y`
+  dans l'affichage suit la même règle (`Y = len(done) + len(non_terminées)`, jamais
+  `len(all)`).
 
 Afficher (une section `###` par workspace retenu, dans l'ordre de `whoami`, labellisée par le `name` du workspace — jamais un label figé `[business]`/`[perso]`) :
 
@@ -111,13 +116,19 @@ Afficher (une section `###` par workspace retenu, dans l'ordre de `whoami`, labe
 ✅ [titre]
 ✅ [titre]
 ⏳ [titre] — [status] — bloqueur probable : [inférer si possible depuis description/tags]
+🚫 Annulées : N
 
 ### <nom d'un autre workspace> — X/Y terminées (Z%)
 ✅ [titre]
 ⏳ [titre] — [status]
+🚫 Annulées : 0
 
-### Score global : X/Y (Z%)
+### Score global : X/Y (Z%) · Annulées : N
 ```
+
+`🚫 Annulées : N` est une **ligne à part, toujours affichée** (même à 0) — jamais fondue
+dans `✅` ni dans `⏳`. Le score global agrège aussi le total des annulées sur tous les
+workspaces retenus.
 
 **Commentaire automatique selon le score :**
 - ≥ 80% : "Bonne semaine sur les tâches."
@@ -272,13 +283,13 @@ Si un workspace n'a aucun projet actif : "Pipeline <nom du workspace> vide — a
 
 ## ÉTAPE 4 — Shortlist sprint suivant
 
-Scanner en parallèle. Les tâches : pour **chaque** workspace retenu `w`, `list_tasks(workspace_slug=w.workspace_slug)` → filtrer non terminées + sans sprint_id.
+Scanner en parallèle. Les tâches : pour **chaque** workspace retenu `w`, `list_tasks(workspace_slug=w.workspace_slug)` → filtrer `status` ∈ `todo`/`in_progress`/`blocked` (ni `done` ni `cancelled`) + sans `sprint_id`.
 
 Les calendriers : l'ensemble à lire est l'**union de chaque `calendar_id` et `member_calendar_id` non-null** sur tous les workspaces retournés par `whoami` (ÉTAPE 0), dédupliquée — jamais un ID littéral. Si aucun workspace ne déclare de calendrier (champs null/absents — ex. phase 1 pas déployée) → rendre `⚠️ Aucun calendrier déclaré sur tes workspaces` et poursuivre sans contrainte calendrier.
 
 ```
 # pour chaque workspace retenu w :
-mcp__plugin_hal_hal-mcp__list_tasks(workspace_slug=w.workspace_slug)  → filtrer non terminées + sans sprint_id
+mcp__plugin_hal_hal-mcp__list_tasks(workspace_slug=w.workspace_slug)  → filtrer status ∈ todo/in_progress/blocked (ni done ni cancelled) + sans sprint_id
 
 # pour chaque calendrier de l'union :
 mcp__claude_ai_Google_Calendar__list_events(
