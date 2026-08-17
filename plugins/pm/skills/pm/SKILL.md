@@ -8,7 +8,7 @@ description: >
   note sur le projet", "attacher un doc", "c'est fait", "done", "next".
   NE PAS déclencher pour : opportunités commerciales, contacts, propales, devis
   (→ /crm).
-allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__save_document"
+allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__transition_sprint mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__save_document"
 ---
 
 # PM — Gestion de projet interne via hal-mcp (Claude Code)
@@ -366,13 +366,28 @@ Si l'utilisateur dit "nouveau sprint S<N>", "créer sprint" :
 
 ### Mettre à jour un sprint
 
-Si l'utilisateur dit "renomme le sprint", "change le statut du sprint en X",
-"le sprint est actuel", "corrige le statut du sprint" :
+Si l'utilisateur dit "renomme le sprint", "change le statut du sprint en X"
+(X ≠ `actuel`), "corrige le statut du sprint" :
 - Résoudre le sprint cible via `list_sprints` (status filter ou matching sur le nom)
 - Appeler `update_sprint(workspace_slug, sprint_id, ...)` — champs : `name`,
   `status`, `starts_at`, `ends_at`
 - Valeurs `status` valides : `passes` / `dernier` / `actuel` / `suivant` / `a_venir`
 - Output : `✅ Sprint mis à jour : <name> → <champ>: <valeur>`
+
+### Passer un sprint à "actuel" (rollover)
+
+Si l'utilisateur dit "le sprint est actuel", "passe le sprint X en actuel",
+"démarre le sprint X" — **ne jamais utiliser `update_sprint` pour ce cas.** Depuis
+hal-mcp v61, un index unique partiel garantit au plus un sprint `actuel` par
+workspace, et `update_sprint` refuse désormais de poser un second `actuel`
+(le message d'erreur nomme le sprint déjà courant).
+- Résoudre le sprint entrant via `list_sprints` (matching sur le nom).
+- Appeler `transition_sprint(workspace_slug, incoming_sprint_id=<sprint_id>)` —
+  rétrograde l'`actuel` sortant en `dernier` et promeut l'entrant en `actuel`,
+  dans une seule transaction. Fonctionne aussi bien s'il n'y a pas encore de
+  sprint `actuel` dans le workspace (zéro `actuel` reste possible même avec la
+  contrainte — ne jamais en choisir un arbitrairement).
+- Output : `✅ Sprint passé à actuel : <name>`
 
 ---
 
@@ -404,7 +419,8 @@ sans exécuter.
 | "X → todo", "remettre X en attente" | `list_tasks` → fuzzy match → `update_task_status` (todo) |
 | "annule X", "X annulée", "abandonne X" | `list_tasks` → fuzzy match → `update_task_status` (cancelled, `cancelled_reason` si motif donné) |
 | "nouveau sprint S<N>", "créer sprint" | `create_sprint` |
-| "renomme le sprint", "change le statut du sprint en X", "le sprint est actuel" | `list_sprints` → match → `update_sprint` |
+| "renomme le sprint", "change le statut du sprint en X" (X ≠ actuel) | `list_sprints` → match → `update_sprint` |
+| "le sprint est actuel", "passe le sprint X en actuel", "démarre le sprint X" | `list_sprints` → match → `transition_sprint` |
 | "assigne tâche X au sprint Y", "tâche X dans sprint Y" | `list_tasks` → match → `assign_task_to_sprint` |
 | "nouveau projet interne [nom]", "créer un projet" | `create_project` |
 | "logger une note sur [projet]", "CR interne", "note de projet" | `log_interaction` (channel: meeting) |
