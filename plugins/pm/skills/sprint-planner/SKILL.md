@@ -81,7 +81,13 @@ possible même avec la contrainte — ne jamais en choisir un arbitrairement).
 ```
 mcp__plugin_hal_hal-mcp__list_tasks(workspace_slug=w.workspace_slug, sprint_id=<sprint_id[w]>)
   (sans sprint_id si aucun sprint actif)
+  → { tasks, total, returned, truncated } — lire tasks[w] = .tasks, garder truncated[w] = .truncated
 ```
+
+Depuis le 2026-08-18 (`hal#105`), `list_tasks` retourne cet objet, pas un tableau brut — ne
+jamais traiter la réponse elle-même comme `tasks[w]`. Si `truncated[w]=true`, le sprint de ce
+workspace tient dans plus de 100 tâches : le bilan et le taux calculés en 1b/1c pour `w` portent
+sur une fraction connue (`returned[w]`/`total[w]`), à afficher explicitement plutôt qu'à taire.
 
 Le **numéro** du prochain sprint est calculé séparément en ÉTAPE 6a, à partir de **tous** les
 sprints du workspace — jamais depuis `sprint_id[w]` ci-dessus (voir la note sur les trous de
@@ -101,6 +107,9 @@ taux_global = somme_w(len(terminées[w])) / somme_w(len(terminées[w]) + len(non
 ouverte. Elle est aussi exclue de `non_terminées[w]` par construction : **une tâche
 `cancelled` n'est jamais reportée** (voir § 1c).
 
+Si `truncated[w]=true` pour au moins un workspace retenu, `taux_global` agrège une fraction
+inconnue de ce workspace — ne pas le présenter comme un taux exact sans le signal de 1c.
+
 ### 1c. Décision report/abandon pour les tâches non terminées
 
 Afficher :
@@ -109,6 +118,7 @@ Afficher :
 ## Bilan sprint actuel — [sprint_name par workspace retenu, séparés par « / »]
 
 Score : X/Y terminées (Z%)
+[⚠️ Résultat tronqué pour <nom du workspace> : <returned[w]>/<total[w]> tâches lues — une ligne par workspace où truncated[w]=true, omise sinon]
 
 ✅ Terminées
 - [titre] [<nom du workspace>]
@@ -285,7 +295,9 @@ Buffer 40% : (22 - X) × 0.4h
 
 Intégrer dans le sprint :
 1. Tâches reportées depuis le sprint actuel (décidées à l'étape 1)
-2. Tâches hal non sprintées en retard (list_tasks sans sprint_id)
+2. Tâches hal non sprintées en retard (`list_tasks` sans `sprint_id` — même forme de réponse
+   `{tasks, total, returned, truncated}` qu'en 1a ; si `truncated=true`, le signaler avant de
+   présenter la liste comme complète)
 3. Relances jobsearch dues semaine prochaine (étape 2 — si `jobsearch:DOWN`, sauter cet item)
 4. Offres LinkedIn 🔥 à postuler (étape 3)
 5. Nouvelles tâches si nécessaire
