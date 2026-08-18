@@ -17,8 +17,10 @@ declare two dependencies owned by that repo:
 
 - `Skill(jobsearch-vault)` — declared by **both** skills; the skill lives in the `jobsearch`
   plugin of `renaud-marketplace`.
-- `mcp__plugin_jobsearch_gmail-mcp__search_emails` — declared by `sprint-planner` only; the MCP
-  server is carried by the same `jobsearch` plugin.
+- `mcp__plugin_briefing_gmail-mcp__search_emails` — declared by `sprint-planner` only; the MCP
+  server moved from the `jobsearch` plugin to `briefing` in `renaud-marketplace`
+  ([rm#96](https://github.com/BluegReeno/renaud-marketplace/pull/96)) — `sprint-planner` now
+  requires `briefing` co-installed to reach the perso inbox, not `jobsearch`.
 
 Neither dependency is removed here — `Skill(jobsearch-vault)` and the gmail-mcp tool stay in
 `allowed-tools` — but as of 0.1.1 both skills degrade gracefully (`jobsearch:DOWN`, mirroring the
@@ -30,6 +32,24 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 [#65](https://github.com/BluegReeno/bluegreen-marketplace/issues/65).
 
 ---
+
+## [0.1.6] — 2026-08-18 — follow gmail-mcp's move from jobsearch to briefing
+
+`renaud-marketplace#96` moved the `gmail-mcp` connector declaration from the `jobsearch` plugin
+to `briefing`, so its tool prefix moved with it:
+`mcp__plugin_jobsearch_gmail-mcp__*` → `mcp__plugin_briefing_gmail-mcp__*`. `sprint-planner` was
+the one consumer of this tool left outside `renaud-marketplace` (which fixed its own three
+consumers in the same PR) — unpatched, its ÉTAPE 3 LinkedIn-alerts step would have called an
+unresolvable tool name the moment rm#96 merged.
+
+- `sprint-planner` (SKILL): renamed the tool in `allowed-tools`, the ÉTAPE 3 prose, and the
+  actual call; the YAML `description` now names `briefing` as the plugin carrying `gmail-mcp`.
+- The dependency itself is unchanged, only its owning plugin: `sprint-planner` now requires
+  `briefing` co-installed (not `jobsearch`) to reach the perso inbox for LinkedIn alerts. The
+  other cross-repo coupling, `Skill(jobsearch-vault)`, still lives in `jobsearch` and is untouched
+  here — see "Cross-repo couplings" above.
+
+Closes [#79](https://github.com/BluegReeno/bluegreen-marketplace/issues/79).
 
 ## [0.1.5] — 2026-08-17 — route sprint rollover through `transition_sprint`, derive sprint number from MAX
 
