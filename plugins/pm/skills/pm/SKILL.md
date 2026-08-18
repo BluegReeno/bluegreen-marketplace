@@ -129,6 +129,29 @@ jamais le reproduire).
 
 ---
 
+## `list_tasks` response shape (s'applique à tout appel `list_tasks`)
+
+Depuis le 2026-08-18 (`hal#105`), `list_tasks` ne retourne plus un tableau brut mais un objet :
+
+```json
+{ "tasks": [...], "total": 111, "returned": 100, "truncated": true }
+```
+
+- Toujours lire `.tasks` — ne jamais traiter la réponse elle-même comme la liste des tâches.
+- `limit` est désormais un paramètre accepté par `list_tasks` (défaut serveur : 100 lignes).
+  Quand une commande a explicitement besoin de l'exhaustivité (`--all`), passer un `limit`
+  suffisant plutôt que de se contenter de la première page.
+- **`truncated=true` doit être signalé, jamais toléré en silence.** Une réponse tronquée
+  produit un décompte faux (kanban incomplet, taux de complétion calculé sur une fraction
+  inconnue). Avant tout affichage basé sur cette réponse, ajouter la ligne :
+
+  > ⚠️ Résultat tronqué : `<returned>`/`<total>` tâches affichées.
+
+  Ne jamais présenter un total ou un groupement par statut calculé sur une réponse tronquée
+  comme s'il portait sur l'intégralité du workspace.
+
+---
+
 ## /pm list `[workspace]`
 
 Affiche les projets du workspace en kanban texte groupé par stage.
@@ -195,7 +218,9 @@ Deux modes selon les flags présents :
   - `--status <value>` → filtre `status` (`todo` | `in_progress` | `done` | `blocked` | `cancelled`)
   - `--project <ref>` → `list_projects` pour résoudre `project_id` par nom/ref,
     puis filtre `project_id`
-  - `--all` → aucun filtre ; toutes les tâches du workspace
+  - `--all` → aucun filtre ; toutes les tâches du workspace — l'exhaustivité est
+    explicitement demandée, donc si le premier appel revient `truncated=true`, ré-appeler
+    avec `limit=<total>` plutôt que d'afficher un avertissement de troncature
   - `--tag <value>` → passer `tags=["<value>"]` à `list_tasks`
 - **Mode sprint actuel** — défaut, aucun de ces flags :
   1. `list_sprints(workspace_slug, status="actuel")`
@@ -212,7 +237,8 @@ ajoute `assignee_email: <user_email du cache whoami>` (jamais demander).
 
 **3. Appeler `list_tasks`**
 
-Avec `workspace_slug` (+ filtres résolus).
+Avec `workspace_slug` (+ filtres résolus). Lire `.tasks` de la réponse — voir §
+`list_tasks` response shape ci-dessus, y compris le traitement de `--all`.
 
 **3bis. Normaliser `priority`** sur chaque tâche retournée — voir § Priority normalization.
 
@@ -224,6 +250,8 @@ Ligne de scope en tête :
 - Filtre `--status`/`--project` → nommer, ex. `**Statut : blocked** · workspace <slug>`
 - Filtre `--tag` → `**Tag : <value>** · workspace <slug>`
 - Fallback (aucun sprint) → le ⚠️ ci-dessus tient lieu de scope line
+- `truncated=true` (hors `--all`, déjà résolu ci-dessus) → ajouter la ligne
+  `⚠️ Résultat tronqué : <returned>/<total> tâches affichées.` juste après la scope line
 
 Grouper par `status`. Ordre fixe : `todo` → `in_progress` → `blocked` → `done` → `cancelled`.
 `done` est terminal — préfixer `✓ ` (omis dans le fallback sans sprint). `cancelled` a sa
@@ -433,7 +461,10 @@ Seuils : score **> 80** → match direct ; **50–80** → lister les candidats,
 **< 50** → entité introuvable, proposer création.
 
 - Matcher sur `title`. Appeler `list_tasks` **sans filtre `status`** — "X → done"
-  doit matcher des tâches `todo` ou `in_progress`.
+  doit matcher des tâches `todo` ou `in_progress`. Lire `.tasks` de la réponse (voir §
+  `list_tasks` response shape). Si `truncated=true` et qu'aucun candidat ne matche,
+  le dire — `<returned>/<total>` tâches ont été comparées, ce n'est pas forcément une
+  absence — plutôt que de conclure silencieusement à une entité introuvable.
 - Ambiguïté : plusieurs tâches au même score → lister, demander.
 - **Trois writers à responsabilité unique** :
   - **status** → `update_task_status` (`workspace_slug`, `task_id`, `status` ∈

@@ -95,7 +95,17 @@ Pour chaque workspace : prendre le premier élément de la liste (un seul sprint
 
 ```
 mcp__plugin_hal_hal-mcp__list_tasks(workspace_slug=w.workspace_slug, sprint_id=<sprint_id[w]>)
+  → { tasks, total, returned, truncated } — lire tasks[w] = .tasks, garder truncated[w] = .truncated
 ```
+
+Depuis le 2026-08-18 (`hal#105`), `list_tasks` retourne cet objet, pas un tableau brut — ne
+jamais traiter la réponse elle-même comme `tasks[w]`.
+
+**`truncated[w]=true` doit être signalé, jamais toléré en silence.** `list_tasks` plafonne à
+100 lignes par défaut ; un sprint qui en dépasse laisse les tâches les plus anciennes hors du
+bilan sans que rien ne le montre, sauf ce flag — un bilan qui affiche « X/Y terminées » sur une
+lecture tronquée rapporte un pourcentage sur une fraction inconnue du workspace, pas sur le
+sprint entier.
 
 Calculer par workspace :
 - `done` = tasks avec `status == "done"`
@@ -113,6 +123,7 @@ Afficher (une section `###` par workspace retenu, dans l'ordre de `whoami`, labe
 ## Bilan Sprint [N] — Semaine du $CURR_D0_LABEL–$CURR_D4_LABEL
 
 ### <nom du workspace> — X/Y terminées (Z%)
+[⚠️ Résultat tronqué : <returned[w]>/<total[w]> tâches lues — ligne présente seulement si truncated[w]=true]
 ✅ [titre]
 ✅ [titre]
 ⏳ [titre] — [status] — bloqueur probable : [inférer si possible depuis description/tags]
@@ -124,11 +135,14 @@ Afficher (une section `###` par workspace retenu, dans l'ordre de `whoami`, labe
 🚫 Annulées : 0
 
 ### Score global : X/Y (Z%) · Annulées : N
+[⚠️ Score global partiel — au moins un workspace listé ci-dessus a un résultat tronqué, présent seulement si truncated[w]=true pour au moins un w retenu]
 ```
 
 `🚫 Annulées : N` est une **ligne à part, toujours affichée** (même à 0) — jamais fondue
 dans `✅` ni dans `⏳`. Le score global agrège aussi le total des annulées sur tous les
-workspaces retenus.
+workspaces retenus. Si `truncated[w]` est vrai pour un ou plusieurs workspaces, le score
+global lui-même est partiel : la ligne `⚠️ Score global partiel` le dit explicitement plutôt
+que de laisser le pourcentage se présenter comme définitif.
 
 **Commentaire automatique selon le score :**
 - ≥ 80% : "Bonne semaine sur les tâches."
@@ -283,7 +297,7 @@ Si un workspace n'a aucun projet actif : "Pipeline <nom du workspace> vide — a
 
 ## ÉTAPE 4 — Shortlist sprint suivant
 
-Scanner en parallèle. Les tâches : pour **chaque** workspace retenu `w`, `list_tasks(workspace_slug=w.workspace_slug)` → filtrer `status` ∈ `todo`/`in_progress`/`blocked` (ni `done` ni `cancelled`) + sans `sprint_id`.
+Scanner en parallèle. Les tâches : pour **chaque** workspace retenu `w`, `list_tasks(workspace_slug=w.workspace_slug)` → lire `.tasks`, puis filtrer `status` ∈ `todo`/`in_progress`/`blocked` (ni `done` ni `cancelled`) + sans `sprint_id`. Un backlog non filtré par sprint dépasse facilement les 100 lignes par défaut de `list_tasks` — si `.truncated` est vrai, les tâches les plus anciennes du backlog sont absentes du pool candidat ; l'indiquer avant la shortlist plutôt que de proposer un choix qui se prétend exhaustif : `⚠️ Backlog <nom du workspace> tronqué : <returned>/<total> tâches vues.`
 
 Les calendriers : l'ensemble à lire est l'**union de chaque `calendar_id` et `member_calendar_id` non-null** sur tous les workspaces retournés par `whoami` (ÉTAPE 0), dédupliquée — jamais un ID littéral. Si aucun workspace ne déclare de calendrier (champs null/absents — ex. phase 1 pas déployée) → rendre `⚠️ Aucun calendrier déclaré sur tes workspaces` et poursuivre sans contrainte calendrier.
 

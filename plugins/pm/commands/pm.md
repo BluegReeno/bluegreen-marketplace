@@ -38,6 +38,16 @@ Stopper si indisponible. Continuer si le call réussit.
 
 ---
 
+### `list_tasks` response shape (s'applique à tout appel `list_tasks`)
+
+Depuis le 2026-08-18 (`hal#105`), `list_tasks` retourne `{ tasks, total, returned, truncated }`,
+pas un tableau brut. Toujours lire `.tasks`. `limit` est un paramètre optionnel (défaut serveur :
+100). `--all` a explicitement besoin de l'exhaustivité : si `truncated=true`, ré-appeler avec
+`limit=<total>`. Dans tous les autres cas, `truncated=true` → afficher
+`⚠️ Résultat tronqué : <returned>/<total> tâches affichées.` avant le kanban, jamais en silence.
+
+---
+
 ### `list [workspace]`
 
 Projets en kanban texte groupé par stage.
@@ -64,16 +74,18 @@ Tâches en kanban texte groupé par statut. **Scope par défaut : le sprint actu
     sauf `--all` ignoré si un autre filtre est présent :
     - `--status <value>` → filtrer (`todo` | `in_progress` | `done` | `blocked` | `cancelled`)
     - `--project <ref>` → `list_projects` pour résoudre `project_id`, puis filtrer
-    - `--all` → aucun filtre, toutes les tâches du workspace
+    - `--all` → aucun filtre, toutes les tâches du workspace — exhaustivité explicite : si
+      `truncated=true`, ré-appeler avec `limit=<total>` (voir § `list_tasks` response shape)
     - `--tag <value>` → passer `tags=["<value>"]` à `list_tasks`
   - **Mode sprint actuel** (défaut, aucun de ces flags) :
     1. `list_sprints(workspace_slug, status="actuel")`
     2. Sprint trouvé → filtrer `list_tasks` par `sprint_id` ; retenir `name` pour le header
     3. Aucun sprint actuel → `⚠️ Aucun sprint actuel dans <slug>. Affichage des tâches ouvertes du workspace.` puis `list_tasks` sans filtre sprint, en omettant le groupe `done`. **Jamais de board vide silencieux.**
   - `--mine` : filtre dans les deux modes → `assignee_email = user_email` du cache `whoami`
-- Appeler `list_tasks` avec `workspace_slug` (+ filtres résolus)
+- Appeler `list_tasks` avec `workspace_slug` (+ filtres résolus) ; lire `.tasks` de la réponse
 - Ligne de scope en tête : `**<nom sprint>** · workspace <slug>`
   (ou `**Toutes les tâches**`, `**Statut : <s>**`, `**Tag : <valeur>**`, ou le ⚠️ du fallback)
+- `truncated=true` (hors `--all`) → ajouter `⚠️ Résultat tronqué : <returned>/<total> tâches affichées.` juste après la scope line
 - Grouper par `status` dans l'ordre fixe : `todo` → `in_progress` → `blocked` → `done` → `cancelled`
 - `done` est terminal → préfixer `✓ ` (omis dans le fallback sans sprint)
 - `cancelled` a sa propre colonne, toujours en dernier, jamais fusionnée avec `done` → préfixer `🚫 `

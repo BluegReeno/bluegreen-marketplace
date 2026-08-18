@@ -33,6 +33,39 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.1.7] — 2026-08-18 — follow `list_tasks`' new `{tasks, total, returned, truncated}` shape
+
+`hal#105` (`hal-mcp` PR #107) changed `list_tasks` from returning a bare array to
+`{ tasks, total, returned, truncated }`, with `limit` now an accepted parameter (server
+default: 100 rows). hal-mcp is **not yet deployed** — `make deploy` stays held on
+[hal#108](https://github.com/BluegReeno/hal/issues/108) until every consumer, including this
+one, is updated; this is the `bluegreen-marketplace` half (the other is
+[renaud-marketplace#99](https://github.com/BluegReeno/renaud-marketplace/issues/99)). These
+skills describe the call in prose, not code, so the prose is what the model follows — a
+documented shape that no longer matched the server would have been a live defect, not a
+documentation nit.
+
+- `pm` (SKILL + `commands/pm.md`): every `list_tasks` call site now reads `.tasks`, never the
+  raw response. A new shared section documents the shape and the `truncated` contract. `/pm
+  tasks --all` — which explicitly wants everything — re-calls with `limit=<total>` on
+  `truncated=true` instead of just warning; every other mode (sprint scope, `--status`,
+  `--project`, `--tag`, task-resolution fuzzy match) surfaces
+  `⚠️ Résultat tronqué : <returned>/<total> tâches affichées.` rather than silently reporting
+  on a partial page.
+- `sprint-planner`: ÉTAPE 1a and the ÉTAPE 5 backlog `list_tasks` call read `.tasks` and carry
+  `truncated[w]`; a truncated workspace gets an explicit warning line in the ÉTAPE 1c bilan
+  instead of folding into `taux_global` unannounced.
+- `sprint-review`: this is the skill the issue singled out, because its numbers were already
+  known to be wrong for one reason (`hal#98`'s `❌ ANNULÉ`-prefix inflation, untouched here)
+  and this change could have quietly stacked a second, worse one on top — the workspace this
+  runs against holds 111 tasks against a 100-row default, so a review reading "all tasks" was
+  silently missing the 11 oldest. ÉTAPE 1's per-workspace bilan and the aggregate "Score
+  global" now carry an explicit `⚠️ Résultat tronqué` / `⚠️ Score global partiel` line whenever
+  `truncated=true`, and ÉTAPE 4's backlog scan for the next-sprint shortlist warns the same way
+  before presenting candidates as the full backlog.
+
+Closes [#81](https://github.com/BluegReeno/bluegreen-marketplace/issues/81).
+
 ## [0.1.6] — 2026-08-18 — follow gmail-mcp's move from jobsearch to briefing
 
 `renaud-marketplace#96` moved the `gmail-mcp` connector declaration from the `jobsearch` plugin
