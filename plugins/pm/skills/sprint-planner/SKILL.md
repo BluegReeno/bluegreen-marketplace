@@ -4,7 +4,7 @@ description: >
   Planifie le sprint de la semaine prochaine pour Renaud Laborbe. Sources :
   hal-mcp (tâches + sprints), les calendriers déclarés par tes workspaces, et,
   si le plugin jobsearch est co-installé, le vault Obsidian (jobsearch CRM) et
-  les alertes LinkedIn (Gmail perso via gmail-mcp du plugin jobsearch) — sinon
+  les alertes LinkedIn (Gmail perso via gmail-mcp du plugin briefing) — sinon
   ces deux sections sont sautées sans bloquer le reste. En mode conversationnel : reporte ou abandonne les tâches non
   finies, pose des questions ciblées sur les contraintes calendrier détectées.
   En mode schedule (vendredi après-midi automatique) : s'exécute de façon
@@ -13,7 +13,7 @@ description: >
   Utiliser quand Renaud dit "sprint planning", "planifier la semaine",
   "plan my week", "sprint de la semaine prochaine", "weekly planning",
   "priorités de la semaine", "organiser ma semaine" — ou en mode schedule.
-allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__transition_sprint mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__get_document mcp__claude_ai_Google_Calendar__list_events mcp__plugin_jobsearch_gmail-mcp__search_emails Skill(jobsearch-vault) Bash"
+allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__transition_sprint mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__get_document mcp__claude_ai_Google_Calendar__list_events mcp__plugin_briefing_gmail-mcp__search_emails Skill(jobsearch-vault) Bash"
 ---
 
 # Sprint Planner — Renaud Laborbe
@@ -209,11 +209,11 @@ Relances prévues semaine prochaine :
 
 ## ÉTAPE 3 — Scan LinkedIn Gmail
 
-Chercher dans la boîte perso les alertes LinkedIn de la semaine écoulée. Quelle boîte est interrogée est décidé par **le serveur MCP appelé** (`mcp__plugin_jobsearch_gmail-mcp__*` = boîte perso), jamais par une adresse.
-Cette étape requiert le plugin jobsearch (gmail-mcp) co-installé. Si le tool est indisponible, marquer `gmail:DOWN` et sauter.
+Chercher dans la boîte perso les alertes LinkedIn de la semaine écoulée. Quelle boîte est interrogée est décidé par **le serveur MCP appelé** (`mcp__plugin_briefing_gmail-mcp__*` = boîte perso), jamais par une adresse.
+Cette étape requiert le plugin briefing (gmail-mcp) co-installé. Si le tool est indisponible, marquer `gmail:DOWN` et sauter.
 
 ```
-mcp__plugin_jobsearch_gmail-mcp__search_emails(query="from:jobalerts-noreply@linkedin.com newer_than:7d")
+mcp__plugin_briefing_gmail-mcp__search_emails(query="from:jobalerts-noreply@linkedin.com newer_than:7d")
 ```
 
 Pour chaque offre extraite, scorer selon le profil de Renaud (Solution Architect IA, ~90K€, Paris IDF) :
