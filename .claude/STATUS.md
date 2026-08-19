@@ -1,8 +1,31 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-08-17
+Last updated: 2026-08-18
 
 ## Current Focus
+
+### 2026-08-18 — `pm` 0.1.7 : deux ruptures de contrat suivies le jour même
+
+**`sprint-planner` a suivi le déplacement de `gmail-mcp`** ([#79](https://github.com/BluegReeno/bluegreen-marketplace/issues/79) → PR #80).
+`renaud-marketplace#96` a déplacé le connecteur de `jobsearch` vers `briefing`, donc le préfixe
+est passé à `mcp__plugin_briefing_gmail-mcp__*`. `sprint-planner` était le **seul appelant hors
+de ce dépôt-là** (SKILL.md l.16, 212, 216) : la PR d'en face ne pouvait pas l'atteindre. Fusionné
+**avant** elle, pour qu'il n'existe aucune fenêtre où l'étape « alertes LinkedIn » pointe dans le
+vide. ⚠️ La CI vérifie que `allowed-tools` est *présent*, jamais que ses noms *résolvent* — un
+préfixe mort passe au vert (défaut `rm#88`, 2026-08-09).
+**Conséquence à retenir** : `pm` dépend désormais de `briefing` installé, plus de `jobsearch`.
+
+**`list_tasks` ne renvoie plus un tableau** ([#81](https://github.com/BluegReeno/bluegreen-marketplace/issues/81) → PR #82),
+mais `{tasks, total, returned, truncated}` (hal#105/#107). Quatre fichiers suivis : `pm`,
+`commands/pm.md`, `sprint-planner`, `sprint-review`. Le drapeau est **exploité, pas toléré** :
+`sprint-review` affiche `⚠️ Résultat tronqué : <returned>/<total> tâches affichées` au lieu de
+publier des chiffres faux — il lisait jusqu'ici 100 lignes sur les 111 du workspace `blue-green`,
+les plus anciennes tombant en premier.
+
+⛔ **hal-mcp n'est pas encore déployé** — [hal#108](https://github.com/BluegReeno/hal/issues/108)
+tient le verrou tant que l'artefact Command Center n'est pas republié. Ces skills sont prêts pour
+le nouveau format, donc ils ne fonctionneront correctement qu'**après** ce déploiement.
+
 
 **Refonte de l'agencement des plugins — brief complet dans [#66](https://github.com/BluegReeno/bluegreen-marketplace/issues/66), prêt à lancer.**
 
