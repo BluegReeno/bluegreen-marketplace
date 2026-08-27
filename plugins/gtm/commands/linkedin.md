@@ -60,11 +60,14 @@ Backlog éditorial LinkedIn groupé par statut.
 - Pre-flight (hal-mcp)
 - Résoudre workspace
 - Appeler `list_tasks(workspace_slug, tags=["linkedin"])`
-- Grouper par `status` dans l'ordre fixe : `todo` → `in_progress` → `done`
+- Grouper par `status` (cinq statuts possibles — hal#98), ordre fixe :
+  `todo` → `in_progress` → `blocked` → `done` → `cancelled`
+- `blocked` → section dédiée entre `in_progress` et `done`, préfixer `⛔ `
 - `done` est terminal → préfixer `✓ `
+- `cancelled` est terminal → section dédiée en dernier (après `done`), préfixer `✗ `
 - Ligne : `{⚡ si priority=high}{title} · {assignee short ou "—"} · {due_date ou "—"}`
 - Groupes vides → ne pas afficher la section
-- Aucune tâche → `Aucune idée LinkedIn dans le workspace <slug>.`
+- Aucune tâche (tous statuts confondus) → `Aucune idée LinkedIn dans le workspace <slug>.`
 
 ---
 

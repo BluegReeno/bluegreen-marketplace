@@ -96,8 +96,14 @@ Afficher le backlog éditorial LinkedIn groupé par statut.
 3. Appeler `list_tasks` avec :
    - `workspace_slug`
    - `tags: ["marketing"]`
-4. Grouper par `status`. Ordre fixe : `todo` → `in_progress` → `done`.
+4. Grouper par `status`. Cinq statuts possibles (hal#98), ordre fixe :
+   `todo` → `in_progress` → `blocked` → `done` → `cancelled`.
+   - `blocked` — travail en cours mais bloqué. Section dédiée entre `in_progress`
+     et `done`, préfixer `⛔ `.
    - `done` est terminal — préfixer `✓ `.
+   - `cancelled` est terminal — section dédiée **en dernier**, après `done` ;
+     préfixer `✗ `. Ce n'est pas du travail en cours, mais on ne le fait pas
+     disparaître silencieusement : le backlog éditorial doit rester traçable.
 5. Format d'affichage :
 
 ```
@@ -108,8 +114,14 @@ Afficher le backlog éditorial LinkedIn groupé par statut.
 ### in_progress (1)
 - Diagnostic numérique PME · renaud · —
 
+### ⛔ blocked (1)
+- Post partenariat X · renaud · —
+
 ### ✓ done (1)
 - Lancement service Edifice · renaud · 2026-06-15
+
+### ✗ cancelled (1)
+- Post événement annulé · renaud · —
 ```
 
 Ligne par tâche :
@@ -117,7 +129,7 @@ Ligne par tâche :
 
 - `assignee short` : partie locale de `assignee_email` (avant `@`). `—` si null.
 - Groupes vides → ne pas afficher la section.
-- Aucune tâche → `Aucune idée LinkedIn dans le workspace <slug>.`
+- Aucune tâche (tous statuts confondus) → `Aucune idée LinkedIn dans le workspace <slug>.`
 
 ---
 
