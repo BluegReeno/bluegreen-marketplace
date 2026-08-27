@@ -12,6 +12,24 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.2.1] — 2026-08-27 — /linkedin backlog: handle blocked and cancelled statuses
+
+`list_tasks` returns five statuses since hal#98 (`todo`, `in_progress`, `done`,
+`blocked`, `cancelled`), but `/linkedin backlog` only grouped three
+(`todo` → `in_progress` → `done`). Tasks in `blocked` or `cancelled` fell between
+groups and were silently dropped or misfiled — confirmed in production against
+`marketing`-tagged tasks (3 `cancelled` tasks had no bucket).
+
+Grouping order is now `todo` → `in_progress` → `blocked` → `done` → `cancelled`.
+`blocked` gets its own section (prefixed `⛔ `) between `in_progress` and `done`.
+`cancelled` is terminal like `done` and gets a trailing section (prefixed `✗ `) —
+excluded from prior "active work" sections but not dropped from the report, so
+the editorial backlog stays traceable.
+
+Updated in both `skills/linkedin/SKILL.md` and `commands/linkedin.md`.
+
+Closes #83.
+
 ## [0.2.0] — 2026-08-14 — /crm log update
 
 Add `/crm log update` to correct an already-logged interaction (`summary`, `transcript`,
