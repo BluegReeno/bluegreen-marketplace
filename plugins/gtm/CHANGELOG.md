@@ -12,6 +12,29 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.2.2] — 2026-08-28 — every `tags` writer picks from the workspace vocabulary, fix a stale hardcoded tag
+
+`whoami` already returns each workspace's `allowed_tags`, but no skill spelled out the rule for
+using it. Measured on prod: 67 tag values outside the workspace vocabulary across 28 rows —
+some of it traced back here: `commands/linkedin.md` still hardcoded `tags: ["linkedin"]` on
+every `create_task`/`list_tasks` call, even though `skills/linkedin/SKILL.md` was fixed to
+`marketing` after the same bug broke `create_task` on `blue-green` (`linkedin` isn't in that
+workspace's `allowed_tags` — see `hal` CHANGELOG [0.11.5]). Because `commands/*.md` files are
+self-contained (the skill body isn't preloaded when the command fires), the fix never reached
+the command file, so `/linkedin idea|backlog|draft|log` kept failing/silently drifting.
+
+- `commands/linkedin.md`: replaced every `tags=["linkedin"]` / `tags: ["linkedin"]` with
+  `tags: ["marketing"]` (5 call sites), matching `skills/linkedin/SKILL.md`.
+- `crm` (SKILL + `commands/crm.md`), `linkedin` (SKILL + `commands/linkedin.md`): added a
+  `## Tags` section — `tags` means functional domain, pick only from the calling workspace's
+  `allowed_tags` (via `whoami`), fall back to `other`, never invent a value, and never
+  duplicate what `company_id`/`role`/`channel`/`project_id` already carry. The rule does not
+  claim `hal://vocabulary` exists — that resource is proposed (`BluegReeno/hal#123`) and
+  unimplemented. Byte-identical to `pm`'s and to `renaud-marketplace`'s (`rm#107`), so one
+  grep finds every writer across the portfolio.
+
+Closes [#86](https://github.com/BluegReeno/bluegreen-marketplace/issues/86).
+
 ## [0.2.1] — 2026-08-27 — /linkedin backlog: handle blocked and cancelled statuses
 
 `list_tasks` returns five statuses since hal#98 (`todo`, `in_progress`, `done`,

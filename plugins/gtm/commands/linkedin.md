@@ -25,8 +25,9 @@ Si l'outil échoue ou est indisponible :
 
 Stopper si indisponible. Continuer si le call réussit.
 
-**Les idées LinkedIn = tâches hal avec `tags: ["linkedin"]`.** Toujours passer ce
-filtre à `list_tasks` et ce tag à `create_task`.
+**Les idées LinkedIn = tâches hal taguées `marketing`** (le workspace `blue-green`
+n'autorise pas de tag `linkedin` dédié — voir `allowed_tags`). Toujours passer
+`tags: ["marketing"]` à `list_tasks` et à `create_task`.
 
 ---
 
@@ -40,6 +41,12 @@ filtre à `list_tasks` et ce tag à `create_task`.
 
 ---
 
+### Tags (s'applique à toute écriture `tags`)
+
+**Tags.** `tags` means functional domain — which area of business or life this belongs to. Pick only from the calling workspace's `allowed_tags` (returned by `whoami`; a `hal://vocabulary` MCP resource has been proposed but is not yet shipped — do not depend on it). If nothing fits, use `other`. Never invent a value. Do not put in `tags` what another column already carries: a company name (`company_id`), a person's job (`role`), how an exchange happened (`channel`), or which opportunity it concerns (`project_id`).
+
+---
+
 ### `idea <titre>`
 
 Capturer une idée de post LinkedIn.
@@ -48,7 +55,7 @@ Capturer une idée de post LinkedIn.
 - Résoudre workspace
 - `title` depuis l'argument (requis)
 - Champs optionnels depuis le contexte : `description` (angle, message clé), `due_date`
-- Appeler `create_task(workspace_slug, title, tags=["linkedin"], description?, due_date?)`
+- Appeler `create_task(workspace_slug, title, tags=["marketing"], description?, due_date?)`
 - Output : `✅ Idée créée : <titre>`
 
 ---
@@ -59,7 +66,7 @@ Backlog éditorial LinkedIn groupé par statut.
 
 - Pre-flight (hal-mcp)
 - Résoudre workspace
-- Appeler `list_tasks(workspace_slug, tags=["linkedin"])`
+- Appeler `list_tasks(workspace_slug, tags=["marketing"])`
 - Grouper par `status` (cinq statuts possibles — hal#98), ordre fixe :
   `todo` → `in_progress` → `blocked` → `done` → `cancelled`
 - `blocked` → section dédiée entre `in_progress` et `done`, préfixer `⛔ `
@@ -89,7 +96,7 @@ Rédiger un post LinkedIn et le sauvegarder.
 
 - Pre-flight (hal-mcp)
 - Résoudre workspace
-- Fuzzy match sur `list_tasks(tags=["linkedin"])` pour trouver la tâche liée
+- Fuzzy match sur `list_tasks(tags=["marketing"])` pour trouver la tâche liée
   (seuils : > 80 match ; 50–80 lister candidats ; < 50 rédiger sans tâche liée)
 - Rédiger le post (pur Claude) : accroche 1 ligne, 3–5 paragraphes courts, CTA, 3–5 hashtags, ~1300 chars
 - Appeler `save_document(workspace_slug, title="Draft LinkedIn : <titre>", content=<post>)`
@@ -104,7 +111,7 @@ Marquer un post comme publié.
 
 - Pre-flight (hal-mcp)
 - Résoudre workspace
-- Fuzzy match sur `list_tasks(tags=["linkedin"])` (seuils standard)
+- Fuzzy match sur `list_tasks(tags=["marketing"])` (seuils standard)
 - Collecter `summary` (lien ou note, requis) et `occurred_at` (optionnel)
 - Appeler `update_task_status(workspace_slug, task_id, status="done")`
 - Appeler `log_interaction(workspace_slug, channel="note", summary="Post LinkedIn publié : <titre>\n<note>", occurred_at?)`

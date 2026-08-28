@@ -38,6 +38,12 @@ filtre à `list_projects` et ce champ à `create_project`.
 
 ---
 
+### Tags (s'applique à toute écriture `tags` — `log update`)
+
+**Tags.** `tags` means functional domain — which area of business or life this belongs to. Pick only from the calling workspace's `allowed_tags` (returned by `whoami`; a `hal://vocabulary` MCP resource has been proposed but is not yet shipped — do not depend on it). If nothing fits, use `other`. Never invent a value. Do not put in `tags` what another column already carries: a company name (`company_id`), a person's job (`role`), how an exchange happened (`channel`), or which opportunity it concerns (`project_id`).
+
+---
+
 ### `list [workspace]`
 
 Pipeline en kanban texte groupé par stage.
