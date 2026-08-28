@@ -10,6 +10,14 @@ export interface MissionSummary {
   building: { name: string; address: string } | null;
 }
 
+/** list_edifice_missions response since hal#119 — a bare array no longer comes back. */
+export interface MissionListEnvelope {
+  missions: MissionSummary[];
+  total: number;
+  returned: number;
+  truncated: boolean;
+}
+
 export interface RawNote {
   note_id: string;
   type: string;

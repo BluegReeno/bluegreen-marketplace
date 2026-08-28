@@ -1,6 +1,6 @@
 {
   "name": "edifice",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Edifice — building inspection missions for IC Ingénieurs Conseils (list, pull, improve, report, push).",
   "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" }
 }

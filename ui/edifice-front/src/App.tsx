@@ -13,6 +13,7 @@ type LoadState =
 
 export default function App() {
   const [missions, setMissions] = useState<MissionSummary[]>([]);
+  const [withheld, setWithheld] = useState(0);
   const [listState, setListState] = useState<LoadState>({ status: "loading" });
   const [retriedOnce, setRetriedOnce] = useState(false);
 
@@ -25,7 +26,8 @@ export default function App() {
     setListState({ status: "loading" });
     try {
       const result = await listMissions();
-      setMissions(result);
+      setMissions(result.missions);
+      setWithheld(result.truncated ? result.total - result.returned : 0);
       setListState({ status: "ready" });
     } catch (err) {
       const code = err instanceof McpToolError ? err.code : "upstream_error";
@@ -69,6 +71,11 @@ export default function App() {
               detail={listState.detail}
               onRetry={retriedOnce ? undefined : () => loadMissions(true)}
             />
+          )}
+          {listState.status === "ready" && withheld > 0 && (
+            <p className="mb-2 text-sm text-muted-foreground">
+              {withheld} mission{withheld > 1 ? "s" : ""} non affichée{withheld > 1 ? "s" : ""} — la liste est tronquée.
+            </p>
           )}
           {listState.status === "ready" && <MissionList missions={missions} onSelect={selectMission} />}
         </>
