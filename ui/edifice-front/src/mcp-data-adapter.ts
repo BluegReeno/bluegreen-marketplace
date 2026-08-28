@@ -1,12 +1,12 @@
 import { callJsonTool, callPhotoTool } from "./cowork-mcp";
-import type { MissionContext, MissionSummary, RawPhoto } from "./hal-types";
+import type { MissionContext, MissionListEnvelope, RawPhoto } from "./hal-types";
 import type { AnnotationPhoto, Json, NoteWithRelations } from "@bluegreeno/annotation-core";
 
-export function listMissions(status?: string, limit?: number): Promise<MissionSummary[]> {
+export function listMissions(status?: string, limit?: number): Promise<MissionListEnvelope> {
   const args: Record<string, unknown> = {};
   if (status) args.status = status;
   if (limit) args.limit = limit;
-  return callJsonTool<MissionSummary[]>("list_edifice_missions", args);
+  return callJsonTool<MissionListEnvelope>("list_edifice_missions", args);
 }
 
 export function getMissionContext(missionId: string): Promise<MissionContext> {

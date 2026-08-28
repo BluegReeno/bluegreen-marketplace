@@ -12,6 +12,17 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.1.1] — 2026-08-28 — follow hal-mcp's list_edifice_missions envelope
+
+`hal#119` stopped the three hal-mcp listing tools from silently truncating: they now return
+`{items, total, returned, truncated}` instead of a bare array. `listMissions` was typed
+`MissionSummary[]` and received an object, so the mission list rendered nothing from the moment
+hal-mcp v64 was deployed.
+
+Consumes the envelope, and renders a line when rows were withheld rather than dropping the
+`truncated` flag on the floor — swallowing it would rebuild the very defect `hal#119` removed,
+one layer up.
+
 ## [0.1.0] — 2026-08-02 — extract edifice from the hal monolith
 
 ## [0.0.0] — seed
