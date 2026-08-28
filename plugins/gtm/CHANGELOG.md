@@ -27,10 +27,11 @@ the command file, so `/linkedin idea|backlog|draft|log` kept failing/silently dr
   `tags: ["marketing"]` (5 call sites), matching `skills/linkedin/SKILL.md`.
 - `crm` (SKILL + `commands/crm.md`), `linkedin` (SKILL + `commands/linkedin.md`): added a
   `## Tags` section — `tags` means functional domain, pick only from the calling workspace's
-  `allowed_tags` (via `whoami` / `hal://vocabulary`), fall back to `other`, never invent a
-  value, and never duplicate what `company_id`/`role`/`channel`/`project_id` already carry.
-  Same wording as `pm`'s equivalent section, so a grep for it finds every writer across the
-  portfolio.
+  `allowed_tags` (via `whoami`), fall back to `other`, never invent a value, and never
+  duplicate what `company_id`/`role`/`channel`/`project_id` already carry. The rule does not
+  claim `hal://vocabulary` exists — that resource is proposed (`BluegReeno/hal#123`) and
+  unimplemented. Byte-identical to `pm`'s and to `renaud-marketplace`'s (`rm#107`), so one
+  grep finds every writer across the portfolio.
 
 Closes [#86](https://github.com/BluegReeno/bluegreen-marketplace/issues/86).
 
