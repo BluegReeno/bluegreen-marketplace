@@ -61,6 +61,18 @@ cache la réponse `whoami`. Résoudre dans cet ordre :
 
 ---
 
+## Tags (s'applique à toute écriture `tags` — `/pm new`, `/pm task`, `/pm update`)
+
+**Tags.** `tags` means **functional domain** — which area of business or life this belongs to.
+Pick only from the calling workspace's `allowed_tags` (returned by `whoami`, and published as
+the `hal://vocabulary` MCP resource). If nothing fits, use `other`. Never invent a value.
+
+Do not put in `tags` what another column already carries: a company name (`company_id`), a
+person's job (`role`), how an exchange happened (`channel`), or which opportunity it concerns
+(`project_id`).
+
+---
+
 ## Priority normalization (s'applique à `/pm task`, `/pm update`, `/pm tasks`)
 
 `priority` **est validé côté serveur** depuis le 2026-08-14 (`hal#97`, hal-mcp v60) :

@@ -33,6 +33,24 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.1.8] — 2026-08-28 — every `tags` writer picks from the workspace vocabulary
+
+`whoami` already returns each workspace's `allowed_tags`, but no skill spelled out the rule for
+using it — tool descriptions only said tags "must belong to `allowed_tags`" without telling the
+model where to find the list. Measured on prod: 67 tag values outside the workspace vocabulary
+across 28 rows (`architecte`, `BET-terrain`, `EDF`, `relance`, …), while columns backed by an
+explicit rule (`tasks.tags` written by `sprint-planner`, `projects.tags`) stayed clean.
+
+- `pm` (SKILL + `commands/pm.md`), `sprint-planner`: added a `## Tags` section — `tags` means
+  functional domain, pick only from the calling workspace's `allowed_tags` (via `whoami` /
+  `hal://vocabulary`), fall back to `other`, never invent a value, and never duplicate what
+  `company_id`/`role`/`channel`/`project_id` already carry. `sprint-planner` §6d's ad hoc
+  one-liner is replaced by this same wording so a grep for it finds every writer.
+- `sprint-review` unchanged — it never writes to a `tags` column (only `domain` on
+  `save_document`, already covered by its own §5b rule).
+
+Closes [#86](https://github.com/BluegReeno/bluegreen-marketplace/issues/86).
+
 ## [0.1.7] — 2026-08-18 — follow `list_tasks`' new `{tasks, total, returned, truncated}` shape
 
 `hal#105` (`hal-mcp` PR #107) changed `list_tasks` from returning a bare array to
