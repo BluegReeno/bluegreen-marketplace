@@ -455,7 +455,9 @@ mcp__plugin_hal_hal-mcp__assign_task_to_sprint(
 
 ### 6d. Créer les nouvelles tâches
 
-Router chaque nouvelle tâche vers le workspace qui la porte, jamais vers un slug figé. Les offres LinkedIn 🔥 et relances jobsearch vont dans le workspace **dont les `allowed_tags` contiennent `jobsearch`** ; les autres nouvelles tâches vont dans le workspace concerné. N'utiliser que des tags présents dans les `allowed_tags` de ce workspace.
+Router chaque nouvelle tâche vers le workspace qui la porte, jamais vers un slug figé. Les offres LinkedIn 🔥 et relances jobsearch vont dans le workspace **dont les `allowed_tags` contiennent `jobsearch`** ; les autres nouvelles tâches vont dans le workspace concerné.
+
+**Tags.** `tags` means functional domain — which area of business or life this belongs to. Pick only from the calling workspace's `allowed_tags` (returned by `whoami`; a `hal://vocabulary` MCP resource has been proposed but is not yet shipped — do not depend on it). If nothing fits, use `other`. Never invent a value. Do not put in `tags` what another column already carries: a company name (`company_id`), a person's job (`role`), how an exchange happened (`channel`), or which opportunity it concerns (`project_id`).
 
 ```
 mcp__plugin_hal_hal-mcp__create_task(

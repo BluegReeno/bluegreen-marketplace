@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.25",
+  "version": "0.10.26",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — field work, building inspections, CRM",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
@@ -27,7 +27,7 @@
       "name": "gtm",
       "description": "GTM — Blue Green go-to-market: commercial pipeline (crm) and editorial content (linkedin).",
       "source": "./plugins/gtm",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
@@ -36,7 +36,7 @@
       "name": "pm",
       "description": "PM — project management: tasks, sprints, projects, docs, plus weekly sprint planning and review.",
       "source": "./plugins/pm",
-      "version": "0.1.7",
+      "version": "0.1.8",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
