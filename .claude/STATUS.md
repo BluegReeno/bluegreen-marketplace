@@ -1,8 +1,27 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-08-18
+Last updated: 2026-08-29
 
 ## Current Focus
+
+### 2026-08-29 (à faire, prochaine session) — lot D : `#89`, **première étape** du plan
+
+[`#89`](https://github.com/BluegReeno/bluegreen-marketplace/issues/89) — scope D de
+[`hal#135`](https://github.com/BluegReeno/hal/issues/135). 8 fichiers ici (`gtm` ×4, `pm` ×4)
+promettent encore `hal://vocabulary`, une resource **annulée** : le paragraphe de doctrine de 523
+caractères se réduit à un pointeur d'une ligne, qui doit porter le minimum exigible **seul** puisque
+claude.ai n'affiche jamais les `instructions` d'un serveur MCP. Bumps obligatoires : `gtm` 0.2.3 et
+`pm` 0.1.8, dans `plugin.json` + `marketplace.json` + `CHANGELOG.md`.
+
+**Piège ajouté à l'issue le 2026-08-29** : ne pas énumérer les clés de `kind_stages`
+(`gtm/skills/crm/SKILL.md` l.36-38 dit `{active, terminal}`, que
+[`hal#137`](https://github.com/BluegReeno/hal/issues/137) rendra faux en ajoutant `won`) — sinon
+`gtm` est réécrit et bumpé deux fois pour deux lignes.
+
+**Archon**, un run sur cette issue ; puis
+[`renaud-marketplace#111`](https://github.com/BluegReeno/renaud-marketplace/issues/111), même patron
+sur 3 plugins. `BLUEGREEN_MAP.md` vit dans `archon-workflows` : sa table des versions se met à jour
+**à la main** après merge. L'ordre complet des chantiers est dans `hal/.claude/STATUS.md`.
 
 ### 2026-08-18 — `pm` 0.1.7 : deux ruptures de contrat suivies le jour même
 
