@@ -27,7 +27,7 @@
       "name": "gtm",
       "description": "GTM — Blue Green go-to-market: commercial pipeline (crm) and editorial content (linkedin).",
       "source": "./plugins/gtm",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
