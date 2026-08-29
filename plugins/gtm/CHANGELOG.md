@@ -12,6 +12,28 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.2.3] — 2026-08-29 — `list_stages` retiré de hal-mcp, les étapes arrivent par `whoami`
+
+`hal#135` a tranché le porteur de chaque vocabulaire : ce qui **diffère par workspace** voyage
+dans `whoami`, qui est déjà appelé en pre-flight par ce skill. `kind_stages` (les étapes du
+pipeline par `kind` de projet, `{active, terminal}`) en fait partie, donc l'outil de découverte
+`list_stages` a été supprimé du registre hal-mcp (35 → 34 outils). Sans cette migration, le
+skill appellerait un outil qui n'existe plus.
+
+Le seul appel de ce skill était de toute façon cassé : `list_stages(workspace_slug)` était
+passé **sans `kind`**, et `getKindStages` retombait sur la clé `"default"` qu'aucun workspace
+ne déclare → `Unknown project kind: "default". Valid: project, opportunity`, en échec depuis
+que `hal#118` a fermé le vocabulaire des `kind`. Le pliage dans `whoami` supprime le mode
+d'échec : il n'y a plus d'argument `kind` à se tromper, et tous les `kind` arrivent d'un coup.
+
+- `skills/crm/SKILL.md` : `list_stages` retiré de `allowed-tools` ; le pre-flight met
+  `kind_stages` en cache avec le reste de la réponse `whoami` ; la validation de stage de
+  `/crm update` lit ce cache ; 2 lignes de routage mises à jour.
+- `commands/crm.md` : 2 lignes de routage mises à jour.
+- Aucun appel MCP supplémentaire : `kind_stages` voyage sur une réponse déjà payée.
+
+---
+
 ## [0.2.2] — 2026-08-28 — every `tags` writer picks from the workspace vocabulary, fix a stale hardcoded tag
 
 `whoami` already returns each workspace's `allowed_tags`, but no skill spelled out the rule for

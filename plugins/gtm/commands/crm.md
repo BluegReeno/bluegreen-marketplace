@@ -150,8 +150,8 @@ Corriger une interaction déjà loguée (`summary`, `transcript`, `channel`, `oc
 
 | Intention | Outils MCP |
 |-----------|-----------|
-| "passe X à Qualification", "stage X → Devis" | `list_stages` → `update_project_stage` |
-| "X perdu", "X → Gagné" | `list_stages` → `update_project_stage` (stage terminal) |
+| "passe X à Qualification", "stage X → Devis" | `kind_stages` (cache `whoami`) → `update_project_stage` |
+| "X perdu", "X → Gagné" | `kind_stages` (cache `whoami`) → `update_project_stage` (stage terminal) |
 | "budget de X : 10k€", "montant X = 8k€" | `update_project` (`amount_ht`) |
 | "renomme X en Y" | `update_project` (`name`) |
 | "qualifier X", "BANT de X" | → flux `qualify` |
