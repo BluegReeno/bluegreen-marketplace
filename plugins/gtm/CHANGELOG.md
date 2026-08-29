@@ -12,6 +12,27 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.2.4] — 2026-08-29 — Le pointeur remplace la doctrine `tags`, `hal://vocabulary` ne verra jamais le jour
+
+`hal#135` (scope D) a tranché que le carrier de la doctrine `tags` est hal-mcp lui-même — le
+paragraphe de 523 caractères dupliqué dans `commands/crm.md`, `commands/linkedin.md`,
+`skills/crm/SKILL.md` et `skills/linkedin/SKILL.md` promettait une resource MCP
+`hal://vocabulary` que `#135` a définitivement écartée : les round-trips coûteraient
+`resources/list` + `resources/read`, alors que `whoami` — déjà appelé par chaque skill qui
+écrit dans hal — renvoie `allowed_tags` depuis hal-mcp v70. Le paragraphe est réduit à un
+pointeur d'une ligne vers les `instructions` du serveur MCP, seule source de la doctrine
+complète désormais — `instructions` reste ignoré par claude.ai/Cowork et tronqué à 2 Ko par
+Claude Code, donc le pointeur porte lui-même le minimum exigible (workspace, `allowed_tags`,
+`other`, colonnes déjà porteuses).
+
+`skills/crm/SKILL.md` l.37-38 : la description de `kind_stages` en cache (pre-flight)
+n'énumère plus `{active, terminal}` — `hal#137` ajoute `won` à ce même tableau, une
+énumération figée ici serait devenue fausse le jour où ce champ shippe. Le check de stage
+cible (l.282-283) reste inchangé : il valide déjà contre l'union `active` + `terminal` sans
+nommer les clés, donc il reste exact que `won` en fasse partie ou non.
+
+---
+
 ## [0.2.3] — 2026-08-29 — `list_stages` retiré de hal-mcp, les étapes arrivent par `whoami`
 
 `hal#135` a tranché le porteur de chaque vocabulaire : ce qui **diffère par workspace** voyage
