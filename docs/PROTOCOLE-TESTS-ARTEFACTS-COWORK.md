@@ -107,27 +107,31 @@ Un artefact peut déclarer **plusieurs connecteurs** : Command Center combine Go
 
 ## 3. Inventaire des outils disponibles
 
-### 3.1 hal-mcp — 31 outils
+### 3.1 hal-mcp — 34 outils
+
+Relevé sur le registre de `hal-mcp` v69 (2026-08-29). `list_stages` a été retiré par hal#135 :
+les étapes du pipeline arrivent désormais dans `whoami`, champ `kind_stages`.
 
 **Lecture (15)**
 
 | Outil | Domaine |
 |---|---|
-| `whoami` | identité / workspace |
-| `list_projects` · `list_sprints` · `list_stages` · `list_tasks` | PM |
-| `list_companies` · `list_contacts` | CRM |
+| `whoami` | identité / workspace — porte aussi `allowed_tags`, `allowed_ecosystems`, `allowed_activity_types`, `kind_stages` |
+| `list_projects` · `list_sprints` · `list_tasks` | PM |
+| `list_companies` · `list_contacts` · `list_interactions` | CRM |
 | `list_documents` · `get_document` · `get_document_file` | documents |
 | `list_edifice_missions` · `read_edifice_mission` · `get_mission_context` · `get_mission_with_assets` | Edifice |
 | `get_mission_photo` | Edifice — **renvoie un bloc `type:"image"`, cas particulier, voir Q1** |
 
-**Écriture (16)**
+**Écriture (19)**
 
 | Outil | Domaine |
 |---|---|
 | `create_project` · `update_project` · `update_project_stage` | PM |
-| `create_sprint` · `update_sprint` · `assign_task_to_sprint` | PM |
+| `create_sprint` · `update_sprint` · `transition_sprint` · `assign_task_to_sprint` | PM |
 | `create_task` · `update_task` · `update_task_status` | PM |
-| `create_company` · `create_contact` · `update_contact` · `enrich_contact` · `log_interaction` | CRM |
+| `create_company` · `update_company` · `create_contact` · `update_contact` · `enrich_contact` | CRM |
+| `log_interaction` · `update_interaction` | CRM |
 | `save_document` | documents |
 | `push_mission_context` | Edifice |
 

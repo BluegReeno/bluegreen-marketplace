@@ -7,7 +7,7 @@ description: >
   "nouvelle opportunité", "qualifier le lead", "logger un CR commercial",
   "corriger une interaction", "pipeline commercial", "attacher une propale".
   NE PAS déclencher pour : projets internes, tâches, sprints (→ /pm).
-allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__update_project mcp__plugin_hal_hal-mcp__list_stages mcp__plugin_hal_hal-mcp__update_project_stage mcp__plugin_hal_hal-mcp__list_companies mcp__plugin_hal_hal-mcp__create_company mcp__plugin_hal_hal-mcp__list_contacts mcp__plugin_hal_hal-mcp__create_contact mcp__plugin_hal_hal-mcp__update_contact mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__update_interaction mcp__plugin_hal_hal-mcp__save_document"
+allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__update_project mcp__plugin_hal_hal-mcp__update_project_stage mcp__plugin_hal_hal-mcp__list_companies mcp__plugin_hal_hal-mcp__create_company mcp__plugin_hal_hal-mcp__list_contacts mcp__plugin_hal_hal-mcp__create_contact mcp__plugin_hal_hal-mcp__update_contact mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__update_interaction mcp__plugin_hal_hal-mcp__save_document"
 ---
 
 # CRM — Pipeline commercial Blue Green via hal-mcp (Claude Code)
@@ -33,6 +33,9 @@ Avant toute opération MCP, vérifier que le connecteur est actif via `whoami` :
    - `default_workspace_slug` — utilisé par la résolution de workspace
    - `workspaces` — liste des memberships, sert pour les messages d'erreur
    - `user_email` — utilisé si besoin de filtres assignee
+   - `kind_stages` (par workspace) — les étapes du pipeline par `kind` de projet,
+     `{active, terminal}`. C'est la seule source : `list_stages` a été retiré de hal-mcp
+     (hal#135). Aucun appel supplémentaire, la valeur est déjà dans la réponse `whoami`.
 3. **Échec** (outil indisponible / connexion refusée / timeout) :
 
 > ❌ **hal-mcp non connecté.**
@@ -276,8 +279,9 @@ d'une opportunité.
 2. **Parser l'intention** : détecter l'opportunité cible et le(s) champ(s) à modifier.
 3. **Résoudre l'opportunité** — fuzzy match sur `name` (seuils standard).
 4. **Router l'écriture** :
-   - `stage` → appeler `list_stages(workspace_slug)` pour valider le stage cible,
-     puis `update_project_stage(workspace_slug, project_id, stage)`
+   - `stage` → valider le stage cible contre `kind_stages[<kind de l'opportunité>]`
+     du cache `whoami` (`active` + `terminal`), puis
+     `update_project_stage(workspace_slug, project_id, stage)`
    - `amount_ht`, `description`, `name`, `location` → `update_project`
    - Si le texte contient "BANT" ou des infos budget/authority/need/timeline →
      appliquer la logique `/crm qualify` sur l'opportunité résolue
@@ -288,10 +292,10 @@ d'une opportunité.
 
 | L'utilisateur dit | Outil(s) MCP |
 |-------------------|-------------|
-| "passe X à Qualification", "stage X → Devis", "X perdu" | `list_stages` → `update_project_stage` |
+| "passe X à Qualification", "stage X → Devis", "X perdu" | `kind_stages` (cache `whoami`) → `update_project_stage` |
 | "budget de X : 10k€", "montant X = 8k€" | `update_project` (`amount_ht`) |
 | "renomme X en Y" | `update_project` (`name`) |
-| "X → Gagné", "fermer X comme gagné" | `list_stages` → `update_project_stage` (stage gagné) |
+| "X → Gagné", "fermer X comme gagné" | `kind_stages` (cache `whoami`) → `update_project_stage` (stage gagné) |
 | "qualifier X", "BANT de X" | → flux `/crm qualify` |
 | "mettre à jour la timeline de X" | `update_project` (`description` — bloc BANT) |
 
