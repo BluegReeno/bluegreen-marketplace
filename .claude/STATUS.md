@@ -4,24 +4,33 @@ Last updated: 2026-08-29
 
 ## Current Focus
 
-### 2026-08-29 (à faire, prochaine session) — lot D : `#89`, **première étape** du plan
+### 2026-08-29 — lot D livré : `#89` mergée, `gtm` **0.2.4** / `pm` **0.1.9**
 
-[`#89`](https://github.com/BluegReeno/bluegreen-marketplace/issues/89) — scope D de
-[`hal#135`](https://github.com/BluegReeno/hal/issues/135). 8 fichiers ici (`gtm` ×4, `pm` ×4)
-promettent encore `hal://vocabulary`, une resource **annulée** : le paragraphe de doctrine de 523
-caractères se réduit à un pointeur d'une ligne, qui doit porter le minimum exigible **seul** puisque
-claude.ai n'affiche jamais les `instructions` d'un serveur MCP. Bumps obligatoires : `gtm` 0.2.3 et
-`pm` 0.1.8, dans `plugin.json` + `marketplace.json` + `CHANGELOG.md`.
+[`#89`](https://github.com/BluegReeno/bluegreen-marketplace/issues/89) → [PR #90](https://github.com/BluegReeno/bluegreen-marketplace/pull/90),
+mergée en **merge commit** (`0f83462`). Les 8 fichiers (`gtm` ×4, `pm` ×4) portent le pointeur d'une
+ligne ; `git grep 'hal://vocabulary' -- 'plugins/*.md'` ne renvoie plus rien. Top-level **0.10.27**.
+Le patron a été appliqué en parallèle sur
+[`renaud-marketplace#111`](https://github.com/BluegReeno/renaud-marketplace/issues/111) (PR #112) —
+le texte de remplacement étant écrit mot pour mot dans les deux issues, il n'y avait plus rien à
+apprendre du premier run. **`hal#135` est close.**
 
-**Piège ajouté à l'issue le 2026-08-29** : ne pas énumérer les clés de `kind_stages`
-(`gtm/skills/crm/SKILL.md` l.36-38 dit `{active, terminal}`, que
-[`hal#137`](https://github.com/BluegReeno/hal/issues/137) rendra faux en ajoutant `won`) — sinon
-`gtm` est réécrit et bumpé deux fois pour deux lignes.
+**Le piège `kind_stages` a été désamorcé dans la même passe** : `gtm/skills/crm/SKILL.md` l.36-38
+disait `{active, terminal}` ; [`hal#137`](https://github.com/BluegReeno/hal/issues/137) — déployée
+en **v72** quelques heures plus tard — ajoute `won` à cette colonne. La phrase dit désormais *"les
+tableaux d'étapes par `kind`, tels que `whoami` les renvoie"* : nommer le porteur, jamais les clés.
+Les deux autres occurrences ont été relues et laissées telles quelles.
 
-**Archon**, un run sur cette issue ; puis
-[`renaud-marketplace#111`](https://github.com/BluegReeno/renaud-marketplace/issues/111), même patron
-sur 3 plugins. `BLUEGREEN_MAP.md` vit dans `archon-workflows` : sa table des versions se met à jour
-**à la main** après merge. L'ordre complet des chantiers est dans `hal/.claude/STATUS.md`.
+⚠️ **`skill-improve` impose toujours une règle que ce dépôt a supprimée** — le frontmatter
+`version:` des `SKILL.md`, absent depuis le 2026-08-02 (`CLAUDE.md` l.152) et pourtant réclamé par
+ses nodes `implement` et `verify-all-versions`, ce dernier ayant pour consigne de « corriger » la
+divergence **et de pusher**. Le run l'a remarqué et a refusé — c'est le jugement du modèle, pas le
+workflow, qui a tenu. Filé en
+[`archon-workflows#30`](https://github.com/BluegReeno/archon-workflows/issues/30). La note du
+2026-08-02 plus bas dans ce fichier disait déjà « ne pas lancer archon » pour cette raison :
+elle vaut toujours pour un chantier structurel, mais un run sur une issue au corps corrigé passe.
+
+Reste à faire à la main : `/plugin marketplace update` en Cowork pour confirmer que le bump est
+capté. `BLUEGREEN_MAP.md` (dans `archon-workflows`) est à jour.
 
 ### 2026-08-18 — `pm` 0.1.7 : deux ruptures de contrat suivies le jour même
 
