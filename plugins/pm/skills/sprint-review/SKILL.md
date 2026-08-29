@@ -376,7 +376,7 @@ mcp__plugin_hal_hal-mcp__save_document(
 
 **Contenu propre à chaque workspace.** Chaque bilan porte le score et les tâches de *son* sprint. Les sections thématiques ne s'écrivent que là où elles ont un sens : les métriques jobsearch et la shortlist n'appartiennent qu'au workspace où vit le job search, et n'ont rien à faire dans le bilan d'un workspace professionnel ou familial.
 
-**Tags.** `tags` means functional domain — which area of business or life this belongs to. Pick only from the calling workspace's `allowed_tags` (returned by `whoami`; a `hal://vocabulary` MCP resource has been proposed but is not yet shipped — do not depend on it). If nothing fits, use `other`. Never invent a value. Do not put in `tags` what another column already carries: a company name (`company_id`), a person's job (`role`), how an exchange happened (`channel`), or which opportunity it concerns (`project_id`).
+**Tags.** `tags` means functional domain. Pick only from the calling workspace's `allowed_tags`, returned by `whoami`; if nothing fits, use `other`. Never invent a value, and never put in `tags` what another column already carries (`company_id`, `role`, `channel`, `project_id`). hal-mcp states the full doctrine in its server `instructions` and enforces it on every write.
 
 **`domain="memory"`** — le domaine doit appartenir au vocabulaire (`allowed_tags`) du workspace de destination, et `memory` est le seul terme commun à tous. Ne jamais coder en dur un domaine lié à un sujet (`jobsearch`) dans un document écrit dans plusieurs workspaces : il y serait hors vocabulaire et invisible aux recherches par domaine.
 

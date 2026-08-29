@@ -33,8 +33,8 @@ Avant toute opération MCP, vérifier que le connecteur est actif via `whoami` :
    - `default_workspace_slug` — utilisé par la résolution de workspace
    - `workspaces` — liste des memberships, sert pour les messages d'erreur
    - `user_email` — utilisé si besoin de filtres assignee
-   - `kind_stages` (par workspace) — les étapes du pipeline par `kind` de projet,
-     `{active, terminal}`. C'est la seule source : `list_stages` a été retiré de hal-mcp
+   - `kind_stages` (par workspace) — les tableaux d'étapes par `kind` de projet, tels que
+     `whoami` les renvoie. C'est la seule source : `list_stages` a été retiré de hal-mcp
      (hal#135). Aucun appel supplémentaire, la valeur est déjà dans la réponse `whoami`.
 3. **Échec** (outil indisponible / connexion refusée / timeout) :
 
@@ -64,7 +64,7 @@ cache la réponse `whoami`. Résoudre dans cet ordre :
 
 ## Tags (s'applique à toute écriture `tags` — `/crm log update`)
 
-**Tags.** `tags` means functional domain — which area of business or life this belongs to. Pick only from the calling workspace's `allowed_tags` (returned by `whoami`; a `hal://vocabulary` MCP resource has been proposed but is not yet shipped — do not depend on it). If nothing fits, use `other`. Never invent a value. Do not put in `tags` what another column already carries: a company name (`company_id`), a person's job (`role`), how an exchange happened (`channel`), or which opportunity it concerns (`project_id`).
+**Tags.** `tags` means functional domain. Pick only from the calling workspace's `allowed_tags`, returned by `whoami`; if nothing fits, use `other`. Never invent a value, and never put in `tags` what another column already carries (`company_id`, `role`, `channel`, `project_id`). hal-mcp states the full doctrine in its server `instructions` and enforces it on every write.
 
 ---
 

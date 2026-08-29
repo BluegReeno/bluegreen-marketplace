@@ -33,6 +33,20 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.1.9] — 2026-08-29 — the `tags` doctrine points at hal-mcp instead of promising a dead resource
+
+`hal#135` (scope D) decided the `tags` doctrine's carrier is hal-mcp itself — its server
+`instructions` now state the full rule. The 523-character paragraph duplicated in
+`commands/pm.md`, `skills/pm/SKILL.md`, `skills/sprint-planner/SKILL.md` and
+`skills/sprint-review/SKILL.md` still promised a `hal://vocabulary` MCP resource that `#135`
+ruled out for good — the round-trip cost (`resources/list` + `resources/read`) buys nothing
+`whoami` doesn't already give every skill that writes to hal. Reduced to a one-line pointer;
+since claude.ai/Cowork never surface a server's `instructions` and Claude Code truncates them
+at 2KB, the pointer carries the enforceable minimum itself rather than relying on the
+truncated/invisible source.
+
+Closes [#89](https://github.com/BluegReeno/bluegreen-marketplace/issues/89).
+
 ## [0.1.8] — 2026-08-28 — every `tags` writer picks from the workspace vocabulary
 
 `whoami` already returns each workspace's `allowed_tags`, but no skill spelled out the rule for
