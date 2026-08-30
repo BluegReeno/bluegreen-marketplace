@@ -23,7 +23,7 @@ no command of its own. Then add what you actually use.
 
 | Plugin | Commands | What it does |
 |--------|----------|--------------|
-| **`edifice`** | `/edifice` | Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report (`list`, `pull`, `improve`, `report`, `push`) |
+| **`edifice`** | `/edifice` | Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report (`list`, `pull`, `improve`, `report`, `push`, `front`) |
 | **`pm`** | `/pm`, `/sprint-planner`, `/sprint-review` | Project management: tasks, sprints, projects, docs (`list`, `tasks`, `new`, `task`, `log`, `doc`, `sprint`, `update`), plus weekly planning and review |
 | **`gtm`** | `/crm`, `/linkedin` | Commercial pipeline — opportunities, contacts, BANT qualification, interaction log — and the LinkedIn editorial pipeline (idea, backlog, trend, draft, publish log) |
 
@@ -43,9 +43,14 @@ no command of its own. Then add what you actually use.
 
 **Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account — both for `edifice` only. `pm` and `gtm` need nothing beyond the **hal-mcp** connector that `hal` brings (authenticated via OAuth); `/linkedin trend` also uses the Bright Data connector.
 
-The connector targets **hal-mcp v39** on Supabase `zgkvbjqlvebttbnkklpo`. Powered by [hal](https://github.com/BluegReeno/hal).
+The connector targets **hal-mcp 0.3.0** on Supabase `zgkvbjqlvebttbnkklpo` (the version in
+`plugins/hal/.mcp.json`). Powered by [hal](https://github.com/BluegReeno/hal).
 
-**Task and project tags** use a unified vocabulary: `commercial`, `client`, `marketing`, `product`, `operations`, `hr`, `finance`, `legal`, `other`.
+**Task and project tags come from the workspace, not from this page.** Each workspace declares
+its own `allowed_tags`, and `whoami` is the only carrier — a value legal in one workspace is
+rejected in the next, and the list changes without a deploy. For `blue-green` it is currently
+`commercial`, `client`, `marketing`, `product`, `operations`, `hr`, `finance`, `legal`, `memory`,
+`other`; do not hardcode that anywhere, call `whoami`.
 
 See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions.
 
@@ -83,12 +88,15 @@ is in [`docs/connectors-and-skills.md`](docs/connectors-and-skills.md).
 
 Plugin code lives directly in this repo. Each plugin is self-contained under `plugins/<name>/`.
 
+Versions below are a snapshot; `.claude-plugin/marketplace.json` is the only authoritative
+version table — read it there rather than quoting this one.
+
 | Plugin | Skills | Status |
 |--------|--------|--------|
 | `hal` | — (connector only) | v0.12.0 — active |
-| `edifice` | `edifice` | v0.1.0 — active |
-| `pm` | `pm`, `sprint-planner`, `sprint-review` | v0.1.0 — active |
-| `gtm` | `crm`, `linkedin` | v0.1.0 — active |
+| `edifice` | `edifice` | v0.1.1 — active |
+| `pm` | `pm`, `sprint-planner`, `sprint-review` | v0.1.9 — active |
+| `gtm` | `crm`, `linkedin` | v0.2.4 — active |
 
 ```
 plugins/
