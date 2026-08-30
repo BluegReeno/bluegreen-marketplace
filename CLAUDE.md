@@ -146,8 +146,9 @@ The marketplace **top-level** `version` is a monotonic PATCH+1 counter, bumped o
 | MCP `hal-mcp` | `"version"` | `plugins/hal/.mcp.json` | tracked, not sync-enforced |
 
 **Plugins version independently.** They share only the top-level counter, which every release
-increments by one PATCH whichever plugin it targets. Current state: `hal` 0.12.0, `edifice` 0.1.0,
-`pm` 0.1.0, `gtm` 0.1.0, counter 0.10.16.
+increments by one PATCH whichever plugin it targets. Never quote a current version from this
+file — read `.claude-plugin/marketplace.json`, which is the enforced source of truth. This
+paragraph used to pin one and was four releases stale.
 
 Skills (`SKILL.md`) no longer carry a `version:` field — there is no per-skill bump ritual.
 
@@ -159,11 +160,13 @@ Skills (`SKILL.md`) no longer carry a `version:` field — there is no per-skill
 
 **Example:**
 
+Illustrative only — the numbers below are a worked example, not repo state:
+
 | Release | Plugin | What changed | plugin.json | marketplace entry | marketplace top-level |
 |---------|--------|-------------|:-----------:|:-----------------:|:---------------------:|
-| current | `edifice` | — | 0.1.0 | 0.1.0 | 0.10.16 |
-| next — edifice bugfix | `edifice` | skill logic | **0.1.1** | **0.1.1** | **0.10.17** |
-| next — new `/pm` field | `pm` | pm interface | **0.2.0** | **0.2.0** | **0.10.18** |
+| starting point | `edifice` | — | 0.1.0 | 0.1.0 | 0.10.16 |
+| then — edifice bugfix | `edifice` | skill logic | **0.1.1** | **0.1.1** | **0.10.17** |
+| then — new `/pm` field | `pm` | pm interface | **0.2.0** | **0.2.0** | **0.10.18** |
 
 ---
 
