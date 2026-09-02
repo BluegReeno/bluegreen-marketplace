@@ -106,8 +106,9 @@ Tâches en kanban texte groupé par statut. **Scope par défaut : le sprint actu
 Créer un projet interne.
 
 - Résoudre workspace
-- Collecter `name` (requis, depuis l'argument), `description` et `kind` (optionnels)
-- Appeler `create_project` avec `workspace_slug`, `name`, champs optionnels disponibles
+- Collecter `name` (requis, depuis l'argument), `description` (optionnel)
+- Appeler `create_project` avec `workspace_slug`, `name`, `kind: "project"` (requis) et `stage`
+  (requis — premier stage de `kind_stages.project.active` lu via `whoami`), plus les optionnels
 - Output : `✅ Projet créé : <ref> · <name>`
 
 ---
