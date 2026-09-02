@@ -313,10 +313,22 @@ Créer un nouveau projet interne.
 2. Collecter depuis la conversation ou demander si absent :
    - `name` (requis) — le nom passé après `/pm new`
    - `description` (optionnel) — contexte ou objectif
-   - `kind` (optionnel) — type de projet si connu
-3. Appeler `create_project` avec `workspace_slug`, `name`, et les champs optionnels
-   disponibles.
+3. Appeler `create_project` avec :
+   - `workspace_slug`
+   - `name`
+   - `kind: "project"` — **requis**. `/pm new` crée un projet interne ; une opportunité
+     commerciale passe par `/crm new`, qui envoie `kind: "opportunity"`.
+   - `stage` — **requis**. Prendre le premier stage de `kind_stages.project.active` tel que
+     `whoami` le renvoie pour ce workspace (`Backlog` sur les workspaces actuels). Ne jamais
+     écrire un stage en dur sans l'avoir lu : le vocabulaire est par workspace et change sans
+     redéploiement.
+   - champs optionnels disponibles
 4. Output : `✅ Projet créé : <ref> · <name>`
+
+> `kind` et `stage` sont tous deux refusés côté serveur s'ils sont absents ou hors vocabulaire,
+> et `halcrm_projects.stage` est en plus gardé par un trigger Postgres
+> (`halcrm_projects_stage_guard`, hal#161). Le refus nomme la valeur fautive et énumère
+> l'ensemble permis : le lire et réessayer, jamais contourner.
 
 ---
 

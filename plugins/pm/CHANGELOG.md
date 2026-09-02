@@ -33,6 +33,29 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.2.0] — 2026-09-02 — `/pm new` sends the `kind` and the `stage` `create_project` has always demanded
+
+`hal#161` made `create_project.kind` required. It had been declared optional in the tool schema
+and written as `kind ?? null` against a `NOT NULL` column, so the advertised optionality was
+unreachable: every `/pm new` without a kind already failed, with an opaque `23502` naming a
+column no skill mentions. hal now refuses it by name instead.
+
+Fixing that surfaced a second, older gap in this plugin: `stage` was **never** optional in
+`create_project` (`z.string()`, no `.optional()`), and neither `commands/pm.md` nor
+`skills/pm/SKILL.md` mentioned it at all. `/pm new` was therefore broken on two counts, not one,
+and had been since the command was written.
+
+Both sites now send `kind: "project"` — `/pm new` creates an internal project; a commercial
+opportunity goes through `/crm new`, which already sent `kind: "opportunity"` and was unaffected —
+and read `stage` from `kind_stages.project.active` via `whoami` rather than hard-coding it, because
+the stage vocabulary is per workspace and changes without a redeploy.
+
+Requires hal-mcp **v74** or later. `halcrm_projects.stage` is also guarded in Postgres now
+(`halcrm_projects_stage_guard`, applied 2026-09-02), so an illegal stage is refused even on a path
+that does not cross the edge function.
+
+MINOR per this file's own convention: a new required field.
+
 ## [0.1.9] — 2026-08-29 — the `tags` doctrine points at hal-mcp instead of promising a dead resource
 
 `hal#135` (scope D) decided the `tags` doctrine's carrier is hal-mcp itself — its server
