@@ -204,5 +204,68 @@ class TestPullDoesNotClobberExistingContext(unittest.TestCase):
             self.assertNotIn("edited_by_technician", context_path.read_text(encoding="utf-8"))
 
 
+class TestParseMissionContext(unittest.TestCase):
+    """`mission_context` is prose in prod (13 of 22 missions), never a header object.
+
+    Mirrors `parseMissionContext` in hal-mcp's index.ts — see bluegreen-marketplace#93.
+    """
+
+    def test_prose_is_returned_as_free_text_not_discarded(self):
+        fields, text = build_context._parse_mission_context(
+            {"id": "m1", "mission_context": "Fissures en facade sud, visite du 12/03."}
+        )
+        self.assertEqual(fields, {})
+        self.assertEqual(text, "Fissures en facade sud, visite du 12/03.")
+
+    def test_header_object_as_json_string_is_parsed(self):
+        fields, text = build_context._parse_mission_context(
+            {"id": "m1", "mission_context": '{"client": "Foncia", "ref_dossier": "D-42"}'}
+        )
+        self.assertEqual(fields, {"client": "Foncia", "ref_dossier": "D-42"})
+        self.assertEqual(text, "")
+
+    def test_header_object_already_decoded_is_passed_through(self):
+        fields, text = build_context._parse_mission_context(
+            {"id": "m1", "mission_context": {"client": "Foncia"}}
+        )
+        self.assertEqual(fields, {"client": "Foncia"})
+        self.assertEqual(text, "")
+
+    def test_absent_or_empty_context_yields_nothing(self):
+        for value in (None, "", {}):
+            fields, text = build_context._parse_mission_context({"id": "m1", "mission_context": value})
+            self.assertEqual((fields, text), ({}, ""))
+
+    def test_truncated_json_raises_and_names_the_mission(self):
+        with self.assertRaises(ValueError) as cm:
+            build_context._parse_mission_context(
+                {"id": "m-truncated", "mission_context": '{"client": "Fonci'}
+            )
+        self.assertIn("m-truncated", str(cm.exception))
+
+
+class TestBuildHeaderFreeText(unittest.TestCase):
+    """The brief the technician typed must reach the header's 'why we are here' field."""
+
+    PROJECT = {"id": "m1", "name": "Mission test", "mission_context": "Controle des balcons."}
+
+    def test_diagnostic_free_text_fills_objet_visite(self):
+        header = build_context.build_header(self.PROJECT, None, "diagnostic")
+        self.assertEqual(header["objet_visite"], "Controle des balcons.")
+
+    def test_suivi_chantier_free_text_fills_objet_visite(self):
+        header = build_context.build_header(self.PROJECT, None, "suivi_chantier")
+        self.assertEqual(header["objet_visite"], "Controle des balcons.")
+
+    def test_devis_free_text_fills_declencheur(self):
+        header = build_context.build_header(self.PROJECT, None, "devis")
+        self.assertEqual(header["declencheur"], "Controle des balcons.")
+
+    def test_header_object_field_wins_over_free_text(self):
+        project = {"id": "m1", "mission_context": '{"objet_visite": "Depuis l\'objet"}'}
+        header = build_context.build_header(project, None, "diagnostic")
+        self.assertEqual(header["objet_visite"], "Depuis l'objet")
+
+
 if __name__ == "__main__":
     unittest.main()
