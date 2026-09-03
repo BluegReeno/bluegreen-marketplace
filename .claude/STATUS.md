@@ -1,6 +1,6 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-08-30
+Last updated: 2026-09-03
 
 > History up to 2026-08-29 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
@@ -8,14 +8,14 @@ Last updated: 2026-08-30
 ## Current Focus
 
 Four plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` and nothing else),
-`edifice` **0.1.1**, `gtm` **0.2.4**, `pm` **0.1.9**, marketplace top-level **0.10.27** (read from
-`marketplace.json`). The monolith split (`#66`) and `/edifice front` (`#60`) are both closed. The
-hal vocabulary contract is closed on this side: no skill promises `hal://vocabulary`, and none
-names the keys of `kind_stages` instead of its carrier. Nothing is in flight.
+`edifice` **0.1.2**, `gtm` **0.2.4**, `pm` **0.2.0**, marketplace top-level **0.10.28** (read from
+`marketplace.json`). In flight: PR for `#93`, catching the `edifice` plugin up to hal-mcp v75/v76.
 
 ## In Progress
 
-- [ ] Nothing in flight.
+- [ ] [#93](https://github.com/BluegReeno/bluegreen-marketplace/issues/93) — `edifice` **0.1.2**
+      opened as a PR: `build_context.py` carries the mission brief instead of swallowing the parse,
+      and `/edifice push` is documented against hal-mcp v75. Awaiting review.
 
 ## Backlog
 
@@ -51,6 +51,9 @@ one gap and deserve one issue.
 
 ## Done (current sprint)
 
+- [x] `867e028` — `/pm new` sends `kind` and `stage`, both required by `create_project` since
+      `hal#161`; `pm` **0.2.0**. Landed straight on `main` without `release.sh`, so the top-level
+      counter was not bumped for it — that is the third trap below, observed — 2026-09-02
 - [x] `#89` / PR #90 — `hal#135` lot D: the tag doctrine became a one-line pointer in 8 files;
       `gtm` **0.2.4** / `pm` **0.1.9**, top-level **0.10.27**. Same pass defused the `kind_stages`
       trap in `gtm/skills/crm/SKILL.md` ahead of `hal#137` — 2026-08-29
