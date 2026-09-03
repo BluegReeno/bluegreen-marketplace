@@ -12,6 +12,8 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.1.2] — 2026-09-03 — build_context carries the mission brief and stops swallowing the parse; /edifice push documented against hal-mcp v75
+
 ## [0.1.1] — 2026-08-28 — follow hal-mcp's list_edifice_missions envelope
 
 `hal#119` stopped the three hal-mcp listing tools from silently truncating: they now return
