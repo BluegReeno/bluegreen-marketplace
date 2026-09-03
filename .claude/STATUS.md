@@ -9,13 +9,12 @@ Last updated: 2026-09-03
 
 Four plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` and nothing else),
 `edifice` **0.1.2**, `gtm` **0.2.4**, `pm` **0.2.0**, marketplace top-level **0.10.28** (read from
-`marketplace.json`). In flight: PR for `#93`, catching the `edifice` plugin up to hal-mcp v75/v76.
+`marketplace.json`). `#93` merged this morning — the `edifice` plugin has caught up to hal-mcp
+v75/v76. Nothing is in flight.
 
 ## In Progress
 
-- [ ] [#93](https://github.com/BluegReeno/bluegreen-marketplace/issues/93) — `edifice` **0.1.2**
-      opened as a PR: `build_context.py` carries the mission brief instead of swallowing the parse,
-      and `/edifice push` is documented against hal-mcp v75. Awaiting review.
+- [ ] Nothing in flight.
 
 ## Backlog
 
@@ -51,6 +50,13 @@ one gap and deserve one issue.
 
 ## Done (current sprint)
 
+- [x] `#93` / PR #94 — the `edifice` plugin follows hal-mcp again; `edifice` **0.1.2**, top-level
+      **0.10.28**. `build_context.py` stopped swallowing the parse on the `get_mission_with_assets`
+      → DOCX route and now carries the free-text brief into `objet_visite` / `declencheur` (v76's
+      mapping, 13 of prod's 22 missions). `SKILL.md` stopped promising a three-field result (six
+      since v75), a `project_id` bug fixed on 2026-07-25, and an `assessment` → `condition_index`
+      mapping `hal f70a10d` removed. `#84`, the parity check that would have caught all of it,
+      stays open — 2026-09-03
 - [x] `867e028` — `/pm new` sends `kind` and `stage`, both required by `create_project` since
       `hal#161`; `pm` **0.2.0**. Landed straight on `main` without `release.sh`, so the top-level
       counter was not bumped for it — that is the third trap below, observed — 2026-09-02
