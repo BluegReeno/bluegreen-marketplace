@@ -456,27 +456,35 @@ Push the updated `mission/context.json` observations back to Supabase
 **1. Read `mission/context.json`** with the Read tool.
 
 **2. Call MCP tool `push_mission_context`** with:
+- `workspace_slug` + `mission_id`: both required. Every id in the payload must
+  belong to that mission; the tool validates all of them before writing anything,
+  so a refusal means nothing was written.
 - `observations`: each observation that has a `note_id`, including any subset
-  of `description`, `location`, `zone`, `assessment`, `recommendations`,
+  of `type`, `description`, `location`, `zone`, `assessment`, `recommendations`,
   `metadata` (only fields that were edited need to be sent — the MCP applies
   partial updates)
 - `building_id` + `building_description`: include only if the building
   description was enriched
 
-The MCP tool auto-maps `assessment` → `condition_index` for diagnostic
-missions (`"1" | "2"` → `poor`, `"3"` → `medium`, `"4" | "-"` → `good`).
+`assessment` is stored verbatim and nothing is derived from it. The
+`assessment` → `condition_index` mapping this skill used to promise was removed
+from hal-mcp by `f70a10d` (hal#54); do not expect a derived field.
 
 **3. Confirm to user**
-Report `{ updated, skipped, errors }` from the MCP response.
+The response carries six counters — `updated`, `skipped`, `errors`,
+`building_updated`, `photos_updated`, `annotations_upserted`. Report them all, and
+treat a non-empty `errors` (the response is flagged `isError`) as a failure even
+when `updated` is non-zero. Since hal-mcp **v75** the counters mean rows
+*written*, not rows sent: `building_updated: 0` after sending a
+`building_description` means that write did not land. `photos_updated` and
+`annotations_upserted` are always `0` on this route — this skill never sends
+`photos` (see the passthrough note under `/edifice pull`).
 
-**Known issue — `null value in column "project_id"`**
-If `errors` contains `null value in column "project_id" of relation "edifice_notes"
-violates not-null constraint`, this is a **backend bug** in `push_mission_context`
-(hal-mcp), not a problem with the `observations` payload — do not retry with a
-different `note_id` or `type`. `push_mission_context` must UPDATE existing
-`edifice_notes` rows by `note_id` (preserving their `project_id`), never INSERT.
-Report the error to the user and point them to the `hal-mcp` repo for a fix; this
-skill's contract (partial updates keyed by `note_id`) is unaffected.
+**No known open backend bug on this route.** The `null value in column
+"project_id"` failures are fixed on both tables it hit — `edifice_notes` by hal
+`ad5fc47` (hal#76, 2026-07-25, upsert → targeted UPDATE) and `edifice_photos` by
+hal#162 (v75, 2026-09-03). If one appears today it is a **new** failure: report it
+as such, do not retry with a different `note_id` or `type`.
 
 ---
 
