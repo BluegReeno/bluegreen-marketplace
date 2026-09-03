@@ -33,17 +33,30 @@ def _clean_address(addr: str) -> str:
     return re.sub(r'\s*\([^)]*\)', '', addr).strip()
 
 
-def _parse_mission_context(project: dict) -> dict:
+def _parse_mission_context(project: dict) -> tuple[dict, str]:
+    """Return (header fields, free text) from `edifice_projects.mission_context`.
+
+    That column is `text`, filled by the PWA from a free-text textarea: prose is the
+    rule and a header object the exception. So a string that does not claim to be JSON
+    is the mission brief, returned as free text; a string that claims to be JSON and
+    does not parse raises, naming the mission. Field-for-field port of
+    `parseMissionContext` in hal-mcp's `index.ts`.
+    """
     mc = project.get("mission_context") or {}
-    if isinstance(mc, str):
-        try:
-            mc = json.loads(mc)
-        except Exception:
-            mc = {}
-    return mc
+    if not isinstance(mc, str):
+        return mc or {}, ""
+    trimmed = mc.strip()
+    if not trimmed.startswith("{") and not trimmed.startswith("["):
+        return {}, trimmed
+    try:
+        return json.loads(mc) or {}, ""
+    except json.JSONDecodeError as e:
+        raise ValueError(
+            f"mission_context for mission '{project.get('id')}' is not valid JSON: {e}"
+        ) from e
 
 
-def _build_header_diagnostic(project: dict, building: dict | None, mc: dict) -> dict:
+def _build_header_diagnostic(project: dict, building: dict | None, mc: dict, free_text: str) -> dict:
     return {
         "project_type": "diagnostic",
         "building_id": project.get("building_id") or "",
@@ -55,13 +68,13 @@ def _build_header_diagnostic(project: dict, building: dict | None, mc: dict) -> 
         "ref_dossier": mc.get("ref_dossier") or "",
         "date_visite": mc.get("date_visite") or datetime.date.today().isoformat(),
         "description_batiment": (building.get("description") if building else "") or "",
-        "objet_visite": mc.get("objet_visite") or "",
+        "objet_visite": mc.get("objet_visite") or free_text or "",
         "synthese": mc.get("synthese") or "",
         "conclusion": mc.get("conclusion") or "",
     }
 
 
-def _build_header_suivi_chantier(project: dict, building: dict | None, mc: dict) -> dict:
+def _build_header_suivi_chantier(project: dict, building: dict | None, mc: dict, free_text: str) -> dict:
     return {
         "project_type": "suivi_chantier",
         "building_id": project.get("building_id") or "",
@@ -74,13 +87,13 @@ def _build_header_suivi_chantier(project: dict, building: dict | None, mc: dict)
         "ref_dossier": mc.get("ref_dossier") or "",
         "date_visite": mc.get("date_visite") or datetime.date.today().isoformat(),
         "participants": mc.get("participants") or [],
-        "objet_visite": mc.get("objet_visite") or "",
+        "objet_visite": mc.get("objet_visite") or free_text or "",
         "synthese": mc.get("synthese") or "",
         "conclusion": mc.get("conclusion") or "",
     }
 
 
-def _build_header_devis(project: dict, building: dict | None, mc: dict) -> dict:
+def _build_header_devis(project: dict, building: dict | None, mc: dict, free_text: str) -> dict:
     return {
         "project_type": "devis",
         "building_id": project.get("building_id") or "",
@@ -95,7 +108,7 @@ def _build_header_devis(project: dict, building: dict | None, mc: dict) -> dict:
         "annee_construction": mc.get("annee_construction") or "",
         "nb_etages": mc.get("nb_etages") or "",
         "description_batiment": (building.get("description") if building else "") or "",
-        "declencheur": mc.get("declencheur") or "",
+        "declencheur": mc.get("declencheur") or free_text or "",
         "livrable": mc.get("livrable") or "",
         "urgence": mc.get("urgence") or "Normal",
         "date_visite": mc.get("date_visite") or datetime.date.today().isoformat(),
@@ -111,12 +124,12 @@ def _build_header_devis(project: dict, building: dict | None, mc: dict) -> dict:
 
 
 def build_header(project: dict, building: dict | None, project_type: str) -> dict:
-    mc = _parse_mission_context(project)
+    mc, free_text = _parse_mission_context(project)
     if project_type == "suivi_chantier":
-        return _build_header_suivi_chantier(project, building, mc)
+        return _build_header_suivi_chantier(project, building, mc, free_text)
     if project_type == "devis":
-        return _build_header_devis(project, building, mc)
-    return _build_header_diagnostic(project, building, mc)
+        return _build_header_devis(project, building, mc, free_text)
+    return _build_header_diagnostic(project, building, mc, free_text)
 
 
 # Routing config: which note.type goes into observations[] vs notes[]
