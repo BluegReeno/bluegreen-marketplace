@@ -1,4 +1,4 @@
-> **bluegreen-marketplace** is the Claude Code plugin distribution layer for [hal](https://github.com/BluegReeno/hal) — the AI-native company layer for field-work SMEs. Install a plugin to wire CRM, project management, and building-inspection workflows directly into your Claude client.
+> **bluegreen-marketplace** is the Claude Code plugin distribution layer for [hal](https://github.com/BluegReeno/hal) — the AI foundation a small firm runs on: its pipeline, its work, its memory, its documents. Install a plugin to wire that foundation into your Claude client, and `edifice` on top of it if your firm also works on site.
 
 # BlueGreen Marketplace
 
@@ -88,15 +88,16 @@ is in [`docs/connectors-and-skills.md`](docs/connectors-and-skills.md).
 
 Plugin code lives directly in this repo. Each plugin is self-contained under `plugins/<name>/`.
 
-Versions below are a snapshot; `.claude-plugin/marketplace.json` is the only authoritative
-version table — read it there rather than quoting this one.
+**Versions are deliberately absent from this table.** They go stale the day a plugin is released,
+and this one was wrong on two of four until 2026-09-08. `.claude-plugin/marketplace.json` is the
+only version table; read it there.
 
-| Plugin | Skills | Status |
+| Plugin | Skills | Serves |
 |--------|--------|--------|
-| `hal` | — (connector only) | v0.12.0 — active |
-| `edifice` | `edifice` | v0.1.1 — active |
-| `pm` | `pm`, `sprint-planner`, `sprint-review` | v0.1.9 — active |
-| `gtm` | `crm`, `linkedin` | v0.2.4 — active |
+| `hal` | — (connector only) | the foundation — every other plugin calls through it |
+| `edifice` | `edifice` | the field vertical |
+| `pm` | `pm`, `sprint-planner`, `sprint-review` | tasks, sprints, projects, documents |
+| `gtm` | `crm`, `linkedin` | pipeline, contacts, logged exchanges |
 
 ```
 plugins/
