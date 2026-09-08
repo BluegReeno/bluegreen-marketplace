@@ -375,7 +375,7 @@ Renderer : `render_cr_visite.py` + `templates/ic-ingenieurs/suivi_chantier.docx`
   "ref_dossier": "DE0328",
   "date_visite": "2026-04-28",
   "participants": [
-    {"nom": "R. Laborbe", "fonction": "M.O", "entreprise": "IC Ingénieurs Conseils", "contact": "06 50 96 61 98"}
+    {"nom": "R. Laborbe", "fonction": "M.O", "entreprise": "IC Ingénieurs Conseils", "contact": "06 XX XX XX XX"}
   ],
   "objet_visite": "IC Ingénieurs Conseils assure le suivi...",
   "synthese": "L'inspection a permis...",
