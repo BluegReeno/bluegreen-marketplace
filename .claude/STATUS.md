@@ -1,6 +1,6 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-09-03
+Last updated: 2026-09-09
 
 > History up to 2026-08-29 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
@@ -9,12 +9,25 @@ Last updated: 2026-09-03
 
 Four plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` and nothing else),
 `edifice` **0.1.2**, `gtm` **0.2.4**, `pm` **0.2.0**, marketplace top-level **0.10.28** (read from
-`marketplace.json`). `#93` merged this morning — the `edifice` plugin has caught up to hal-mcp
-v75/v76. Nothing is in flight.
+`marketplace.json`). The public history was rewritten on 2026-09-09 to purge a personal phone number
+(`#95`): `main` is `c5f29c4`, 159 commits, and every clone predating it is invalid. The number is
+still served by GitHub's cached pre-rewrite commits until Support purges them — `#95` stays open on
+that alone.
 
 ## In Progress
 
-- [ ] Nothing in flight.
+- [ ] **Send the GitHub Support request** that ends the `#95` exposure. Drafted and pasted into
+      [#95](https://github.com/BluegReeno/bluegreen-marketplace/issues/95); it has to go through
+      https://support.github.com by hand. Measured minutes after the force-push: the API still
+      serves `b9874ec` and still returns the file with the number, and a `clone --mirror` pulls 51
+      `refs/pull/*` refs holding 244 pre-rewrite commits and 32 contaminated blobs. `filter-repo`
+      did not end the exposure — this step does. Close `#95` only once a fresh `--mirror` clone
+      returns 0 across all refs.
+- [ ] **Decide the fate of 22 local-only branches** in `~/Projects/bluegreen-marketplace`. They
+      never existed on `origin` in this form and they keep 30 contaminated blobs alive in the local
+      object store. Hygiene on one disk, not exposure. `git cherry` puts 3–6 commits per branch
+      outside `main`, except `refactor/plugin-split` at 19 — check that one before deleting
+      anything.
 
 ## Backlog
 
@@ -49,6 +62,18 @@ one gap and deserve one issue.
   edits silently, and `check_version_sync.sh` does not look at the top-level counter.
 
 ## Done (current sprint)
+
+- [x] `#95` step 1 — PR #96, merged `219bcbd`: the personal phone number left `HEAD` of a public
+      repo, replaced by a placeholder in the `suivi_chantier` example payload. Subsumed by the
+      rewrite hours later, which emptied both its commits — 2026-09-09
+- [x] `#95` step 2 — history rewritten with `git filter-repo --replace-text` and force-pushed,
+      `219bcbd` → `c5f29c4`. Re-measured rather than quoted: **30** blobs over 4 paths, **158 of
+      161** commits, one written form — the issue body's 31 / 185 of 186 counted a wider ref set.
+      The 21 non-`main` remote branches were deleted first, SHAs recorded in `#95`; 13 held nothing
+      not already upstream, 7 belonged to squash-merged PRs, 1 (PR #2, closed 2026-05-22) was dead
+      work on the retired `edifice-mission-report`. Strongest check, and it passes: the final tree
+      is byte-identical to the pre-rewrite one, `6c0cfc6c` — only the history moved. Plugin cache
+      refreshed, 0 contaminated blobs — 2026-09-09
 
 - [x] `#93` / PR #94 — the `edifice` plugin follows hal-mcp again; `edifice` **0.1.2**, top-level
       **0.10.28**. `build_context.py` stopped swallowing the parse on the `get_mission_with_assets`
