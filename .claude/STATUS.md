@@ -15,11 +15,22 @@ GitHub Support purge was **declined, not deferred** — do not re-open it as pen
 
 ## In Progress
 
-- [ ] **Decide the fate of 22 local-only branches** in `~/Projects/bluegreen-marketplace`. They
-      never existed on `origin` in this form and they keep 30 contaminated blobs alive in the local
-      object store. Hygiene on one disk, not exposure. `git cherry` puts 3–6 commits per branch
-      outside `main`, except `refactor/plugin-split` at 19 — check that one before deleting
-      anything.
+- [ ] **`wip/edifice-front-mcp` is the last pre-rewrite branch, and it holds real work.** 21 of the
+      22 local branches were deleted on 2026-09-09 — every one backed by a merged PR, plus PR #2
+      closed unmerged on the retired `edifice-mission-report`. This one has no PR at all: `b3f28cf`
+      (2026-08-02, *"exploration cowork-mcp et mcp-data-adapter — non abouti"*) carries **253 lines
+      on `ui/edifice-front/src/cowork-mcp.ts` that are newer than `main`'s** and exist nowhere else.
+      Its sibling commit `a0bcc54` brings nothing — one of its two docs is identical on `main`, the
+      other superseded there on 2026-08-29.
+
+      **Replaying it onto the rewritten history was attempted and abandoned**: `cherry-pick`
+      conflicts on `mcp-data-adapter.ts` against `fix(edifice): consume the list_edifice_missions
+      envelope — v0.1.1` (2026-08-28), i.e. merging five-week-old unfinished exploration into a
+      shipped fix, on a front-end that ships no tests. That is a real engineering decision, not
+      cleanup.
+
+      Until it is taken, this branch keeps **28** contaminated blobs in the local object store (30
+      before the sweep). Local only, and the residual was accepted when `#95` was closed.
 
 ## Backlog
 
