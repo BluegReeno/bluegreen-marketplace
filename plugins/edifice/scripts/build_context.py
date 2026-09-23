@@ -24,6 +24,15 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ---------------------------------------------------------------------------
 # Context builders
+#
+# SOURCE OF TRUTH for the context.json shape: this file. hal-mcp's `index.ts`
+# (buildHeader, buildObservationsAndNotes, cleanAddress, parseMissionContext) is a
+# field-for-field mirror of _clean_address / _parse_mission_context / build_header /
+# build_observations below, kept in a separate private repo with no shared CI — see
+# bluegreen-marketplace#84. Any shape change here (a field added, removed or renamed)
+# must be ported to hal-mcp's index.ts by hand; tests/test_context_parity.py is the
+# tripwire that catches an *unported* change on this side, not a substitute for that
+# manual port.
 # ---------------------------------------------------------------------------
 
 def _clean_address(addr: str) -> str:
@@ -39,7 +48,7 @@ def _parse_mission_context(project: dict) -> tuple[dict, str]:
     That column is `text`, filled by the PWA from a free-text textarea: prose is the
     rule and a header object the exception. So a string that does not claim to be JSON
     is the mission brief, returned as free text; a string that claims to be JSON and
-    does not parse raises, naming the mission. Field-for-field port of
+    does not parse raises, naming the mission. Mirrored field-for-field by
     `parseMissionContext` in hal-mcp's `index.ts`.
     """
     mc = project.get("mission_context") or {}
