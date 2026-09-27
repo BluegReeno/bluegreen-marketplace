@@ -127,7 +127,7 @@ Créer une nouvelle opportunité commerciale.
 2. Collecter depuis la conversation ou demander si absent :
    - `name` (requis) — le nom passé après `/crm new`
    - `company_id` (optionnel) — si une entreprise est mentionnée, résoudre via
-     `list_companies` (fuzzy match)
+     `list_companies(search=<mot distinctif du nom>)` (voir « Résoudre une entreprise ou un contact »)
    - `amount_ht` (optionnel) — montant estimé si mentionné
    - `description` (optionnel) — contexte ou notes initiales
 3. Appeler `create_project` avec :
@@ -313,7 +313,7 @@ Gérer les contacts et entreprises liés au CRM.
    - `email` (optionnel)
    - `phone` (optionnel)
    - `role` (optionnel) — ex. "coordinatrice formation"
-   - Entreprise associée : chercher via `list_companies` (fuzzy match). Si introuvable
+   - Entreprise associée : chercher via `list_companies(search=<mot distinctif du nom>)`. Si introuvable
      et nom mentionné → proposer de créer l'entreprise d'abord.
 3. Si l'entreprise doit être créée :
    - Appeler `create_company(workspace_slug, name)`.
@@ -321,10 +321,20 @@ Gérer les contacts et entreprises liés au CRM.
 4. Appeler `create_contact(workspace_slug, name, ...)` avec les champs collectés.
 5. Output : `✅ Contact créé : <name> · <entreprise ou "—">`
 
+### Résoudre une entreprise ou un contact
+
+`list_companies` et `list_contacts` renvoient `{companies|contacts, total, offset, returned,
+truncated}`, **100 lignes par défaut** — jamais la liste complète (381 contacts dans
+`blue-green`). Ne pas chercher à la main dans une page : passer `search`, une sous-chaîne
+insensible à la casse (sur le nom pour les entreprises, sur le nom **ou** l'email pour les
+contacts). Ce n'est pas un fuzzy match : chercher un mot distinctif (`cognyx`, pas
+`Cognyx SAS`) ; à zéro résultat, raccourcir le mot avant de conclure « introuvable ».
+Plusieurs résultats → demander lequel.
+
 ### `contact update <nom>`
 
 1. **Résoudre workspace** — règle standard.
-2. Résoudre le contact via `list_contacts` (fuzzy match sur `name`).
+2. Résoudre le contact via `list_contacts(search=<nom ou email>)` (voir « Résoudre une entreprise ou un contact »).
 3. Si le connecteur MCP expose un outil `update_contact` → l'appeler avec les champs
    modifiés. Sinon → informer que la mise à jour de contact n'est pas encore supportée
    par l'API et proposer de recréer le contact.

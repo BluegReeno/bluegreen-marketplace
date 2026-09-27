@@ -65,7 +65,7 @@ Créer une opportunité commerciale.
 
 - Résoudre workspace
 - `name` depuis l'argument (requis)
-- Champs optionnels si présents dans le contexte : `company_id` (fuzzy match `list_companies`),
+- Champs optionnels si présents dans le contexte : `company_id` (`list_companies(search=<mot distinctif du nom>)`),
   `amount_ht`, `description`
 - Appeler `create_project` avec `workspace_slug`, `name`, `kind: "opportunity"`, `stage: "Prospect"`
 - Output : `✅ Opportunité créée : <ref> · <name> · Prospect`
@@ -169,7 +169,7 @@ Créer un contact (et son entreprise si nécessaire).
 - Résoudre workspace
 - `name` depuis l'argument (requis)
 - Champs optionnels depuis le contexte : `email`, `phone`, `role`
-- Entreprise : fuzzy match `list_companies` ; si introuvable et nom mentionné →
+- Entreprise : `list_companies(search=<mot distinctif du nom>)` ; si introuvable et nom mentionné →
   `create_company(workspace_slug, name)` d'abord
 - Appeler `create_contact(workspace_slug, name, ...)` avec les champs disponibles
 - Output : `✅ Contact créé : <name> · <entreprise ou "—">`
@@ -177,7 +177,7 @@ Créer un contact (et son entreprise si nécessaire).
 ### `contact update <nom>`
 
 - Résoudre workspace
-- Résoudre le contact via `list_contacts` (fuzzy match)
+- Résoudre le contact via `list_contacts(search=<nom ou email>)` — une page de 100, jamais la liste complète
 - Appeler `update_contact` si disponible ; sinon → informer que la mise à jour de
   contact n'est pas encore supportée par l'API
 - Output : `✅ Contact mis à jour : <name>` ou message d'erreur clair
