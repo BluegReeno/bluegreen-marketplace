@@ -12,6 +12,8 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.3.0] — 2026-09-29 — gtm:call — a call becomes hal knowledge (transcript, analysis, ingestion); /crm log retired (hal#192)
+
 ## [0.2.5] — 2026-09-25 — crm resolves companies and contacts with list_*(search=…) — since hal#171 the lists return a 100-row page, not every row
 
 ## [0.2.4] — 2026-08-29 — Le pointeur remplace la doctrine `tags`, `hal://vocabulary` ne verra jamais le jour
