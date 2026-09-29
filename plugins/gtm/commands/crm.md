@@ -1,6 +1,6 @@
 ---
 description: CRM — pipeline commercial Blue Green (opportunités, contacts, CRs, propales)
-argument-hint: "list [workspace] | new <nom> | qualify <nom> | log <note ou CR> | log update <interaction> | update <texte libre> | contact new <nom> | contact update <nom> | doc <url>"
+argument-hint: "list [workspace] | new <nom> | qualify <nom> | log update <interaction> | update <texte libre> | contact new <nom> | contact update <nom> | doc <url>"
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob"
 ---
 
@@ -94,49 +94,16 @@ Qualifier avec la méthode BANT (Budget · Authority · Need · Timeline).
 
 ---
 
-### `log <note ou CR markdown>`
-
-Logger un CR de meeting ou une note commerciale.
-
-- Résoudre workspace
-- Identifier l'opportunité depuis le contexte (fuzzy match `list_projects(kind="opportunity")`)
-- Structurer le CR dans ce format si texte libre :
-  ```
-  ## CR — [Entreprise] — [Date]
-  **Participants :** ...
-  **Durée :** XX min
-
-  ### Notes clés
-  ...
-
-  ### BANT extrait
-  - **Budget :** ...
-  - **Authority :** ...
-  - **Need :** ...
-  - **Timeline :** ...
-
-  ### Next steps
-  - [ ] action 1
-  ```
-- Appeler `log_interaction(workspace_slug, project_id, channel="meeting", summary=<CR structuré>)`
-- Après le log : tenter extraction BANT automatique ; si des infos sont identifiables →
-  mettre à jour la description via `update_project` (même logique que `qualify`)
-- Si opportunité introuvable (score < 50) → logger quand même, mettre le nom dans `summary`
-- Output : `✅ CR logué sur <opportunité> (id: <interaction_id>)` (+ `✅ BANT mis à jour` si
-  extraction réussie). Afficher l'id — c'est le seul moyen de retrouver l'interaction
-  ensuite pour la corriger (pas de listing côté MCP).
-
----
-
 ### `log update <interaction>`
 
 Corriger une interaction déjà loguée (`summary`, `transcript`, `channel`, `occurred_at`,
 `contact_id`, `project_id`, `tags`) — pas de suppression, aucun outil MCP ne l'expose.
 
 - Résoudre workspace
-- **`interaction_id`** ne peut venir que du contexte conversation (confirmation d'un
-  `log` précédent dans la session, ou id collé par l'utilisateur) — hal-mcp n'expose
-  aucun `list_interactions`. Sans id identifiable, demander de reloguer ou de fournir l'id.
+- **`interaction_id`** : depuis le contexte conversation (rapport d'un `/call` précédent dans
+  la session, ou id collé par l'utilisateur), sinon `list_interactions(workspace_slug,
+  search=<mot du summary>, since, until)` — plusieurs → lister et demander, jamais deviner.
+- Logger un **nouvel** appel n'est pas ici : `/call` (skill `gtm:call`).
 - Collecter uniquement les champs à corriger, mentionnés par l'utilisateur ; les champs
   omis restent inchangés côté serveur
 - `tags` **remplace** le tableau existant (ne fusionne pas) — pour ajouter un tag,
@@ -196,4 +163,4 @@ Attacher un document à une opportunité.
 
 ---
 
-Pour les instructions complètes et les règles de fuzzy match : charger le skill `crm` via le menu (`hal:crm`) ou une description naturelle.
+Pour les instructions complètes et les règles de fuzzy match : charger le skill `crm` via le menu (`gtm:crm`) ou une description naturelle.

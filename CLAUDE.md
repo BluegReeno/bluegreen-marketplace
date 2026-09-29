@@ -30,7 +30,7 @@ without a version bump, Claude Desktop won't surface the update and clients stay
 | `hal` | `plugins/hal/` | — (connector only) | **everyone** — carries `.mcp.json`, the mandatory base |
 | `edifice` | `plugins/edifice/` | `edifice` | IC Ingénieurs Conseils — building inspection missions |
 | `pm` | `plugins/pm/` | `pm`, `sprint-planner`, `sprint-review` | anyone running projects and sprints |
-| `gtm` | `plugins/gtm/` | `crm`, `linkedin` | Blue Green go-to-market |
+| `gtm` | `plugins/gtm/` | `crm`, `call`, `linkedin` | Blue Green go-to-market |
 
 Split in #66 (`hal` 0.12.0), because a client who needs `/pm` should not download `/edifice`,
 `/crm`, `/linkedin` and ten Python scripts along with it.
@@ -83,9 +83,10 @@ bluegreen-marketplace/
 │   └── gtm/
 │       ├── .claude-plugin/plugin.json
 │       ├── skills/
-│       │   ├── crm/SKILL.md      # /crm list | new | qualify | log | update | contact | doc
+│       │   ├── crm/SKILL.md      # /crm list | new | qualify | log update | update | contact | doc
+│       │   ├── call/SKILL.md     # /call — a call becomes hal knowledge; also called by jobsearch:log-cr
 │       │   └── linkedin/SKILL.md # /linkedin idea | backlog | trend | draft | log
-│       ├── commands/{crm,linkedin}.md
+│       ├── commands/{crm,call,linkedin}.md   # call.md only delegates: Skill("gtm:call")
 │       └── CHANGELOG.md
 ├── tests/                         # ALL tests live here, at the root — never inside a plugin
 ├── ui/                            # artifact front-end build workspace — see § Artifact front-ends
@@ -111,6 +112,8 @@ Skills are always namespaced by their **plugin** (`pm:pm`, `gtm:crm`, `edifice:e
 `/pm` raw looks for a **command**, not a skill. Each plugin's `commands/` files register the bare
 slash commands.
 The command file must be self-contained — the skill body is NOT pre-loaded when a command fires.
+One exception: `gtm/commands/call.md` only invokes `Skill("gtm:call")`, because `jobsearch:log-cr`
+(renaud-marketplace) calls the same skill by that name and a copied body would drift (hal#192).
 
 See `docs/skills-mcp-guide.md` for the full reference (MCP detection, cross-platform).
 

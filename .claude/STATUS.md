@@ -1,20 +1,24 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-09-09
+Last updated: 2026-09-29
 
 > History up to 2026-08-29 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
 
 ## Current Focus
 
-Four plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` and nothing else),
-`edifice` **0.1.2**, `gtm` **0.2.4**, `pm` **0.2.0**, marketplace top-level **0.10.28** (read from
-`marketplace.json`). The public history was rewritten on 2026-09-09 to purge a personal phone number
-(`#95`, closed): `main` is `c5f29c4`, 159 commits, and every clone predating it is invalid. The
-GitHub Support purge was **declined, not deferred** — do not re-open it as pending work.
+hal#192 phase B: `gtm:call` (`/call`) turns a call into hal knowledge through hal's
+`call_analysis.py`; `/crm log` retired; `gtm` → **0.3.0** on branch `feat/hal-192-gtm-call`, PR
+pending Renaud's Level-4 runs. Versions: read `marketplace.json`, never this file.
 
 ## In Progress
 
+- [ ] **hal#192 phase B — `gtm:call`** (`feat/hal-192-gtm-call`): skill + thin `/call` command +
+      `tests/test_gtm_call_skill.py`; `/crm log` removed, `/crm log update` now resolves ids via
+      `list_interactions`. Depends on hal PR #228 (merged 2026-09-29). Level 4 (Renaud): OSS Ventures
+      via `/log-cr` (after phase R), « Alstom » → Cognyx, Mister IA client call 2026-09-28 (Granola
+      and pasted), re-run idempotency, `gtm` absent, Cowork pre-flight stop, `kb_search`. Next:
+      phase R (renaud-marketplace `log-cr` → `gtm:call`), H2 (hal docs), M (maps).
 - [ ] **`wip/edifice-front-mcp` is the last pre-rewrite branch, and it holds real work.** 21 of the
       22 local branches were deleted on 2026-09-09 — every one backed by a merged PR, plus PR #2
       closed unmerged on the retired `edifice-mission-report`. This one has no PR at all: `b3f28cf`
@@ -66,6 +70,8 @@ one gap and deserve one issue.
 
 ## Done (current sprint)
 
+- [x] PR #99 — `crm` resolves companies and contacts with `list_*(search=…)` (hal#171 pages);
+      `gtm` **0.2.5** — 2026-09-25
 - [x] `#95` **closed `not planned` 2026-09-09** — the rewrite shipped, the GitHub Support purge was
       declined by the owner, whose number it is. A default clone, the web UI and code search return
       nothing; the value stays retrievable by explicit SHA and through the 51 `refs/pull/*` refs

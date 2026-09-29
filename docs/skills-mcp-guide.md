@@ -19,7 +19,7 @@ Typing `/pm` raw looks for a **command** named `pm`, not a skill. Without `comma
 Claude Code returns "compétence inconnue".
 
 **Fix**: each plugin ships a `commands/<name>.md` per skill (auto-discovered from the `commands/`
-directory, no manifest entry needed) — that is what registers `/pm`, `/edifice`, `/crm`, `/linkedin`,
+directory, no manifest entry needed) — that is what registers `/pm`, `/edifice`, `/crm`, `/call`, `/linkedin`,
 `/sprint-planner` and `/sprint-review` as first-class slash commands.
 
 ### Command file format
@@ -47,6 +47,9 @@ Command files are invoked BEFORE the associated skill body is loaded into contex
 Do NOT rely on the skill being pre-loaded. Either:
 1. Include the essential routing logic inline (current approach — preferred)
 2. Open with `Read skills/<name>/SKILL.md` to load instructions explicitly
+3. Delegate with `Skill("<plugin>:<skill>")` — `gtm/commands/call.md` does this, and only it: the
+   same skill is invoked by another plugin (`jobsearch:log-cr`) under that namespaced name, so a
+   copied body would be a second implementation that drifts (hal#192). Stop on `Unknown skill`.
 
 ---
 
