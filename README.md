@@ -25,7 +25,7 @@ no command of its own. Then add what you actually use.
 |--------|----------|--------------|
 | **`edifice`** | `/edifice` | Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report (`list`, `pull`, `improve`, `report`, `push`, `front`) |
 | **`pm`** | `/pm`, `/sprint-planner`, `/sprint-review` | Project management: tasks, sprints, projects, docs (`list`, `tasks`, `new`, `task`, `log`, `doc`, `sprint`, `update`), plus weekly planning and review |
-| **`gtm`** | `/crm`, `/linkedin` | Commercial pipeline — opportunities, contacts, BANT qualification, interaction log — and the LinkedIn editorial pipeline (idea, backlog, trend, draft, publish log) |
+| **`gtm`** | `/crm`, `/call`, `/linkedin` | Commercial pipeline — opportunities, contacts, BANT qualification — a call turned into hal knowledge (`/call`: Granola or pasted transcript, correction, `call_analysis`, `kb_search` indexing; needs the hal checkout and `uv` on the Mac), and the LinkedIn editorial pipeline (idea, backlog, trend, draft, publish log) |
 
 ### Pick your install
 
@@ -55,14 +55,14 @@ rejected in the next, and the list changes without a deploy. For `blue-green` it
 See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions.
 
 > **Coming from `hal` 0.11.x?** That version bundled all four skill families. Updating to 0.12.0
-> removes `/edifice`, `/pm`, `/crm` and `/linkedin` from it — install the plugin that owns the
+> removes `/edifice`, `/pm`, `/crm`, `/call` and `/linkedin` from it — install the plugin that owns the
 > command you need and it comes straight back. Nothing else changed: same server, same tools.
 
 ---
 
 ## Connecting from Claude, Gemini, or OpenAI
 
-The `hal-mcp` **connector** (the MCP server) works on all three providers; the `/edifice`, `/pm`, `/crm`, and `/linkedin` **skills** only run on the agent/CLI surfaces (Claude Code, Gemini CLI, OpenAI Codex).
+The `hal-mcp` **connector** (the MCP server) works on all three providers; the `/edifice`, `/pm`, `/crm`, `/call`, and `/linkedin` **skills** only run on the agent/CLI surfaces (Claude Code, Gemini CLI, OpenAI Codex).
 
 | Provider | One-line path |
 |----------|---------------|
@@ -97,7 +97,7 @@ only version table; read it there.
 | `hal` | — (connector only) | the foundation — every other plugin calls through it |
 | `edifice` | `edifice` | the field vertical |
 | `pm` | `pm`, `sprint-planner`, `sprint-review` | tasks, sprints, projects, documents |
-| `gtm` | `crm`, `linkedin` | pipeline, contacts, logged exchanges |
+| `gtm` | `crm`, `call`, `linkedin` | pipeline, contacts, calls made searchable |
 
 ```
 plugins/
@@ -113,7 +113,7 @@ plugins/
 ├── pm/
 │   └── skills/                  # pm, sprint-planner, sprint-review
 └── gtm/
-    └── skills/                  # crm, linkedin
+    └── skills/                  # crm, call, linkedin
 ```
 
 The three skill plugins declare no `.mcp.json` — they call `hal-mcp` through `hal`, which is why
