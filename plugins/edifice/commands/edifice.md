@@ -1,7 +1,7 @@
 ---
 description: Edifice — inspection missions IC Ingénieurs Conseils (list, pull, improve, report, push, front)
 argument-hint: "list [status=active] [limit=N] | pull | improve | report | push | front"
-allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
+allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob"
 ---
 
 Edifice — Argument reçu : `$ARGUMENTS`

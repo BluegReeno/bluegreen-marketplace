@@ -49,54 +49,15 @@ Every plugin has the same three mandatory files — `.claude-plugin/plugin.json`
 and an entry in `marketplace.json`. Creating a plugin means creating all three at once, otherwise
 `check_version_sync.sh` fails and **every** release is blocked, not just that plugin's.
 
-```
-bluegreen-marketplace/
-├── .claude-plugin/
-│   └── marketplace.json          # registry entry point (Anthropic schema) — one entry per plugin
-├── plugins/
-│   ├── hal/                      # the connector — no skill, no command
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── .mcp.json             # hal-mcp HTTP server + version ← the only one in the repo
-│   │   ├── README.md
-│   │   └── CHANGELOG.md
-│   ├── edifice/                  # the only plugin carrying scripts, templates and artifacts
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/edifice/SKILL.md   # /edifice list | pull | improve | report | push | front
-│   │   ├── commands/edifice.md
-│   │   ├── scripts/
-│   │   │   ├── *.py              # build_context, render_*, download_photos, xml_escape
-│   │   │   └── obsidian/         # bundled obsidian-crm scripts ← source of truth ★
-│   │   ├── templates/ic-ingenieurs/  # *.docx report templates
-│   │   ├── organizations/ic-ingenieurs/  # client config — gitignored, not public
-│   │   ├── artifacts/            # committed artifact-front-end HTML — see § Artifact front-ends
-│   │   ├── tests/README.md       # points at tests/ at the repo root
-│   │   ├── requirements.txt      # human-readable manifest only — never executed
-│   │   └── CHANGELOG.md
-│   ├── pm/
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/
-│   │   │   ├── pm/SKILL.md            # /pm list | tasks | new | task | log | doc | sprint | update
-│   │   │   ├── sprint-planner/SKILL.md   # adopted from briefing@renaud-marketplace
-│   │   │   └── sprint-review/SKILL.md    # idem
-│   │   ├── commands/{pm,sprint-planner,sprint-review}.md
-│   │   └── CHANGELOG.md          # ← documents the two unresolved cross-repo couplings
-│   └── gtm/
-│       ├── .claude-plugin/plugin.json
-│       ├── skills/
-│       │   ├── crm/SKILL.md      # /crm list | new | qualify | log | update | contact | doc
-│       │   └── linkedin/SKILL.md # /linkedin idea | backlog | trend | draft | log
-│       ├── commands/{crm,linkedin}.md
-│       └── CHANGELOG.md
-├── tests/                         # ALL tests live here, at the root — never inside a plugin
-├── ui/                            # artifact front-end build workspace — see § Artifact front-ends
-├── scripts/                       # check_version_sync.sh, check_artifact_sync.sh, release.sh
-├── docs/
-│   ├── brief.md                  # sprint brief and architectural decisions
-│   ├── INSTALL.md                # one-liner install instructions
-│   ├── skills-mcp-guide.md       # skill vs command architecture, MCP check, cross-platform
-│   └── artifact-front-ends.md    # how a skill consumes a bundled artifact
-└── README.md                     # public-facing install guide
-```
+What `ls plugins/*/` does not show:
+
+- `plugins/hal/.mcp.json` is the **only** connector in the repo — see § Common Gotchas.
+- `plugins/edifice/scripts/obsidian/` is the source of truth for vault I/O — see § Source of truth.
+- `plugins/edifice/organizations/ic-ingenieurs/` is client config: gitignored, never public.
+- `plugins/edifice/requirements.txt` is a human-readable manifest only — never executed.
+- `plugins/edifice/artifacts/` holds the committed artifact front-ends built from `ui/` — see § Artifact front-ends.
+- `plugins/pm/CHANGELOG.md` documents the two unresolved cross-repo couplings.
+- `tests/` at the repo root holds every test — never inside a plugin.
 
 ### Skills vs Commands — why both exist
 
@@ -173,32 +134,9 @@ Illustrative only — the numbers below are a worked example, not repo state:
 ## Release Process (one command)
 
 Releases are intentional and infrequent (~1-2/month), and stay a deliberate human act — CI only
-enforces the invariant (`.github/workflows/ci.yml` runs `scripts/check_version_sync.sh` + tests on
-every PR/push, so a broken version sync or a missing CHANGELOG entry fails the build).
-
-`scripts/release.sh` performs the whole bump in one validated pass so a missed field can no longer
-strand Claude Desktop clients on the old version (the top-level marketplace counter is what surfaces
-the "Mettre à jour" button — see §Project Overview). It validates everything **before** writing, then:
-
-1. bumps `plugin.json.version`,
-2. bumps the matching marketplace plugin entry (kept identical),
-3. bumps the marketplace **top-level** `version` (monotonic PATCH +1),
-4. prepends a dated `## [<version>]` CHANGELOG entry,
-5. runs `scripts/check_version_sync.sh` and aborts if it fails,
-6. commits `chore(<plugin>): release v<version>` — **no push, no merge, no tag**.
-
-```bash
-# <plugin> <new-version> "<changelog line>"  (--mcp-version <v> also bumps .mcp.json)
-bash scripts/release.sh edifice 0.1.1 "fix edifice crop_region off-by-one"
-git push        # the human pushes after reviewing the commit
-```
-
-It refuses (exit 1, clear message) on: missing args, unknown plugin, a version not strictly
-greater than the current one, a dirty working tree, or a CHANGELOG that already lists the version.
-A failed validation writes nothing. `.mcp.json` is left untouched unless `--mcp-version` is passed.
-
----
-
+enforces the invariant. `scripts/release.sh <plugin> <version> "<changelog line>"` performs the
+whole bump in one validated pass and commits — **no push, no merge, no tag**. The full procedure
+and its refusal cases live in the `release` skill (`.claude/skills/release/SKILL.md`).
 ## schema-contract.json — Cross-repo sync anchor ★
 
 `plugins/edifice/schema-contract.json` will declare which Supabase tables/columns the plugin
@@ -306,6 +244,6 @@ For `ai-improvable`-labeled issues: `archon workflow run skill-improve "<issue_n
 
 ## Session Management
 
-- Use `/handoff` before ending long sessions
+- Use `session:wrap-up` before ending a session
 - Use `/commit` with the `Context:` section when AI context files change
 - After any plugin sync: verify `marketplace.json` version === `plugin.json` version
