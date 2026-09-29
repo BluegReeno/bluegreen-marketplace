@@ -6,7 +6,7 @@ description: >
   Edifice report", "create a diagnostic report", "generate a devis",
   "open the edifice front", "show the mission viewer artifact", or
   "run edifice".
-allowed-tools: "Bash(uv *) Bash(pip *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob ToolSearch ListConnectors mcp__plugin_hal_hal-mcp__list_edifice_missions mcp__plugin_hal_hal-mcp__get_mission_with_assets mcp__plugin_hal_hal-mcp__push_mission_context"
+allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(curl *) Bash(chmod *) Bash(mkdir *) Bash(find *) Bash(ls *) Read Write Edit Glob ToolSearch ListConnectors mcp__plugin_hal_hal-mcp__list_edifice_missions mcp__plugin_hal_hal-mcp__get_mission_with_assets mcp__plugin_hal_hal-mcp__push_mission_context"
 ---
 
 # Edifice — Mission Workflow (Claude Code)

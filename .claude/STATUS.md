@@ -1,6 +1,6 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-09-09
+Last updated: 2026-09-30
 
 > History up to 2026-08-29 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
@@ -8,7 +8,7 @@ Last updated: 2026-09-09
 ## Current Focus
 
 Four plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` and nothing else),
-`edifice` **0.1.2**, `gtm` **0.2.4**, `pm` **0.2.0**, marketplace top-level **0.10.28** (read from
+`edifice` **0.1.3**, `gtm` **0.2.5**, `pm` **0.2.0**, marketplace top-level **0.10.30** (read from
 `marketplace.json`). The public history was rewritten on 2026-09-09 to purge a personal phone number
 (`#95`, closed): `main` is `c5f29c4`, 159 commits, and every clone predating it is invalid. The
 GitHub Support purge was **declined, not deferred** — do not re-open it as pending work.
@@ -34,6 +34,7 @@ GitHub Support purge was **declined, not deferred** — do not re-open it as pen
 
 ## Backlog
 
+- [ ] Decide on a single install channel for `hal` and `pm`: today both reach a Claude Code session twice, via the CLI install (`~/.claude/plugins/cache/bluegreen-marketplace/`) and via the Claude Desktop sync (`~/.claude/plugins/synced/…/{hal,pm}~g2`); versions matched on 2026-09-30 after a manual `claude plugin update`, but the CLI copy had silently stayed on `pm` 0.1.9 for a month
 **Open issues**
 
 - [ ] [#84](https://github.com/BluegReeno/bluegreen-marketplace/issues/84) — no parity check between
@@ -65,6 +66,8 @@ one gap and deserve one issue.
   edits silently, and `check_version_sync.sh` does not look at the top-level counter.
 
 ## Done (current sprint)
+
+- [x] `/doctor` audit of the marketplace skills: 5 `404: Not Found` files and the unused `.claude/rules/` removed, `/handoff` pointer replaced by `session:wrap-up`, repo tree and Release Process trimmed out of CLAUDE.md (release procedure now in `.claude/skills/release/`), `Bash(pip *)` dropped from `edifice` allowed-tools, `sprint-planner` / `sprint-review` descriptions shortened — 2026-09-30
 
 - [x] `#95` **closed `not planned` 2026-09-09** — the rewrite shipped, the GitHub Support purge was
       declined by the owner, whose number it is. A default clone, the web UI and code search return

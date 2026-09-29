@@ -1,18 +1,11 @@
 ---
 name: sprint-planner
 description: >
-  Planifie le sprint de la semaine prochaine pour Renaud Laborbe. Sources :
-  hal-mcp (tâches + sprints), les calendriers déclarés par tes workspaces, et,
-  si le plugin jobsearch est co-installé, le vault Obsidian (jobsearch CRM) et
-  les alertes LinkedIn (Gmail perso via gmail-mcp du plugin briefing) — sinon
-  ces deux sections sont sautées sans bloquer le reste. En mode conversationnel : reporte ou abandonne les tâches non
-  finies, pose des questions ciblées sur les contraintes calendrier détectées.
-  En mode schedule (vendredi après-midi automatique) : s'exécute de façon
-  autonome avec des décisions par défaut et présente un plan à valider avant
-  de créer le sprint. Ne crée jamais le sprint sans validation explicite.
-  Utiliser quand Renaud dit "sprint planning", "planifier la semaine",
-  "plan my week", "sprint de la semaine prochaine", "weekly planning",
-  "priorités de la semaine", "organiser ma semaine" — ou en mode schedule.
+  Planifie le sprint de la semaine prochaine de Renaud Laborbe : tâches et sprints hal,
+  calendriers déclarés par les workspaces, et si le plugin jobsearch est co-installé le vault
+  Obsidian et les alertes LinkedIn. Utiliser quand Renaud dit "sprint planning", "planifier la
+  semaine", "plan my week", "sprint de la semaine prochaine", "weekly planning", "priorités
+  de la semaine", "organiser ma semaine" — ou en mode schedule (vendredi après-midi).
 allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__transition_sprint mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__get_document mcp__claude_ai_Google_Calendar__list_events mcp__plugin_briefing_gmail-mcp__search_emails Skill(jobsearch-vault) Bash"
 ---
 

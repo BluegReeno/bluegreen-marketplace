@@ -1,16 +1,10 @@
 ---
 name: sprint-review
 description: >
-  Bilan du sprint de la semaine pour Renaud Laborbe. Bilan Blue Green (projets
-  en cours). Shortlist pour le sprint suivant. Si le plugin jobsearch est
-  co-installé, inclut aussi les métriques jobsearch (candidatures, taux de
-  conversion, profil performance, patterns de refus) — sinon cette section est
-  sautée sans bloquer le reste du bilan.
-  Ne crée pas le sprint suivant — c'est le sprint-planner qui s'en charge.
-  Clôture le sprint dans hal uniquement après validation explicite.
-  Utiliser quand Renaud dit "sprint review", "bilan du sprint", "bilan de la
-  semaine", "weekly review", "rétrospective", "fin de sprint" — ou en mode
-  schedule (vendredi après-midi automatique).
+  Bilan du sprint de la semaine de Renaud Laborbe : tâches hal, projets Blue Green en cours,
+  shortlist du sprint suivant, et métriques jobsearch si le plugin est co-installé. Utiliser
+  quand Renaud dit "sprint review", "bilan du sprint", "bilan de la semaine", "weekly review",
+  "rétrospective", "fin de sprint" — ou en mode schedule (vendredi après-midi).
 allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__get_document mcp__plugin_hal_hal-mcp__save_document mcp__claude_ai_Google_Calendar__list_events Skill(jobsearch-vault) Bash"
 ---
 
