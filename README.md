@@ -33,15 +33,17 @@ no command of its own. Then add what you actually use.
 |---------|---------|-----|
 | A building inspector (IC Ingénieurs Conseils) | `hal` + `edifice` | Missions and reports only — no CRM, no sprints |
 | Running projects and sprints | `hal` + `pm` | Tasks and sprints only — none of the Blue Green commercial surface |
-| Blue Green, end to end | `hal` + `edifice` + `pm` + `gtm` | Everything |
+| Producing Blue Green documents | `docs` | Branded Word reports and proposals from Markdown — `hal` only for the proposal's CRM context |
+| Blue Green, end to end | `hal` + `edifice` + `pm` + `gtm` + `docs` | Everything |
 
 ```
 /plugin install edifice@bluegreen-marketplace
 /plugin install pm@bluegreen-marketplace
 /plugin install gtm@bluegreen-marketplace
+/plugin install docs@bluegreen-marketplace
 ```
 
-**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account — both for `edifice` only. `pm` and `gtm` need nothing beyond the **hal-mcp** connector that `hal` brings (authenticated via OAuth); `/linkedin trend` also uses the Bright Data connector.
+**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account — both for `edifice` only. `docs` needs `uv` and pandoc (or `--with pypandoc_binary`). `pm` and `gtm` need nothing beyond the **hal-mcp** connector that `hal` brings (authenticated via OAuth); `/linkedin trend` also uses the Bright Data connector.
 
 The connector targets **hal-mcp 0.3.0** on Supabase `zgkvbjqlvebttbnkklpo` (the version in
 `plugins/hal/.mcp.json`). Powered by [hal](https://github.com/BluegReeno/hal).
@@ -98,6 +100,7 @@ only version table; read it there.
 | `edifice` | `edifice` | the field vertical |
 | `pm` | `pm`, `sprint-planner`, `sprint-review` | tasks, sprints, projects, documents |
 | `gtm` | `crm`, `linkedin` | pipeline, contacts, logged exchanges |
+| `docs` | `brand`, `study-report`, `proposal` | brand identity, branded Word deliverables |
 
 ```
 plugins/
@@ -112,11 +115,15 @@ plugins/
 │   └── artifacts/               # committed artifact front-ends (built from ui/)
 ├── pm/
 │   └── skills/                  # pm, sprint-planner, sprint-review
-└── gtm/
-    └── skills/                  # crm, linkedin
+├── gtm/
+│   └── skills/                  # crm, linkedin
+└── docs/
+    ├── skills/brand/            # brand.yaml, assets/, templates/ — the Blue Green identity
+    ├── skills/                  # study-report, proposal — content only
+    └── scripts/md2docx.py       # Markdown → branded .docx (pandoc + python-docx)
 ```
 
-The three skill plugins declare no `.mcp.json` — they call `hal-mcp` through `hal`, which is why
+The skill plugins declare no `.mcp.json` — they call `hal-mcp` through `hal`, which is why
 it is a required install for all of them.
 
 See `docs/brief.md` for the full architecture rationale.

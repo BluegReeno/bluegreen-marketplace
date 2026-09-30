@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.30",
+  "version": "0.10.31",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — field work, building inspections, CRM",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
@@ -37,6 +37,15 @@
       "description": "PM — project management: tasks, sprints, projects, docs, plus weekly sprint planning and review.",
       "source": "./plugins/pm",
       "version": "0.2.0",
+      "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
+      "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
+      "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
+    },
+    {
+      "name": "docs",
+      "description": "Docs — Blue Green brand and branded Word deliverables from Markdown (study reports, proposals).",
+      "source": "./plugins/docs",
+      "version": "0.1.0",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
