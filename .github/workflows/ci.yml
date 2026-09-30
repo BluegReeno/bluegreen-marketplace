@@ -31,6 +31,11 @@ jobs:
         # tooling only, not a runtime skill script, so it's exempt from the "uv run --with,
         # never pip install" rule (see CLAUDE.md § Plugin Skill Constraint).
         run: pip install -r plugins/edifice/requirements.txt
+      - name: Install docs render test dependencies
+        # tests/test_docs_md2docx.py renders real .docx through md2docx.py, which needs PyYAML
+        # and a pandoc binary. pypandoc_binary ships pandoc as a wheel (no apt step); the script
+        # falls back to it when pandoc is not on PATH. CI/test tooling only, same exemption.
+        run: pip install pyyaml pypandoc_binary
       - name: Detect ui/ changes
         uses: dorny/paths-filter@v4
         id: ui-changes

@@ -10,7 +10,7 @@
 
 ## Project Overview
 
-**bluegreen-marketplace** is the public distribution layer for all BlueGreen Claude Code plugins. It decouples plugin distribution (public — this repo, where the four plugins are developed) from the private backend they depend on (`edifice`/`hal-mcp` — the Supabase/MCP server, kept in a separate private repo).
+**bluegreen-marketplace** is the public distribution layer for all BlueGreen Claude Code plugins. It decouples plugin distribution (public — this repo, where the five plugins are developed) from the private backend they depend on (`edifice`/`hal-mcp` — the Supabase/MCP server, kept in a separate private repo).
 
 Clients install plugins via:
 ```
@@ -23,7 +23,7 @@ Claude Desktop reads versions from `marketplace.json` → the plugin's `version`
 with the cached installed version. **This is why version bumps in every release are mandatory** —
 without a version bump, Claude Desktop won't surface the update and clients stay on the old code.
 
-### The four plugins — split by installable audience, not by theme
+### The five plugins — split by installable audience, not by theme
 
 | Plugin | Directory | Skills | Who installs it |
 |--------|-----------|--------|-----------------|
@@ -31,11 +31,12 @@ without a version bump, Claude Desktop won't surface the update and clients stay
 | `edifice` | `plugins/edifice/` | `edifice` | IC Ingénieurs Conseils — building inspection missions |
 | `pm` | `plugins/pm/` | `pm`, `sprint-planner`, `sprint-review` | anyone running projects and sprints |
 | `gtm` | `plugins/gtm/` | `crm`, `linkedin` | Blue Green go-to-market |
+| `docs` | `plugins/docs/` | `brand`, `study-report`, `proposal` | Blue Green — branded Word deliverables from Markdown |
 
 Split in #66 (`hal` 0.12.0), because a client who needs `/pm` should not download `/edifice`,
 `/crm`, `/linkedin` and ten Python scripts along with it.
 
-**`hal` is the only carrier of the MCP connector** — the three others declare no `.mcp.json` and
+**`hal` is the only carrier of the MCP connector** — the others declare no `.mcp.json` and
 call the same server through it. Because `hal` kept its name, the tool prefix stays
 `mcp__plugin_hal_hal-mcp__`: no `allowed-tools` list anywhere in the portfolio needs rewriting.
 Same model as `briefing` in `renaud-marketplace`, which has consumed this connector without
@@ -76,6 +77,13 @@ The command file must be self-contained — the skill body is NOT pre-loaded whe
 See `docs/skills-mcp-guide.md` for the full reference (MCP detection, cross-platform).
 
 ---
+
+### Source of truth — Blue Green brand
+
+`plugins/docs/skills/brand/brand.yaml` is the only place the Blue Green colours, font, legal
+notice (SIREN/SIRET/RCS, from the Kbis) and contact live; `scripts/md2docx.py` reads it on every
+render. Content skills (`study-report`, `proposal`) carry structure and writing rules only and
+hand rendering to `brand` — never copy a brand value into them.
 
 ### Source of truth — obsidian-crm scripts
 
@@ -206,7 +214,7 @@ See `docs/artifact-front-ends.md` for how a skill consumes a bundled artifact.
 ## Common Gotchas
 
 - `marketplace.json` **plugin entry** (`plugins[name].version`) must match `plugin.json` version — always in sync (enforced by `scripts/check_version_sync.sh`). The **top-level** `version` is a separate monotonic counter, incremented by one PATCH on every release.
-- The four plugins are developed directly in this repo, under `plugins/<name>/`
+- The five plugins are developed directly in this repo, under `plugins/<name>/`
 - `plugins/edifice/scripts/obsidian/` is the source of truth for vault I/O — do not edit scripts elsewhere
 - **Creating a plugin = three files at once** — `plugin.json`, `CHANGELOG.md` with a matching `## [<version>]` entry, and a `marketplace.json` entry. Miss one and `check_version_sync.sh` blocks every plugin's release, not just the new one
 - Only `hal` carries a `.mcp.json`. Adding one to another plugin would create a second connector and a second tool prefix — the skills' `allowed-tools` lists all assume `mcp__plugin_hal_hal-mcp__`
