@@ -5,7 +5,8 @@ description: >
   insigne, mentions légales SIRET/RCS, coordonnées) et rendu des documents Word
   à la charte à partir d'un Markdown. Déclencher dès qu'un livrable Blue Green
   sort en .docx ou doit être « à la charte » : convention, note, compte rendu,
-  courrier, mise au propre d'un Word existant, ou quand un autre skill
+  courrier, mise au propre d'un Word existant, export à la charte d'un doc
+  Claude Docs (« exporte ce doc à la charte »), ou quand un autre skill
   (docs:study-report, docs:proposal) demande le rendu. Fournit aussi les valeurs
   de marque pour tout autre support (page HTML, email, slides).
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(pandoc *) Bash(soffice *) Bash(pdftoppm *) Bash(mkdir *) Read Write Edit Glob"
@@ -60,10 +61,22 @@ PYEOF
 
    Si `pandoc` est absent du poste : ajouter `--with pypandoc_binary`.
    `--pdf` produit aussi le PDF (LibreOffice, déjà présent dans Cowork et le bac à sable de
-   Claude) ; les champs `{{?…}}` y deviennent des champs à remplir. Le sommaire y apparaît
-   vide, Word le calcule à l'ouverture.
+   Claude) ; les champs `{{?…}}` y deviennent des champs à remplir. Le sommaire du PDF est
+   rempli quand le pont Python de LibreOffice (`uno`) est trouvé : système (Linux,
+   `python3-uno`), celui de LibreOffice (macOS) ou `$LO_PYTHON` ; sinon il sort vide, avec un
+   avertissement. Dans le .docx, Word le calcule à l'ouverture.
 4. Contrôler le PDF en image (`pdftoppm -r 50 -png`) : page de garde, tableaux, sauts de page.
 5. Livrer le .docx **et** le .md source.
+
+### Depuis un doc Claude Docs
+
+Rédaction et relecture dans Docs, rendu ici. On part de l'**export Word** du doc (pas de
+l'export Markdown), converti par `scripts/docs2md.py`, puis rendu comme ci-dessus.
+Conventions d'écriture dans le doc et procédure complète : `references/docs-authoring.md`.
+
+Pour démarrer un livrable dans Docs, créer le doc avec le squelette du modèle voulu
+(`templates/document.md`, `study-report/template.md`, `proposal/template.md`). Le front matter
+y devient un bloc de code `yaml` placé sous le titre.
 
 ### Mettre un Word existant à la charte
 

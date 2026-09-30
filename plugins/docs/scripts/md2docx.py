@@ -83,6 +83,7 @@ def fill_placeholders(text, brand, meta):
     return re.sub(r"\{\{\s*([\w.]+)\s*\}\}", repl, text)
 
 
+NBSP = "\u2007"  # figure space: unbreakable, and LibreOffice still exports the box as a PDF field (U+00A0 does not)
 FIELD_RE = re.compile(r"\{\{\?\s*([^}#]+?)\s*(?:#\s*([\w-]+)\s*)?\}\}")
 
 
@@ -101,8 +102,10 @@ def expand_fields(text, brand):
 
     def repl(m):
         label, name = m.group(1), m.group(2) or slug(m.group(1))
-        esc = label.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        pad = " " * max(2, (20 - len(label)) // 2)  # gives short labels a usable box width
+        # non-breaking spaces keep the box on one line: a box split across two lines becomes, in
+        # the PDF, one field covering both lines and hiding the text under it
+        esc = label.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace(" ", NBSP)
+        pad = NBSP * max(2, (20 - len(label)) // 2)  # gives short labels a usable box width
         xml = (f'<w:sdt><w:sdtPr><w:alias w:val="{name}"/><w:tag w:val="{name}"/><w:showingPlcHdr/><w:text/>'
                f'</w:sdtPr><w:sdtContent><w:r><w:rPr><w:color w:val="{c["heading"]}"/>'
                f'<w:shd w:val="clear" w:color="auto" w:fill="{c["table_header"]}"/></w:rPr>'
@@ -472,6 +475,25 @@ def fix_all_parts(doc):
                 fix_ppr_order(hf._element)
 
 
+def pdf_with_toc(docx, pdf):
+    """PDF through LibreOffice's Python bridge, which fills the TOC; False when no bridge is found.
+
+    `uv run` uses its own Python, which cannot import LibreOffice's `uno` module, so the export
+    runs in a Python that can: $LO_PYTHON, the system one (Linux, python3-uno), or the one
+    LibreOffice ships (macOS).
+    """
+    script = os.path.join(PLUGIN, "scripts", "pdf_export.py")
+    candidates = [os.environ.get("LO_PYTHON"), "/usr/bin/python3",
+                  "/Applications/LibreOffice.app/Contents/Resources/python"]
+    for py in filter(None, candidates):
+        if not os.path.exists(py):
+            continue
+        r = subprocess.run([py, script, docx, "-o", pdf], capture_output=True, text=True, timeout=300)
+        if r.returncode == 0:
+            return True
+    return False
+
+
 # ------------------------------------------------------------------ main
 PANDOC = None
 
@@ -549,11 +571,15 @@ def main():
         if not soffice:
             print("soffice not found: PDF skipped", file=sys.stderr)
             return
-        # ExportFormFields turns every Word content control ({{?…}}) into a fillable PDF field
-        pdf_filter = 'pdf:writer_pdf_Export:{"ExportFormFields":{"type":"boolean","value":"true"}}'
-        subprocess.run([soffice, "--headless", "--convert-to", pdf_filter, "--outdir",
-                        os.path.dirname(out), out], check=True, capture_output=True)
         pdf = os.path.splitext(out)[0] + ".pdf"
+        if not pdf_with_toc(out, pdf):
+            # ExportFormFields turns every Word content control ({{?…}}) into a fillable PDF field
+            pdf_filter = 'pdf:writer_pdf_Export:{"ExportFormFields":{"type":"boolean","value":"true"}}'
+            subprocess.run([soffice, "--headless", "--convert-to", pdf_filter, "--outdir",
+                            os.path.dirname(out), out], check=True, capture_output=True)
+            if opts["toc"]:
+                print("LibreOffice Python bridge not found: the PDF table of contents stays empty",
+                      file=sys.stderr)
         n = finish_pdf_form(pdf, brand)
         print(pdf + (f"  ({n} fillable fields)" if n else ""))
 

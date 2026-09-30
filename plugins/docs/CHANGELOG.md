@@ -23,6 +23,15 @@ All notable changes to this plugin are documented here.
 - Fillable fields: `{{?Label}}` / `{{?Label#name}}` in the Markdown become Word plain-text
   content controls; `--pdf` exports them through LibreOffice (`ExportFormFields`) as PDF form
   fields, then pypdf empties the label LibreOffice pre-fills, names each field and tints its box.
+- Claude Docs → branded deliverable: `scripts/docs2md.py` turns a Docs **Word** export into the
+  source Markdown (yaml code block → front matter, `[[saut de page]]` / `[[page Blue Green]]`
+  markers, unescaped `{{?…}}` names, column widths weighed on the text, single-line grid tables
+  back to pipe tables, images extracted and sized in %, date chips in French). Authoring rules
+  and procedure in `skills/brand/references/docs-authoring.md`.
+- PDF table of contents: `--pdf` goes through LibreOffice's Python bridge (`scripts/pdf_export.py`)
+  to update indexes before exporting; falls back to `soffice --convert-to` (empty TOC) without it.
+- A `{{?…}}` box no longer wraps across two lines (figure spaces): a wrapped box became one PDF
+  field covering both lines and hiding the text under it.
 - `study-report` — structure and writing rules of a study report (`type: report`: cover + TOC).
 - `proposal` — structure and pricing conventions of a commercial proposal (`type: proposal`:
   Blue Green presentation page), with optional hal context (opportunity, contact tone).
