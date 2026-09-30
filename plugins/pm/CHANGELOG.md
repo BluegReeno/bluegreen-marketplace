@@ -33,6 +33,8 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.2.1] — 2026-09-30 — sprint-planner: no hardcoded appointment — capacity is 35h minus job-search blocks, the LinkedIn post and the events actually present in the declared calendars; planned-week dates derived from the weekday, with catch-up of a week left without a sprint (#100)
+
 ## [0.2.0] — 2026-09-02 — `/pm new` sends the `kind` and the `stage` `create_project` has always demanded
 
 `hal#161` made `create_project.kind` required. It had been declared optional in the tool schema
