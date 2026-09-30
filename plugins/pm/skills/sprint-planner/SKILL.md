@@ -11,7 +11,7 @@ allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sp
 
 # Sprint Planner — Renaud Laborbe
 
-Tu es le copilote de Renaud Laborbe. Ta mission : planifier le sprint de la semaine prochaine. Tu ne crées rien dans hal sans validation explicite de Renaud.
+Tu es le copilote de Renaud Laborbe. Ta mission : planifier le sprint de la semaine prochaine — ou de la semaine en cours si elle n'a pas de sprint (rattrapage, ÉTAPE 1a). Tu ne crées rien dans hal sans validation explicite de Renaud.
 
 ## Contexte permanent
 
@@ -19,11 +19,12 @@ Tu es le copilote de Renaud Laborbe. Ta mission : planifier le sprint de la sema
 - **hal-mcp** = source de vérité pour les tâches et sprints.
 - **Vault Obsidian** (`CRM-JobSearch/`) = source de vérité pour les candidatures.
 - **Timezone** : Europe/Paris.
-- **Blocs fixes hebdomadaires** :
-  - Lundi 10h–11h : Réunion IC Ingénieurs (récurrente)
-  - Lundi 11h–13h : Bloc job search (décalé après meeting)
-  - Mar–Ven 09h30–11h30 : Bloc job search (priorité absolue — dépose Lalie à 8h50)
+- **Intentions hebdomadaires** (les seuls blocs que ce skill connaît) :
+  - Lun–Ven 09h30–11h30 : Bloc job search (priorité absolue — dépose Lalie à 8h50)
   - 1× dans la semaine : 2h rédaction + illustration + publication post LinkedIn
+- **Aucun rendez-vous n'est connu de ce skill.** Réunions, visites, points récurrents : tout vient
+  des calendriers lus en ÉTAPE 4, tels qu'ils sont la semaine planifiée. Ne jamais supposer qu'un
+  rendez-vous existe parce qu'il existait une semaine précédente.
 
 ## Mode scheduled vs conversationnel
 
@@ -65,11 +66,18 @@ Le probe hal est déjà fait (ÉTAPE 0). Pour **chaque** workspace retenu `w`, e
 
 ```
 mcp__plugin_hal_hal-mcp__list_sprints(workspace_slug=w.workspace_slug, status="actuel")
-  → sprint_id[w], sprint_name[w] (au plus un élément — hal-mcp v61 garantit l'unicité de "actuel" par workspace)
+  → sprint_id[w], sprint_name[w], ends_at[w] (au plus un élément — hal-mcp v61 garantit l'unicité de "actuel" par workspace)
 ```
 
 Si aucun sprint actif dans un workspace → `sprint_id[w] = null` (zéro sprint `actuel` reste
 possible même avec la contrainte — ne jamais en choisir un arbitrairement).
+
+**Rattrapage.** Un workspace est *couvert* si son sprint `actuel` existe et que `ends_at[w]` n'est
+pas antérieur à aujourd'hui. Si **aucun** workspace retenu n'est couvert (sprint `actuel` terminé
+avant aujourd'hui, ou absent), la semaine en cours n'a pas de sprint : retenir `CATCH_UP=1` — c'est
+elle qu'on planifie, pas la suivante (cas type : lancé le lundi matin alors que le sprint finissait
+le vendredi précédent). Sinon `CATCH_UP=0`. Si certains workspaces sont couverts et d'autres non,
+garder `CATCH_UP=0` et l'afficher : `⚠️ <name> — pas de sprint couvrant la semaine en cours`.
 
 ```
 mcp__plugin_hal_hal-mcp__list_tasks(workspace_slug=w.workspace_slug, sprint_id=<sprint_id[w]>)
@@ -159,10 +167,17 @@ Invoquer `jobsearch-vault` pour les candidatures actives + entretiens prévus. E
 ```bash
 # Ces dates servent aussi aux étapes suivantes (5, 6) — calculées inconditionnellement,
 # jamais dépendantes du vault jobsearch.
-WEEK_START=$(date -d "last monday" +%Y-%m-%d 2>/dev/null || date -v-1w -v+monday +%Y-%m-%d 2>/dev/null || date -v-7d +%Y-%m-%d 2>/dev/null)
+# NEXT_MON/NEXT_FRI = lundi et vendredi de la semaine planifiée : la semaine en cours en
+# rattrapage (CATCH_UP=1, un jour ouvré), la suivante sinon. Dérivés du jour de la semaine,
+# jamais de "next monday"/"next friday" qui, lancés un lundi, désignent deux semaines différentes.
+CATCH_UP=<0 ou 1, résolu en ÉTAPE 1a>
+shift_days() { date -d "$1 days" +%Y-%m-%d 2>/dev/null || date -v"$1"d +%Y-%m-%d; }
 TODAY=$(date +%Y-%m-%d)
-NEXT_MON=$(date -d "next monday" +%Y-%m-%d 2>/dev/null || date -v+1w -v+monday +%Y-%m-%d 2>/dev/null)
-NEXT_FRI=$(date -d "next friday" +%Y-%m-%d 2>/dev/null || date -v+1w -v+friday +%Y-%m-%d 2>/dev/null)
+DOW=$(date +%u)  # 1 = lundi … 7 = dimanche
+if [ "$CATCH_UP" = "1" ] && [ "$DOW" -le 5 ]; then MON_OFFSET=$((1 - DOW)); else MON_OFFSET=$((8 - DOW)); fi
+NEXT_MON=$(shift_days "$(printf '%+d' "$MON_OFFSET")")
+NEXT_FRI=$(shift_days "$(printf '%+d' $((MON_OFFSET + 4)))")
+WEEK_START=$(shift_days "$(printf '%+d' $((MON_OFFSET - 7)))")  # lundi de la semaine écoulée
 
 if [[ ! "$NEXT_MON" > "$TODAY" ]]; then SPRINT_STATUS="actuel"; else SPRINT_STATUS="suivant"; fi
 echo "SPRINT_STATUS=$SPRINT_STATUS"
@@ -244,7 +259,7 @@ Si aucune offre pertinente ou si gmail:DOWN : le noter et continuer.
 
 ## ÉTAPE 4 — Lire les calendriers + ajustements
 
-Lire les calendriers **déclarés par tes workspaces** pour la semaine prochaine (lundi→vendredi, Europe/Paris). L'ensemble à lire est l'**union de chaque `calendar_id` et `member_calendar_id` non-null** sur tous les workspaces retournés par `whoami` (ÉTAPE 0), dédupliquée — jamais un ID littéral. Si aucun workspace ne déclare de calendrier (champs null/absents — ex. phase 1 pas déployée) → rendre `⚠️ Aucun calendrier déclaré sur tes workspaces` et continuer sans contrainte calendrier.
+Lire les calendriers **déclarés par tes workspaces** pour la semaine planifiée (`NEXT_MON`→`NEXT_FRI`, Europe/Paris — la semaine en cours en rattrapage). L'ensemble à lire est l'**union de chaque `calendar_id` et `member_calendar_id` non-null** sur tous les workspaces retournés par `whoami` (ÉTAPE 0), dédupliquée — jamais un ID littéral. Si aucun workspace ne déclare de calendrier (champs null/absents — ex. phase 1 pas déployée) → rendre `⚠️ Aucun calendrier déclaré sur tes workspaces` et continuer sans contrainte calendrier.
 
 Pour chaque calendrier de l'union :
 
@@ -258,14 +273,13 @@ mcp__claude_ai_Google_Calendar__list_events(
 
 Ignorer : "Bureau", "Temps perso", événements toute la journée sans impact réel sur la capacité de travail.
 
-Détecter les conflits avec les blocs fixes :
-- Lundi 10h–11h : IC Ingénieurs (fixe, ne pas déplacer)
-- Lundi 11h–13h : bloc job search (décalable si nécessaire)
-- Mar–Ven 08h30–10h30 : bloc job search (décalable si événement matinal)
+Les événements restants sont les **seuls** rendez-vous de la semaine : les lister par jour avec leur durée, et retenir `X` = somme de leurs durées (dédupliquée si un même événement figure dans deux calendriers). Aucun rendez-vous n'est ajouté de mémoire — un créneau sans événement est libre.
 
-**En mode conversationnel :** Pour chaque événement qui impacte un bloc fixe, poser une question ciblée. Max 3–4 questions. Attendre les réponses avant l'étape 5.
+Détecter les conflits avec les blocs job search (Lun–Ven 09h30–11h30) : un bloc est **décalable, jamais supprimé** — si un événement le chevauche, le replacer sur le premier créneau libre de 2h du même jour, d'après les événements réellement présents.
 
-**En mode schedule :** Résoudre automatiquement les conflits en ajustant les horaires de blocs. Exemple : si réunion mer 09h–10h → bloc job search décalé à 10h30–12h30. Afficher les ajustements dans le plan.
+**En mode conversationnel :** Pour chaque événement qui impacte un bloc job search, poser une question ciblée. Max 3–4 questions. Attendre les réponses avant l'étape 5.
+
+**En mode schedule :** Résoudre automatiquement les conflits en ajustant les horaires de blocs. Exemple : si un événement occupe mer 09h–10h → bloc job search décalé à 10h30–12h30. Afficher les ajustements dans le plan.
 
 ---
 
@@ -275,14 +289,19 @@ Détecter les conflits avec les blocs fixes :
 
 ```
 Semaine brute : 35h (5j × 7h)
-Blocs job search : 10h (lun 11-13 + mar-ven 09:30-11:30 — ajustés selon étape 4)
-IC meeting lundi : 1h
+Blocs job search : 10h (lun-ven 09:30-11:30 — horaires ajustés selon étape 4)
 Post LinkedIn : 2h (rédaction + illustration + publication)
-Meetings calendrier : Xh (depuis étape 4)
-Restant disponible : 35 - 10 - 1 - 2 - X = 22 - Xh
-Buffer 40% : (22 - X) × 0.4h
-= Dispo sprint : (22 - X) × 0.6h
+Meetings calendrier : Xh (somme des événements réellement lus en étape 4)
+Restant disponible : 35 - 10 - 2 - X = 23 - Xh
+Buffer 40% : (23 - X) × 0.4h
+= Dispo sprint : (23 - X) × 0.6h
 ```
+
+`X` est la seule ligne de rendez-vous : aucune réunion nommée n'est soustraite en dehors d'elle.
+Sans calendrier déclaré (étape 4), `X = 0` et le dire dans le plan.
+
+En rattrapage lancé en cours de semaine, ne compter que les jours restants (aujourd'hui inclus) :
+7h brutes et 2h de bloc job search par jour restant, et seulement les événements à venir.
 
 ### Priorisation des tâches
 
@@ -311,20 +330,19 @@ Intégrer dans le sprint :
 ### Capacité
 - Brut : 35h
 - Blocs job search : Xh [ajustements si applicable]
-- IC meeting : 1h
 - Post LinkedIn : 2h
-- Meetings fixes : Yh
+- Meetings calendrier : Yh — [événements lus, par jour]
 - Buffer 40% : Zh
 - **Dispo sprint : Wh**
 
 ### Planning blocs job search
 | Jour | Bloc | Ajustement |
 |------|------|-----------|
-| Lun  | 11h00–13h00 | Après IC meeting |
-| Mar  | 09h30–11h30 | [Standard ou ajustement] |
-| Mer  | 09h30–11h30 | [Standard ou ajustement] |
-| Jeu  | 09h30–11h30 | Standard |
-| Ven  | 09h30–11h30 | Standard |
+| Lun  | 09h30–11h30 | [Standard ou ajustement + événement en cause] |
+| Mar  | 09h30–11h30 | [Standard ou ajustement + événement en cause] |
+| Mer  | 09h30–11h30 | [Standard ou ajustement + événement en cause] |
+| Jeu  | 09h30–11h30 | [Standard ou ajustement + événement en cause] |
+| Ven  | 09h30–11h30 | [Standard ou ajustement + événement en cause] |
 
 Objectif blocs : [X] relances + [Y] nouvelles candidatures 🔥
 
@@ -470,7 +488,7 @@ mcp__plugin_hal_hal-mcp__create_task(
 - <name du workspace> Sprint [N] : [X] tâches reportées + [Y] nouvelles
   (une ligne par workspace retenu)
 - Blocs job search : [X]h planifiées
-- Prochain bloc : lundi [date] 11h00–13h00
+- Prochain bloc : [jour + date + horaire du premier bloc à venir, tel que planifié en étape 5]
 
 Bonne semaine.
 ```

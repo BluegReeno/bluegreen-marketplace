@@ -8,7 +8,7 @@ Last updated: 2026-09-30
 ## Current Focus
 
 Four plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` and nothing else),
-`edifice` **0.1.3**, `gtm` **0.2.5**, `pm` **0.2.0**, marketplace top-level **0.10.30** (read from
+`edifice` **0.1.3**, `gtm` **0.2.5**, `pm` **0.2.1**, marketplace top-level **0.10.31** (read from
 `marketplace.json`). The public history was rewritten on 2026-09-09 to purge a personal phone number
 (`#95`, closed): `main` is `c5f29c4`, 159 commits, and every clone predating it is invalid. The
 GitHub Support purge was **declined, not deferred** — do not re-open it as pending work.
@@ -67,6 +67,7 @@ one gap and deserve one issue.
 
 ## Done (current sprint)
 
+- [x] `#100` — `sprint-planner` no longer names any appointment: capacity is 35h minus the job-search blocks, the LinkedIn post and the events actually read from the declared calendars (the IC Ingénieurs weekly meeting, stopped end of August, was still costing 1h and pushing Monday's block). Planned-week dates now derive from the weekday, with catch-up of a week left without a sprint; `pm` **0.2.1**, top-level **0.10.31**. `sprint-review` still carries the old `next monday` / `next friday` lines — 2026-09-30
 - [x] `/doctor` audit of the marketplace skills: 5 `404: Not Found` files and the unused `.claude/rules/` removed, `/handoff` pointer replaced by `session:wrap-up`, repo tree and Release Process trimmed out of CLAUDE.md (release procedure now in `.claude/skills/release/`), `Bash(pip *)` dropped from `edifice` allowed-tools, `sprint-planner` / `sprint-review` descriptions shortened — 2026-09-30
 
 - [x] `#95` **closed `not planned` 2026-09-09** — the rewrite shipped, the GitHub Support purge was
