@@ -35,7 +35,7 @@ jobs:
         # tests/test_docs_md2docx.py renders real .docx through md2docx.py, which needs PyYAML
         # and a pandoc binary. pypandoc_binary ships pandoc as a wheel (no apt step); the script
         # falls back to it when pandoc is not on PATH. CI/test tooling only, same exemption.
-        run: pip install pyyaml pypandoc_binary
+        run: pip install pyyaml pypandoc_binary pypdf
       - name: Detect ui/ changes
         uses: dorny/paths-filter@v4
         id: ui-changes

@@ -54,13 +54,14 @@ PYEOF
 3. Convertir :
 
    ```bash
-   uv run --with python-docx --with pyyaml \
+   uv run --with python-docx --with pyyaml --with pypdf \
      python3 "$PLUGIN_DIR/scripts/md2docx.py" mon-doc.md -o mon-doc.docx --pdf
    ```
 
    Si `pandoc` est absent du poste : ajouter `--with pypandoc_binary`.
-   `--pdf` (LibreOffice) produit un PDF de contrôle ; le sommaire y apparaît vide, Word le
-   calcule à l'ouverture.
+   `--pdf` produit aussi le PDF (LibreOffice, déjà présent dans Cowork et le bac à sable de
+   Claude) ; les champs `{{?…}}` y deviennent des champs à remplir. Le sommaire y apparaît
+   vide, Word le calcule à l'ouverture.
 4. Contrôler le PDF en image (`pdftoppm -r 50 -png`) : page de garde, tableaux, sauts de page.
 5. Livrer le .docx **et** le .md source.
 
@@ -70,6 +71,20 @@ PYEOF
 puis nettoyer : titres en gras → `##`, blocs « **Libellé :** valeur » → tableau libellé/valeur,
 tableaux HTML → tableaux pipe (ou grid si une cellule contient plusieurs paragraphes).
 Ne pas toucher au texte.
+
+## Champs à remplir
+
+Le Markdown est la source que l'on relit et complète ; les trous restants se déclarent :
+
+- `{{?Libellé}}` — champ nommé d'après le libellé ;
+- `{{?JJ/MM/AAAA#date_client}}` — nom explicite, **obligatoire quand deux champs ont le même
+  libellé** (sinon ils partagent la même valeur dans le PDF).
+
+Dans le .docx, le champ est une case Word (contrôle de contenu) à fond bleu clair ; dans le PDF,
+un champ de formulaire vide. La signature ne passe pas par un champ : le client signe avec
+« Remplir et signer » (Acrobat Reader) ou Aperçu.
+
+Ne jamais retoucher le .docx à la main : modifier le .md et réexporter.
 
 ## Front matter
 

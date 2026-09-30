@@ -83,6 +83,70 @@ def fill_placeholders(text, brand, meta):
     return re.sub(r"\{\{\s*([\w.]+)\s*\}\}", repl, text)
 
 
+FIELD_RE = re.compile(r"\{\{\?\s*([^}#]+?)\s*(?:#\s*([\w-]+)\s*)?\}\}")
+
+
+def slug(text):
+    import unicodedata
+    ascii_ = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "_", ascii_.lower()).strip("_") or "field"
+
+
+def expand_fields(text, brand):
+    """`{{?Label}}` or `{{?Label#name}}` → a Word plain-text content control showing Label.
+
+    Word users click in the box and type; LibreOffice exports each control as a PDF form field.
+    """
+    c = brand["colors"]
+
+    def repl(m):
+        label, name = m.group(1), m.group(2) or slug(m.group(1))
+        esc = label.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        pad = " " * max(2, (20 - len(label)) // 2)  # gives short labels a usable box width
+        xml = (f'<w:sdt><w:sdtPr><w:alias w:val="{name}"/><w:tag w:val="{name}"/><w:showingPlcHdr/><w:text/>'
+               f'</w:sdtPr><w:sdtContent><w:r><w:rPr><w:color w:val="{c["heading"]}"/>'
+               f'<w:shd w:val="clear" w:color="auto" w:fill="{c["table_header"]}"/></w:rPr>'
+               f'<w:t xml:space="preserve">{pad}{esc}{pad}</w:t></w:r></w:sdtContent></w:sdt>')
+        return f"`{xml}`{{=openxml}}"
+    return FIELD_RE.sub(repl, text)
+
+
+def finish_pdf_form(pdf_path, brand):
+    """Empty the fields LibreOffice pre-fills with their label, name them, and tint their box."""
+    try:
+        from pypdf import PdfReader, PdfWriter
+        from pypdf.generic import (ArrayObject, BooleanObject, DictionaryObject, FloatObject,
+                                   NameObject, TextStringObject)
+    except ImportError:
+        print("pypdf missing: PDF fields keep their label as value", file=sys.stderr)
+        return 0
+    reader = PdfReader(pdf_path)
+    if not reader.get_fields():
+        return 0
+    writer = PdfWriter(clone_from=reader)
+    fill, edge = brand["colors"]["table_header"], brand["colors"]["muted"]
+    count = 0
+    for page in writer.pages:
+        for annot in page.get("/Annots") or []:
+            a = annot.get_object()
+            if a.get("/FT") != "/Tx":
+                continue
+            name = str(a.get("/TU") or a.get("/T") or "field")  # LibreOffice carries the control's alias here
+            a[NameObject("/T")] = TextStringObject(name)
+            a[NameObject("/V")] = TextStringObject("")
+            a[NameObject("/MK")] = DictionaryObject({
+                NameObject("/BG"): ArrayObject([FloatObject(int(fill[i:i + 2], 16) / 255) for i in (0, 2, 4)]),
+                NameObject("/BC"): ArrayObject([FloatObject(int(edge[i:i + 2], 16) / 255) for i in (0, 2, 4)]),
+            })
+            if "/AP" in a:
+                del a["/AP"]
+            count += 1
+    writer._root_object["/AcroForm"][NameObject("/NeedAppearances")] = BooleanObject(True)
+    with open(pdf_path, "wb") as f:
+        writer.write(f)
+    return count
+
+
 def rgb(hexa):
     return RGBColor.from_string(hexa.upper())
 
@@ -446,7 +510,8 @@ def main():
     with open(src, encoding="utf-8") as f:
         meta, body = split_front_matter(f.read())
     opts = resolve_options(brand, meta)
-    body = fill_placeholders(insert_blue_green_page(body, opts["blue_green_page"]), brand, meta)
+    body = insert_blue_green_page(body, opts["blue_green_page"])
+    body = expand_fields(fill_placeholders(body, brand, meta), brand)
 
     with tempfile.TemporaryDirectory() as tmp:
         ref = os.path.join(tmp, "reference.docx")
@@ -484,9 +549,13 @@ def main():
         if not soffice:
             print("soffice not found: PDF skipped", file=sys.stderr)
             return
-        subprocess.run([soffice, "--headless", "--convert-to", "pdf", "--outdir",
+        # ExportFormFields turns every Word content control ({{?…}}) into a fillable PDF field
+        pdf_filter = 'pdf:writer_pdf_Export:{"ExportFormFields":{"type":"boolean","value":"true"}}'
+        subprocess.run([soffice, "--headless", "--convert-to", pdf_filter, "--outdir",
                         os.path.dirname(out), out], check=True, capture_output=True)
-        print(os.path.splitext(out)[0] + ".pdf")
+        pdf = os.path.splitext(out)[0] + ".pdf"
+        n = finish_pdf_form(pdf, brand)
+        print(pdf + (f"  ({n} fillable fields)" if n else ""))
 
 
 if __name__ == "__main__":

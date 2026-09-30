@@ -22,6 +22,7 @@ Ce qui passe proprement en Word, et ce qui est volontairement exclu.
 | Saut de page | `\newpage` seul | saut de page |
 | Note de bas de page | `texte[^1]` puis `[^1]: note` | note Word |
 | Code | `` `code` `` ou bloc ``` | police à chasse fixe |
+| Champ à remplir | `{{?Libellé}}` ou `{{?Libellé#nom}}` | case Word ; champ de formulaire dans le PDF |
 
 ## Exclu (perdu ou mal rendu)
 

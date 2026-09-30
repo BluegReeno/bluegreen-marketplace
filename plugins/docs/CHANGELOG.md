@@ -20,6 +20,9 @@ All notable changes to this plugin are documented here.
   from `brand.yaml` on every run, then python-docx post-processing (cover page, TOC page break,
   full-width tables keeping their Markdown proportions, OOXML `pPr` ordering Word requires).
   Runs with `uv run --with python-docx --with pyyaml`; `--with pypandoc_binary` when pandoc is missing.
+- Fillable fields: `{{?Label}}` / `{{?Label#name}}` in the Markdown become Word plain-text
+  content controls; `--pdf` exports them through LibreOffice (`ExportFormFields`) as PDF form
+  fields, then pypdf empties the label LibreOffice pre-fills, names each field and tints its box.
 - `study-report` — structure and writing rules of a study report (`type: report`: cover + TOC).
 - `proposal` — structure and pricing conventions of a commercial proposal (`type: proposal`:
   Blue Green presentation page), with optional hal context (opportunity, contact tone).

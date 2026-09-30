@@ -58,6 +58,14 @@ class HelpersTest(unittest.TestCase):
         self.assertIn("# Blue Green", appended)
         self.assertNotIn("blue-green-page", md2docx.insert_blue_green_page("<!-- blue-green-page -->", False))
 
+    def test_fields_become_content_controls(self):
+        out = md2docx.expand_fields("À {{?Lieu}}, le {{?JJ/MM/AAAA#date_client}}", BRAND)
+        self.assertEqual(out.count("<w:sdt>"), 2)
+        self.assertIn('w:tag w:val="lieu"', out)
+        self.assertIn('w:tag w:val="date_client"', out)
+        self.assertIn("{=openxml}", out)
+        self.assertNotIn("{{?", out)
+
     def test_brand_assets_exist(self):
         for name in ("badge.png", "logo.png", "logo-white.png", "cover.jpg", "blue-green-banner.jpg"):
             self.assertTrue((PLUGIN / "skills/brand/assets" / name).exists(), name)
@@ -96,6 +104,14 @@ class RenderSmokeTest(unittest.TestCase):
         self.assertIn('behindDoc="1"', doc.element.body.xml, "cover image missing")
         self.assertTrue(doc.sections[0].different_first_page_header_footer)
         self.assertIn("TOC", doc.element.body.xml)
+
+    def test_field_reaches_docx(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tpl = pathlib.Path(tmp) / "t.md"
+            tpl.write_text("---\ntype: document\ntitle: T\n---\n\nFonction : {{?Fonction#fonction}}\n",
+                           encoding="utf-8")
+            doc = self._render(tpl)
+        self.assertIn('w:tag w:val="fonction"', doc.element.body.xml)
 
     def test_proposal_has_blue_green_page(self):
         doc = self._render(PLUGIN / "skills/proposal/template.md")
