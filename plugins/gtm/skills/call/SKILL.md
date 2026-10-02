@@ -309,7 +309,9 @@ Sortie `{slug, title, facts, content_md, issued_date}` (exit 1 avec un message n
 entrée invalide → l'afficher, corriger l'entrée, ne jamais contourner). Écrire :
 
 `save_document(workspace_slug=WS, slug, domain, kind="call_analysis", title, content_md, facts,
-issued_date)` — `title` est celui renvoyé par `render` (`Analyse — <title>`, égal au H1 de
+issued_date, knowledge=true)` — `knowledge=true` est obligatoire (hal#235) : un document n'entre dans
+la base de connaissance que si sa fiche le dit, et sans lui le § 9 saute l'analyse en
+`skipped (not knowledge)` sans échouer. `title` est celui renvoyé par `render` (`Analyse — <title>`, égal au H1 de
 `content_md` : `ingest.py` s'en sert comme racine). `domain` ∈ `allowed_tags` de `WS` (`jobsearch`
 pour un entretien ; pour un appel client la valeur montrée en § 8 — jamais inventée, D10). Le même
 `slug` (`call-analysis-<I>`) sur une relance = upsert, aucun doublon.

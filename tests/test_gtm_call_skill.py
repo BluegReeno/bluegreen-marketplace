@@ -67,6 +67,16 @@ class TestCallSkillFrontmatter(unittest.TestCase):
         self.assertIn("log-cr", self.fm["description"])
 
 
+class TestCallSkillKnowledgeFlag(unittest.TestCase):
+    def test_the_analysis_is_saved_as_knowledge(self):
+        # hal#235: `ingest.py --pending` indexes a document only when its fiche carries
+        # `knowledge`. Without the flag the analysis is counted as skipped and the run succeeds.
+        body = " ".join(SKILL.read_text(encoding="utf-8").split())
+        call = re.search(r'`save_document\(workspace_slug=WS[^`]*kind="call_analysis"[^`]*\)`', body)
+        self.assertIsNotNone(call)
+        self.assertIn("knowledge=true", call.group(0))
+
+
 class TestCallSkillHygiene(unittest.TestCase):
     def test_no_email_literal(self):
         # Public repo: owner addresses come from whoami / Granola, never from this file.
