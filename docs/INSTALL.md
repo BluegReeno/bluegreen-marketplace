@@ -32,5 +32,5 @@ In Claude Code or Cowork:
 |--------|--------|-------------|
 | `hal` | — | The `hal-mcp` connector every other plugin calls. No command of its own; install it first |
 | `edifice` | `/edifice` | Edifice building-inspection missions and DOCX reports |
-| `pm` | `/pm`, `/sprint-planner`, `/sprint-review` | Project management — tasks, sprints, projects, docs — via **hal-mcp** |
+| `pm` | `/pm`, `/sprint-planner` | Project management — tasks, sprints, projects, docs — via **hal-mcp** |
 | `gtm` | `/crm`, `/linkedin` | Commercial pipeline and LinkedIn editorial workflow via **hal-mcp** |

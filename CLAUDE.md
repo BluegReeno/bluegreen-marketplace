@@ -29,7 +29,7 @@ without a version bump, Claude Desktop won't surface the update and clients stay
 |--------|-----------|--------|-----------------|
 | `hal` | `plugins/hal/` | — (connector only) | **everyone** — carries `.mcp.json`, the mandatory base |
 | `edifice` | `plugins/edifice/` | `edifice` | IC Ingénieurs Conseils — building inspection missions |
-| `pm` | `plugins/pm/` | `pm`, `sprint-planner`, `sprint-review` | anyone running projects and sprints |
+| `pm` | `plugins/pm/` | `pm`, `sprint-planner` | anyone running projects and sprints |
 | `gtm` | `plugins/gtm/` | `crm`, `linkedin` | Blue Green go-to-market |
 
 Split in #66 (`hal` 0.12.0), because a client who needs `/pm` should not download `/edifice`,

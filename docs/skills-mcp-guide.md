@@ -19,8 +19,8 @@ Typing `/pm` raw looks for a **command** named `pm`, not a skill. Without `comma
 Claude Code returns "compétence inconnue".
 
 **Fix**: each plugin ships a `commands/<name>.md` per skill (auto-discovered from the `commands/`
-directory, no manifest entry needed) — that is what registers `/pm`, `/edifice`, `/crm`, `/linkedin`,
-`/sprint-planner` and `/sprint-review` as first-class slash commands.
+directory, no manifest entry needed) — that is what registers `/pm`, `/edifice`, `/crm`, `/linkedin`
+and `/sprint-planner` as first-class slash commands.
 
 ### Command file format
 
@@ -83,7 +83,7 @@ not by the user's shell.
 | `/pm …` | ✅ | `whoami` |
 | `/crm …` | ✅ | `whoami` |
 | `/linkedin …` | ✅ | `whoami` |
-| `/sprint-planner`, `/sprint-review` | ✅ | `whoami` |
+| `/sprint-planner` | ✅ | `whoami` |
 | `/edifice list` | ✅ | `list_edifice_missions` |
 | `/edifice pull` | ✅ | `list_edifice_missions` |
 | `/edifice improve` | ❌ (local files) | skip |

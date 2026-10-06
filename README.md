@@ -24,7 +24,7 @@ no command of its own. Then add what you actually use.
 | Plugin | Commands | What it does |
 |--------|----------|--------------|
 | **`edifice`** | `/edifice` | Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report (`list`, `pull`, `improve`, `report`, `push`, `front`) |
-| **`pm`** | `/pm`, `/sprint-planner`, `/sprint-review` | Project management: tasks, sprints, projects, docs (`list`, `tasks`, `new`, `task`, `log`, `doc`, `sprint`, `update`), plus weekly planning and review |
+| **`pm`** | `/pm`, `/sprint-planner` | Project management: tasks, sprints, projects, docs (`list`, `tasks`, `new`, `task`, `log`, `doc`, `sprint`, `update`), plus the weekly ritual that closes the sprint and plans the next |
 | **`gtm`** | `/crm`, `/linkedin` | Commercial pipeline — opportunities, contacts, BANT qualification, interaction log — and the LinkedIn editorial pipeline (idea, backlog, trend, draft, publish log) |
 
 ### Pick your install
@@ -96,7 +96,7 @@ only version table; read it there.
 |--------|--------|--------|
 | `hal` | — (connector only) | the foundation — every other plugin calls through it |
 | `edifice` | `edifice` | the field vertical |
-| `pm` | `pm`, `sprint-planner`, `sprint-review` | tasks, sprints, projects, documents |
+| `pm` | `pm`, `sprint-planner` | tasks, sprints, projects, documents |
 | `gtm` | `crm`, `linkedin` | pipeline, contacts, logged exchanges |
 
 ```
@@ -111,7 +111,7 @@ plugins/
 │   ├── organizations/           # client config
 │   └── artifacts/               # committed artifact front-ends (built from ui/)
 ├── pm/
-│   └── skills/                  # pm, sprint-planner, sprint-review
+│   └── skills/                  # pm, sprint-planner
 └── gtm/
     └── skills/                  # crm, linkedin
 ```
