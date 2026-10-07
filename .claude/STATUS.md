@@ -8,15 +8,12 @@ Last updated: 2026-10-07
 ## Current Focus
 
 Three plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` and nothing else),
-`gtm` **0.2.5**, `pm` **0.2.1**, marketplace top-level **0.10.32** (read from `marketplace.json`).
+`gtm` **0.2.6**, `pm` **0.3.0**, marketplace top-level **0.10.34** (read from `marketplace.json`).
 `edifice` is archived (2026-10-07, hal audit q20): git tag `archive/edifice-plugin`. The public history was rewritten on 2026-09-09 to purge a personal phone number
 (`#95`, closed): `main` is `c5f29c4`, 159 commits, and every clone predating it is invalid. The
 GitHub Support purge was **declined, not deferred** — do not re-open it as pending work.
 
 ## In Progress
-
-- [ ] **Release `pm` and `gtm`** — `pm` carries the `sprint-review` retirement (q12, PR #105, MINOR)
-      and both lost their `/edifice` routing line in the archive PR; neither is released yet.
 
 - [ ] **Local branch `wip/edifice-front-mcp` can go.** Its unfinished exploration targeted
       `ui/edifice-front/`, archived on 2026-10-07; deleting it also drops the 28 contaminated blobs
@@ -49,6 +46,8 @@ GitHub Support purge was **declined, not deferred** — do not re-open it as pen
   edits silently, and `check_version_sync.sh` does not look at the top-level counter.
 
 ## Done (current sprint)
+
+- [x] Released `pm` **0.3.0** (`sprint-review` retired, q12) and `gtm` **0.2.6** (no `/edifice` routing); `edifice` archived (#106, tag `archive/edifice-plugin`) — 2026-10-07
 
 - [x] `#100` — `sprint-planner` no longer names any appointment: capacity is 35h minus the job-search blocks, the LinkedIn post and the events actually read from the declared calendars (the IC Ingénieurs weekly meeting, stopped end of August, was still costing 1h and pushing Monday's block). Planned-week dates now derive from the weekday, with catch-up of a week left without a sprint; `pm` **0.2.1**, top-level **0.10.31**. `sprint-review` still carries the old `next monday` / `next friday` lines — 2026-09-30
 - [x] `/doctor` audit of the marketplace skills: 5 `404: Not Found` files and the unused `.claude/rules/` removed, `/handoff` pointer replaced by `session:wrap-up`, repo tree and Release Process trimmed out of CLAUDE.md (release procedure now in `.claude/skills/release/`), `Bash(pip *)` dropped from `edifice` allowed-tools, `sprint-planner` / `sprint-review` descriptions shortened — 2026-09-30
