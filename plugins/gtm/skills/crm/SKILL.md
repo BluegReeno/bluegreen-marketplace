@@ -2,12 +2,13 @@
 name: crm
 description: >
   CRM commercial Blue Green — opportunités, contacts, entreprises, CRs de
-  meeting. Déclencher sur : /crm new, /crm qualify, /crm log, /crm log update,
+  meeting. Déclencher sur : /crm new, /crm qualify, /crm log update,
   /crm update, /crm list, /crm contact, /crm doc, ou toute demande NL :
-  "nouvelle opportunité", "qualifier le lead", "logger un CR commercial",
-  "corriger une interaction", "pipeline commercial", "attacher une propale".
-  NE PAS déclencher pour : projets internes, tâches, sprints (→ /pm).
-allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__update_project mcp__plugin_hal_hal-mcp__update_project_stage mcp__plugin_hal_hal-mcp__list_companies mcp__plugin_hal_hal-mcp__create_company mcp__plugin_hal_hal-mcp__list_contacts mcp__plugin_hal_hal-mcp__create_contact mcp__plugin_hal_hal-mcp__update_contact mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__update_interaction mcp__plugin_hal_hal-mcp__save_document"
+  "nouvelle opportunité", "qualifier le lead", "corriger une interaction",
+  "pipeline commercial", "attacher une propale".
+  NE PAS déclencher pour : logger un appel ou un CR d'appel (→ /call, gtm:call),
+  projets internes, tâches, sprints (→ /pm).
+allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__update_project mcp__plugin_hal_hal-mcp__update_project_stage mcp__plugin_hal_hal-mcp__list_companies mcp__plugin_hal_hal-mcp__create_company mcp__plugin_hal_hal-mcp__list_contacts mcp__plugin_hal_hal-mcp__create_contact mcp__plugin_hal_hal-mcp__update_contact mcp__plugin_hal_hal-mcp__list_interactions mcp__plugin_hal_hal-mcp__update_interaction mcp__plugin_hal_hal-mcp__save_document"
 ---
 
 # CRM — Pipeline commercial Blue Green via hal-mcp (Claude Code)
@@ -15,8 +16,9 @@ allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir
 Ce skill route les instructions NL vers le connecteur MCP `hal-mcp` (backend
 Supabase). Zéro script, zéro Bash — pur NL → mapping MCP.
 
-**Scope** : opportunités commerciales, contacts, entreprises, CRs de meeting,
-propales, relances. Les projets internes Blue Green sont hors scope → skill `/pm`.
+**Scope** : opportunités commerciales, contacts, entreprises, correction d'interactions,
+propales, relances. Les projets internes Blue Green sont hors scope → skill `/pm` ; logger un
+appel (transcript, analyse, indexation) → `/call` (`gtm:call`).
 
 Les opportunités sont des **projets** hal avec `kind: "opportunity"`. Toutes les
 commandes CRM filtrent par `kind="opportunity"` pour les lire, et passent
@@ -188,72 +190,23 @@ bant:
 
 ---
 
-## /crm log `<note ou CR markdown>`
-
-Enregistrer un CR de meeting ou une note commerciale liée à une opportunité.
-
-### Étapes
-
-1. **Résoudre workspace** — règle standard.
-2. **Identifier l'opportunité** depuis le contexte conversation (fuzzy match sur `name`
-   via `list_projects(kind="opportunity")`). Si ambigu, demander.
-3. Collecter :
-   - `summary` (requis) — la note ou le CR passé après `/crm log`
-   - `channel` — `meeting` par défaut pour un CR, `email` si suivi email
-   - `project_id` — résolu à l'étape 2
-   - `occurred_at` (optionnel) — si une date est mentionnée ; défaut = maintenant
-4. **Structurer le CR** si un texte libre est passé. Format attendu :
-
-```markdown
-## CR — [Entreprise] — [Date]
-**Participants :** [liste]
-**Durée :** XX min
-
-### Notes clés
-...
-
-### BANT extrait
-- **Budget :** ...
-- **Authority :** ...
-- **Need :** ...
-- **Timeline :** ...
-
-### Next steps
-- [ ] action 1
-- [ ] action 2
-```
-
-5. Appeler `log_interaction` avec `workspace_slug`, `channel`, `summary` (CR structuré),
-   `project_id`, `occurred_at`.
-6. **Extraction BANT automatique** — après le log, tenter d'extraire le BANT depuis le CR :
-   - Si des infos BANT sont identifiables → appeler `update_project` pour mettre à jour
-     la description (même logique que `/crm qualify`).
-   - Si rien n'est extractable → ne pas mettre à jour la description, ne pas signaler.
-7. Output : `✅ CR logué sur <opportunité> (id: <interaction_id>)` (+ `✅ BANT mis à jour` si
-   extraction réussie). Afficher `interaction_id` — c'est la seule façon de retrouver
-   l'interaction pour la corriger ensuite via `/crm log update` (pas de listing côté MCP).
-
-**Règle** : ne jamais bloquer un log. Si l'opportunité est introuvable (score < 50),
-logger quand même en incluant le nom de l'opportunité dans `summary`.
-
----
-
 ## /crm log update `<interaction>`
 
 Corriger une interaction déjà loguée (`summary`, `transcript`, `channel`, `occurred_at`,
 `contact_id`, `project_id`, `tags`). Une interaction loguée n'est pas immuable : ce
-chemin permet de la corriger sans créer de doublon via `/crm log`.
+chemin permet de la corriger sans relancer `/call` (`gtm:call`), qui la réécrirait entière.
 
 ### Étapes
 
 1. **Résoudre workspace** — règle standard.
-2. **Retrouver `interaction_id`** — hal-mcp n'expose aucun outil de listing des
-   interactions (pas de `list_interactions`). L'identifiant ne peut donc venir que du
-   **contexte conversation en cours** : la confirmation `✅ CR logué sur <opportunité>`
-   d'un `/crm log` précédent dans la même session, ou un identifiant collé par
-   l'utilisateur. Si aucun `interaction_id` n'est identifiable dans le contexte,
-   répondre que l'interaction visée doit être reloguée ou son identifiant fourni —
-   ne jamais deviner ou appeler `update_interaction` sans `interaction_id` confirmé.
+2. **Retrouver `interaction_id`** — d'abord dans le **contexte conversation** (le rapport
+   d'un `/call` (`gtm:call`) précédent dans la même session, ou un identifiant collé par
+   l'utilisateur) ; sinon via `list_interactions(workspace_slug, search=<mot du summary>,
+   since=<date>, until=<date>, project_id ou contact_id si connus)` — la réponse est
+   `{interactions, total, offset, returned, truncated}`, le `transcript` en est omis. Une
+   ligne → son `id` ; plusieurs → les lister (date · summary) et demander ; aucune →
+   répondre que l'interaction visée doit être identifiée autrement. Ne jamais deviner ni
+   appeler `update_interaction` sans `interaction_id` confirmé.
 3. Collecter uniquement les champs à corriger, mentionnés par l'utilisateur :
    - `summary`, `transcript`, `channel`, `occurred_at`, `contact_id`, `project_id`, `tags`
    - Les champs omis restent inchangés côté serveur — ne jamais envoyer un champ non
@@ -388,6 +341,9 @@ Seuils : score **> 80** → match direct ; **50–80** → lister les candidats,
 
 ## Out of scope
 
+- **CR d'appel** (→ `/call`, skill `gtm:call`) : transcript Granola ou collé, correction,
+  analyse `call_analysis`, interaction avec transcript, indexation `kb_search`. La sous-commande
+  `crm log` (sans `update`) a été retirée au profit de `/call` (hal#192) ; seul `/crm log update` reste ici.
 - **Projets internes BG** (→ `/pm`) : tâches, sprints, notes d'avancement,
   outils `create_task`, `list_tasks`, `create_sprint`, `assign_task_to_sprint`.
 - **Job Search** (→ `obsidian-crm`) : candidatures, entretiens, CV.

@@ -12,6 +12,8 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.3.0] — 2026-09-29 — gtm:call — a call becomes hal knowledge (transcript, analysis, ingestion); /crm log retired (hal#192)
+
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)
 
 ## [0.2.5] — 2026-09-25 — crm resolves companies and contacts with list_*(search=…) — since hal#171 the lists return a 100-row page, not every row
