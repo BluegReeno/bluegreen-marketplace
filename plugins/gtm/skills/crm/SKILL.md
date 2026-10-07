@@ -390,6 +390,5 @@ Seuils : score **> 80** → match direct ; **50–80** → lister les candidats,
 
 - **Projets internes BG** (→ `/pm`) : tâches, sprints, notes d'avancement,
   outils `create_task`, `list_tasks`, `create_sprint`, `assign_task_to_sprint`.
-- **Edifice missions** (→ `/edifice`) : rapports terrain, inspection bâtiments.
 - **Job Search** (→ `obsidian-crm`) : candidatures, entretiens, CV.
 - **Facturation** : les devis et factures ne sont pas encore dans hal — à venir.

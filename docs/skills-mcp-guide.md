@@ -19,7 +19,7 @@ Typing `/pm` raw looks for a **command** named `pm`, not a skill. Without `comma
 Claude Code returns "compétence inconnue".
 
 **Fix**: each plugin ships a `commands/<name>.md` per skill (auto-discovered from the `commands/`
-directory, no manifest entry needed) — that is what registers `/pm`, `/edifice`, `/crm`, `/linkedin`
+directory, no manifest entry needed) — that is what registers `/pm`, `/crm`, `/linkedin`
 and `/sprint-planner` as first-class slash commands.
 
 ### Command file format
@@ -58,7 +58,7 @@ Add a pre-flight check at the top of every skill section and command body that
 requires MCP tools.
 
 ```
-1. Call whoami (pm / crm skills — no args) or list_edifice_missions (edifice skill) with workspace_slug: "blue-green"
+1. Call whoami (no args)
 2. Success → proceed normally. For the pm / crm skills, cache the whoami payload
    (default_workspace_slug, workspaces, user_email) for the current command.
 3. Failure (tool not found / connection refused / timeout) → show reconnection message, stop
@@ -84,11 +84,6 @@ not by the user's shell.
 | `/crm …` | ✅ | `whoami` |
 | `/linkedin …` | ✅ | `whoami` |
 | `/sprint-planner` | ✅ | `whoami` |
-| `/edifice list` | ✅ | `list_edifice_missions` |
-| `/edifice pull` | ✅ | `list_edifice_missions` |
-| `/edifice improve` | ❌ (local files) | skip |
-| `/edifice report` | ❌ (local files) | skip |
-| `/edifice push` | ✅ | `list_edifice_missions` |
 
 ---
 
@@ -99,7 +94,7 @@ for skills. Our SKILL.md files already comply:
 
 | Field | Spec | Our SKILL.md |
 |-------|------|-------------|
-| `name` | required — matches directory name | ✅ `edifice` / `pm` / `crm` … |
+| `name` | required — matches directory name | ✅ `pm` / `crm` … |
 | `description` | required | ✅ present |
 | `allowed-tools` | optional, experimental | ✅ used |
 | `version` | not in spec (use `metadata.version`) | **not used** — skills carry no version, see §4 |
@@ -122,7 +117,6 @@ plugin system:
 
 ```bash
 mkdir -p .agents/skills
-ln -sf "$(pwd)/plugins/edifice/skills/edifice" .agents/skills/edifice
 ln -sf "$(pwd)/plugins/pm/skills/pm" .agents/skills/pm
 ```
 
@@ -153,7 +147,6 @@ See `CLAUDE.md` → Versioning Policy for the full bump table.
 
 ```bash
 # Frontmatter compliance (agentskills.io)
-npx skills-ref validate ./plugins/edifice/skills/edifice
 npx skills-ref validate ./plugins/pm/skills/pm
 
 # Version sync — every plugin at once, same check CI runs

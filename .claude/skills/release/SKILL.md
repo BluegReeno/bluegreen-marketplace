@@ -22,7 +22,7 @@ the "Mettre à jour" button — see §Project Overview). It validates everything
 
 ```bash
 # <plugin> <new-version> "<changelog line>"  (--mcp-version <v> also bumps .mcp.json)
-bash scripts/release.sh edifice 0.1.1 "fix edifice crop_region off-by-one"
+bash scripts/release.sh pm 0.2.2 "fix sprint-planner date range"
 git push        # the human pushes after reviewing the commit
 ```
 

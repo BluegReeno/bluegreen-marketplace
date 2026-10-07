@@ -8,7 +8,7 @@ description: >
   "mon backlog LinkedIn", "tendances LinkedIn sur X", "rédiger un post sur Y",
   "j'ai publié le post sur Z".
   NE PAS déclencher pour : projets internes (→ /pm), opportunités commerciales
-  (→ /crm), missions terrain (→ /edifice).
+  (→ /crm).
 allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__save_document mcp__plugin_hal_hal-mcp__log_interaction"
 ---
 
@@ -266,6 +266,5 @@ de confirmation), logger quand même via `log_interaction` en incluant le titre 
 
 - **Projets internes BG** (→ `/pm`) : tâches non-LinkedIn, sprints, notes d'avancement.
 - **CRM commercial** (→ `/crm`) : opportunités, contacts, propales, devis.
-- **Edifice missions** (→ `/edifice`) : rapports terrain, inspection bâtiments.
 - **Publication automatique** : ce skill gère le contenu, pas la publication sur LinkedIn.
 - **Table Supabase dédiée** : V2 uniquement — tracking avancé (impressions, engagement).

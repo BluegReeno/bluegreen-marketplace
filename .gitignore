@@ -2,7 +2,6 @@
 .claude/settings.local.json
 
 # Credentials — NEVER commit these
-.edifice-credentials.json
 *.credentials.json
 config.json
 .env
@@ -16,7 +15,6 @@ config.json
 .agents/plans/
 
 # Client-specific configs — not for public repo
-plugins/edifice/organizations/ic-ingenieurs/
 
 # OS files
 .DS_Store
@@ -46,6 +44,3 @@ yarn-debug.log*
 yarn-error.log*
 
 # Node / ui workspace — source only, build output and deps are never committed
-ui/**/node_modules/
-ui/**/dist/
-ui/**/.vite/

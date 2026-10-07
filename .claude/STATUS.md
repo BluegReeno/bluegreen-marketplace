@@ -1,53 +1,32 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-10-06
+Last updated: 2026-10-07
 
 > History up to 2026-08-29 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
 
 ## Current Focus
 
-Four plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` and nothing else),
-`edifice` **0.1.3**, `gtm` **0.2.5**, `pm` **0.2.1**, marketplace top-level **0.10.31** (read from
-`marketplace.json`). The public history was rewritten on 2026-09-09 to purge a personal phone number
+Three plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` and nothing else),
+`gtm` **0.2.5**, `pm` **0.2.1**, marketplace top-level **0.10.32** (read from `marketplace.json`).
+`edifice` is archived (2026-10-07, hal audit q20): git tag `archive/edifice-plugin`. The public history was rewritten on 2026-09-09 to purge a personal phone number
 (`#95`, closed): `main` is `c5f29c4`, 159 commits, and every clone predating it is invalid. The
 GitHub Support purge was **declined, not deferred** — do not re-open it as pending work.
 
 ## In Progress
 
-- [ ] **hal audit q12 — `pm:sprint-review` retired, `sprint-planner` absorbs it** (branch
-      `claude/audit-q12-retire-sprint-review`, stacked on PR #104 because both rewrite the
-      planner's step 2). The planner now closes the sprint and saves one `sprint_review` document
-      per workspace; its jobsearch step counts interviews from the `Entretiens/` notes and
-      refusals from their dated follow-up line. Not released: at release, `pm` takes a MINOR. Not
-      replayed on a real Friday.
+- [ ] **Release `pm` and `gtm`** — `pm` carries the `sprint-review` retirement (q12, PR #105, MINOR)
+      and both lost their `/edifice` routing line in the archive PR; neither is released yet.
 
-- [ ] **`wip/edifice-front-mcp` is the last pre-rewrite branch, and it holds real work.** 21 of the
-      22 local branches were deleted on 2026-09-09 — every one backed by a merged PR, plus PR #2
-      closed unmerged on the retired `edifice-mission-report`. This one has no PR at all: `b3f28cf`
-      (2026-08-02, *"exploration cowork-mcp et mcp-data-adapter — non abouti"*) carries **253 lines
-      on `ui/edifice-front/src/cowork-mcp.ts` that are newer than `main`'s** and exist nowhere else.
-      Its sibling commit `a0bcc54` brings nothing — one of its two docs is identical on `main`, the
-      other superseded there on 2026-08-29.
-
-      **Replaying it onto the rewritten history was attempted and abandoned**: `cherry-pick`
-      conflicts on `mcp-data-adapter.ts` against `fix(edifice): consume the list_edifice_missions
-      envelope — v0.1.1` (2026-08-28), i.e. merging five-week-old unfinished exploration into a
-      shipped fix, on a front-end that ships no tests. That is a real engineering decision, not
-      cleanup.
-
-      Until it is taken, this branch keeps **28** contaminated blobs in the local object store (30
-      before the sweep). Local only, and the residual was accepted when `#95` was closed.
+- [ ] **Local branch `wip/edifice-front-mcp` can go.** Its unfinished exploration targeted
+      `ui/edifice-front/`, archived on 2026-10-07; deleting it also drops the 28 contaminated blobs
+      left in the local object store (residual accepted when `#95` was closed). Renaud's call.
 
 ## Backlog
 
 - [ ] Decide on a single install channel for `hal` and `pm`: today both reach a Claude Code session twice, via the CLI install (`~/.claude/plugins/cache/bluegreen-marketplace/`) and via the Claude Desktop sync (`~/.claude/plugins/synced/…/{hal,pm}~g2`); versions matched on 2026-09-30 after a manual `claude plugin update`, but the CLI copy had silently stayed on `pm` 0.1.9 for a month
 **Open issues**
 
-- [ ] [#84](https://github.com/BluegReeno/bluegreen-marketplace/issues/84) — no parity check between
-      `build_context.py` and its TypeScript port in `hal-mcp`
-- [ ] [#49](https://github.com/BluegReeno/bluegreen-marketplace/issues/49) — `/edifice`: help the
-      technician write the report from the front (phase 2, the write path)
 - [ ] [#35](https://github.com/BluegReeno/bluegreen-marketplace/issues/35) — `/linkedin stats`
       subcommand: analyse and log a post
 - [ ] [#21](https://github.com/BluegReeno/bluegreen-marketplace/issues/21) — link internal projects
@@ -55,9 +34,6 @@ GitHub Support purge was **declined, not deferred** — do not re-open it as pen
 - [ ] [#13](https://github.com/BluegReeno/bluegreen-marketplace/issues/13) — connect `hal-mcp` to
       Gemini Enterprise (console steps, do from the desktop)
 
-**Unfiled, proposed** — `ui/edifice-front/` ships no tests. Three were proposed on 2026-07-28
-(`fragment` target, size-ceiling boundary, `check_artifact_sync.sh` hand-edit detection); they are
-one gap and deserve one issue.
 
 **Traps that have bitten and are not fixed**
 
