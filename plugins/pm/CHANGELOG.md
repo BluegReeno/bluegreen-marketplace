@@ -33,6 +33,8 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.3.0] — 2026-10-07 — sprint-review retired (hal audit q12): sprint-planner closes the sprint, saves one sprint_review document per workspace and carries the review's metrics (dated refusals, interviews from Entretiens/ notes, profile that converts); pm:pm loses its /edifice routing line
+
 ## [0.2.1] — 2026-09-30 — sprint-planner: no hardcoded appointment — capacity is 35h minus job-search blocks, the LinkedIn post and the events actually present in the declared calendars; planned-week dates derived from the weekday, with catch-up of a week left without a sprint (#100)
 
 ## [0.2.0] — 2026-09-02 — `/pm new` sends the `kind` and the `stage` `create_project` has always demanded
