@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.33",
+  "version": "0.10.34",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — CRM, projects and sprints",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
@@ -18,7 +18,7 @@
       "name": "gtm",
       "description": "GTM — Blue Green go-to-market: commercial pipeline (crm) and editorial content (linkedin).",
       "source": "./plugins/gtm",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
