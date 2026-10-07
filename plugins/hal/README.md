@@ -3,12 +3,11 @@
 `hal` carries **one thing**: the `hal-mcp` connector that every other BlueGreen plugin calls.
 It ships no skill and no command of its own — it is the mandatory base you install first.
 
-Since **0.12.0** the skills that used to live here have moved into three installable plugins.
+Since **0.12.0** the skills that used to live here have moved into installable plugins (`edifice`, the third, is archived since 2026-10-07).
 Install `hal` plus whichever of them matches your work:
 
 | Plugin | Commands | For whom |
 |--------|----------|----------|
-| `edifice` | `/edifice list \| pull \| improve \| report \| push` | IC Ingénieurs Conseils — building inspection missions |
 | `pm` | `/pm`, `/sprint-planner` | anyone running projects, tasks and sprints |
 | `gtm` | `/crm`, `/linkedin` | Blue Green go-to-market — commercial pipeline and editorial content |
 
@@ -24,7 +23,6 @@ Each of them requires `hal`: without it, the `hal-mcp` tools they call are not r
 Then add the plugin(s) you need:
 
 ```
-/plugin install edifice@bluegreen-marketplace     # IC Ingénieurs
 /plugin install pm@bluegreen-marketplace          # projects and sprints
 /plugin install gtm@bluegreen-marketplace         # crm + linkedin
 ```

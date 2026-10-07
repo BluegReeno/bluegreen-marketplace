@@ -17,7 +17,6 @@ In Claude Code or Cowork:
 ## Then install what you use
 
 ```
-/plugin install edifice@bluegreen-marketplace     # building inspections
 /plugin install pm@bluegreen-marketplace          # projects and sprints
 /plugin install gtm@bluegreen-marketplace         # crm + linkedin
 ```
@@ -31,6 +30,5 @@ In Claude Code or Cowork:
 | Plugin | Skills | Description |
 |--------|--------|-------------|
 | `hal` | — | The `hal-mcp` connector every other plugin calls. No command of its own; install it first |
-| `edifice` | `/edifice` | Edifice building-inspection missions and DOCX reports |
 | `pm` | `/pm`, `/sprint-planner` | Project management — tasks, sprints, projects, docs — via **hal-mcp** |
 | `gtm` | `/crm`, `/linkedin` | Commercial pipeline and LinkedIn editorial workflow via **hal-mcp** |

@@ -518,8 +518,6 @@ Seuils : score **> 80** → match direct ; **50–80** → lister les candidats,
 
 - **CRM commercial** (→ `/crm`) : opportunités, propales, contacts, entreprises,
   interactions avec prospects, devis, stages commerciaux (`update_project_stage`).
-- **Edifice missions** (→ `/edifice`) : rapports terrain, inspection bâtiments,
-  outils `read_edifice_mission`, `get_mission_with_assets`, `push_mission_context`.
 - **Job Search** (→ `obsidian-crm`) : candidatures, entretiens, CV. Jamais écrire
   le vault depuis ce skill.
 - **`project_id` join** : `list_tasks` retourne un UUID brut pour `project_id`.

@@ -1,17 +1,17 @@
 # Installing connectors & skills — Claude, Gemini, OpenAI
 
 How to connect the `hal` plugin's MCP server (**connector**) and the `SKILL.md` files shipped by
-the `edifice`, `pm` and `gtm` plugins (**skills**) across the three major AI providers.
+the `pm` and `gtm` plugins (**skills**) across the three major AI providers.
 
 Read this first: **a connector and a skill are two different things with different reach.**
 
 | | What it is | Where it installs |
 |---|---|---|
 | **Connector** | A remote **MCP server** (our Supabase Edge Function `hal-mcp`) exposing tools | **Every** surface: Claude (Code / Desktop / claude.ai), Gemini (Enterprise / CLI), ChatGPT |
-| **Skill** | A `SKILL.md` capability file (`/edifice`, `/pm`, `/crm` …) | **Only the agent/CLI surfaces**: Claude Code, Gemini **CLI**, OpenAI **Codex** — via the [agentskills.io](https://agentskills.io) standard. **Not** the chat apps. |
+| **Skill** | A `SKILL.md` capability file (`/pm`, `/crm` …) | **Only the agent/CLI surfaces**: Claude Code, Gemini **CLI**, OpenAI **Codex** — via the [agentskills.io](https://agentskills.io) standard. **Not** the chat apps. |
 
 The chat apps (claude.ai chat, ChatGPT app, Gemini Enterprise) **cannot install a skill** —
-they only call the connector's tools. The full `/edifice` / `/pm` / `/crm` skill experience lives in
+they only call the connector's tools. The full `/pm` / `/crm` skill experience lives in
 **Claude Code**. That is our primary, fully-supported target.
 
 ---
@@ -42,13 +42,12 @@ pasted manually.
 ```
 /plugin marketplace add BluegReeno/bluegreen-marketplace
 /plugin install hal@bluegreen-marketplace          # the connector — required
-/plugin install edifice@bluegreen-marketplace      # then whichever skills you use
-/plugin install pm@bluegreen-marketplace
+/plugin install pm@bluegreen-marketplace           # then whichever skills you use
 /plugin install gtm@bluegreen-marketplace
 ```
 
 `hal` registers the `hal-mcp` connector automatically (its bundled `.mcp.json` auto-starts when the
-plugin is enabled); the three others register the skills (`/edifice`, `/pm`, `/crm`, `/linkedin`)
+plugin is enabled); the two others register the skills (`/pm`, `/crm`, `/linkedin`)
 and call that same connector. Run `/reload-plugins` if something doesn't appear immediately.
 
 The connector authenticates via the `apikey` header. If it isn't already wired, add it once:
@@ -69,7 +68,7 @@ paste the URL → **Add**.
 - ⚠️ The browser's claude.ai session must be the **same account** as the app, or you get
   "Account mismatch / Incompatibilité de compte".
 
-> Claude Desktop / claude.ai run the **tools**, not the `/edifice` / `/hal` skills. For the full
+> Claude Desktop / claude.ai run the **tools**, not the `/pm` / `/crm` skills. For the full
 > command experience, use Claude Code (§1a).
 
 ---
@@ -134,7 +133,7 @@ Then authorize once with `/mcp auth hal-mcp` (opens the browser flow).
 > is recent and `httpUrl` has no effect, replace it with `url` in `settings.json`.
 
 Gemini CLI also reads the `SKILL.md` standard — skills live in `~/.gemini/skills/`
-(alias `~/.agents/skills/`), so the §4 symlinks expose `/edifice` and `/hal` here too.
+(alias `~/.agents/skills/`), so the §4 symlinks expose `/pm`, `/crm` and `/linkedin` here too.
 
 ---
 
@@ -157,7 +156,7 @@ custom connectors).
 > pre-register a static OAuth client on Supabase so you can paste a `client_id` if the
 > automatic flow fails.
 
-> ChatGPT has no Agent Skills in the chat app. The `/edifice` / `/hal` *skills* run in **Codex**
+> ChatGPT has no Agent Skills in the chat app. The `/pm` / `/crm` *skills* run in **Codex**
 > (which adopted `SKILL.md`) via `.agents/skills/` — see §4. The chat app only calls tools.
 
 ### 3b. OpenAI Codex — connector + skills
@@ -188,7 +187,6 @@ symlink them at the repo root:
 ```bash
 # run from the repo root
 mkdir -p .agents/skills
-ln -sf "$(pwd)/plugins/edifice/skills/edifice" .agents/skills/edifice
 ln -sf "$(pwd)/plugins/pm/skills/pm"          .agents/skills/pm
 ln -sf "$(pwd)/plugins/gtm/skills/crm"        .agents/skills/crm
 ln -sf "$(pwd)/plugins/gtm/skills/linkedin"   .agents/skills/linkedin

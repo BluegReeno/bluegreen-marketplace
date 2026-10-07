@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.31",
+  "version": "0.10.32",
   "name": "bluegreen-marketplace",
-  "description": "BlueGreen AI plugins for Claude Code — field work, building inspections, CRM",
+  "description": "BlueGreen AI plugins for Claude Code — CRM, projects and sprints",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
   "plugins": [
     {
@@ -10,15 +10,6 @@
       "description": "HAL — the BlueGreen connector: carries the hal-mcp server every other BlueGreen plugin calls.",
       "source": "./plugins/hal",
       "version": "0.12.0",
-      "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
-      "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
-      "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
-    },
-    {
-      "name": "edifice",
-      "description": "Edifice — building inspection missions for IC Ingénieurs Conseils (list, pull, improve, report, push).",
-      "source": "./plugins/edifice",
-      "version": "0.1.3",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
