@@ -12,7 +12,23 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
-## [0.3.0] — 2026-09-29 — gtm:call — a call becomes hal knowledge (transcript, analysis, ingestion); /crm log retired (hal#192)
+## [0.3.0] — 2026-10-07 — gtm:call on hal's target tool contract — a call becomes hal knowledge; /crm log retired (hal#192, q49)
+
+New skill `gtm:call` and command `/call` (hal#192), written against the target contract of the
+self-hosted hal (q49, migration-roadmap step 3) — this version requires that instance, not the
+cloud one:
+
+- the workspace is chosen by its `whoami` `type` — `company` for a client call, `jobsearch` for an
+  interview — and an `archived` workspace is never written to;
+- the call concerns an `opportunity` or `client` project (a candidature is an `opportunity` of the
+  `jobsearch` workspace), its stages read from `kind_stages[kind]`; a project without counterpart is
+  flagged before `update_project` would refuse it;
+- the interaction is logged with `channel="call"`, keyed by its Granola id for idempotence; tasks
+  are proposed without duplicating open ones; contacts are created only on yes;
+- the `call_analysis` document, rendered by hal's `scripts/kb/call_analysis.py`, is saved with
+  `content_md`, `knowledge=true` and the project's `project_id` — no upload; `get_document_link`
+  replaces the removed document-file tool; `kb_search` checks that the call is findable;
+- `/crm log` is retired (`/crm log update` stays).
 
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)
 
