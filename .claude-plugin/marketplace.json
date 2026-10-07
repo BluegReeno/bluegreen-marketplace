@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.32",
+  "version": "0.10.33",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — CRM, projects and sprints",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
@@ -27,7 +27,7 @@
       "name": "pm",
       "description": "PM — project management: tasks, sprints, projects, docs, plus weekly sprint planning and review.",
       "source": "./plugins/pm",
-      "version": "0.2.1",
+      "version": "0.3.0",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
