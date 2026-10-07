@@ -1,6 +1,6 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-09-30
+Last updated: 2026-10-06
 
 > History up to 2026-08-29 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
@@ -14,6 +14,13 @@ Four plugins published — `hal` **0.12.0** (the connector alone: `.mcp.json` an
 GitHub Support purge was **declined, not deferred** — do not re-open it as pending work.
 
 ## In Progress
+
+- [ ] **hal audit q12 — `pm:sprint-review` retired, `sprint-planner` absorbs it** (branch
+      `claude/audit-q12-retire-sprint-review`, stacked on PR #104 because both rewrite the
+      planner's step 2). The planner now closes the sprint and saves one `sprint_review` document
+      per workspace; its jobsearch step counts interviews from the `Entretiens/` notes and
+      refusals from their dated follow-up line. Not released: at release, `pm` takes a MINOR. Not
+      replayed on a real Friday.
 
 - [ ] **`wip/edifice-front-mcp` is the last pre-rewrite branch, and it holds real work.** 21 of the
       22 local branches were deleted on 2026-09-09 — every one backed by a merged PR, plus PR #2

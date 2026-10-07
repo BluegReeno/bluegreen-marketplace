@@ -9,7 +9,7 @@ Install `hal` plus whichever of them matches your work:
 | Plugin | Commands | For whom |
 |--------|----------|----------|
 | `edifice` | `/edifice list \| pull \| improve \| report \| push` | IC Ingénieurs Conseils — building inspection missions |
-| `pm` | `/pm`, `/sprint-planner`, `/sprint-review` | anyone running projects, tasks and sprints |
+| `pm` | `/pm`, `/sprint-planner` | anyone running projects, tasks and sprints |
 | `gtm` | `/crm`, `/linkedin` | Blue Green go-to-market — commercial pipeline and editorial content |
 
 Each of them requires `hal`: without it, the `hal-mcp` tools they call are not registered.

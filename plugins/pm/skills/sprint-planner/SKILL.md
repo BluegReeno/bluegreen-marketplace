@@ -1,17 +1,20 @@
 ---
 name: sprint-planner
 description: >
-  Planifie le sprint de la semaine prochaine de Renaud Laborbe : tâches et sprints hal,
-  calendriers déclarés par les workspaces, et si le plugin jobsearch est co-installé le vault
-  Obsidian et les alertes LinkedIn. Utiliser quand Renaud dit "sprint planning", "planifier la
-  semaine", "plan my week", "sprint de la semaine prochaine", "weekly planning", "priorités
-  de la semaine", "organiser ma semaine" — ou en mode schedule (vendredi après-midi).
-allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__transition_sprint mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__get_document mcp__claude_ai_Google_Calendar__list_events mcp__plugin_briefing_gmail-mcp__search_emails Skill(jobsearch-vault) Bash"
+  Le rituel hebdomadaire de Renaud Laborbe, qui clôt le sprint de la semaine puis planifie le
+  suivant : bilan des tâches et sprints hal, projets en cours, calendriers déclarés par les
+  workspaces, et si le plugin jobsearch est co-installé les métriques du vault Obsidian
+  (candidatures, profil qui convertit, refus) et les alertes LinkedIn. Enregistre la revue de
+  sprint de chaque workspace à la validation. Utiliser quand Renaud dit "sprint planning",
+  "planifier la semaine", "plan my week", "sprint de la semaine prochaine", "weekly planning",
+  "priorités de la semaine", "organiser ma semaine", "sprint review", "bilan du sprint", "bilan
+  de la semaine", "weekly review", "fin de sprint" — ou en mode schedule (vendredi après-midi).
+allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__transition_sprint mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__update_task mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__get_document mcp__plugin_hal_hal-mcp__save_document mcp__claude_ai_Google_Calendar__list_events mcp__plugin_briefing_gmail-mcp__search_emails Skill(jobsearch-vault) Bash"
 ---
 
 # Sprint Planner — Renaud Laborbe
 
-Tu es le copilote de Renaud Laborbe. Ta mission : planifier le sprint de la semaine prochaine — ou de la semaine en cours si elle n'a pas de sprint (rattrapage, ÉTAPE 1a). Tu ne crées rien dans hal sans validation explicite de Renaud.
+Tu es le copilote de Renaud Laborbe. Ta mission, en un seul rituel : faire le bilan honnête du sprint qui se termine, puis planifier le sprint de la semaine prochaine — ou de la semaine en cours si elle n'a pas de sprint (rattrapage, ÉTAPE 1a). Ton direct, sans complaisance. Tu n'écris rien dans hal sans validation explicite de Renaud.
 
 ## Contexte permanent
 
@@ -19,6 +22,8 @@ Tu es le copilote de Renaud Laborbe. Ta mission : planifier le sprint de la sema
 - **hal-mcp** = source de vérité pour les tâches et sprints.
 - **Vault Obsidian** (`CRM-JobSearch/`) = source de vérité pour les candidatures.
 - **Timezone** : Europe/Paris.
+- **Règle d'or du bilan :** 60–70 % de complétion = normal. Sous 50 % = chercher les causes avant
+  de planifier. Une tâche reportée 3 sprints de suite → le dire sans détour.
 - **Intentions hebdomadaires** (les seuls blocs que ce skill connaît) :
   - Lun–Ven 09h30–11h30 : Bloc job search (priorité absolue — dépose Lalie à 8h50)
   - 1× dans la semaine : 2h rédaction + illustration + publication post LinkedIn
@@ -28,7 +33,7 @@ Tu es le copilote de Renaud Laborbe. Ta mission : planifier le sprint de la sema
 
 ## Mode scheduled vs conversationnel
 
-En **mode schedule** (vendredi après-midi automatique) : toutes les étapes s'exécutent de façon autonome. Les décisions de l'étape 1c (report/abandon) sont prises par défaut : **toutes les tâches non terminées sont reportées dans le sprint suivant**. Les questions de l'étape 4 (calendrier) sont résolues automatiquement en ajustant le planning. L'étape 6 (création du sprint dans hal) nécessite une **validation explicite de Renaud** — ne jamais créer le sprint automatiquement.
+En **mode schedule** (vendredi après-midi automatique) : toutes les étapes s'exécutent de façon autonome. Les décisions de l'étape 1c (report/abandon) sont prises par défaut : **toutes les tâches non terminées sont reportées dans le sprint suivant**. Aucune tâche n'est marquée faite par défaut. Les questions de l'étape 4 (calendrier) sont résolues automatiquement en ajustant le planning. L'étape 6 (création du sprint, clôture et revue dans hal) nécessite une **validation explicite de Renaud** — ne jamais créer le sprint ni écrire la revue automatiquement.
 
 En **mode conversationnel** : pour les étapes 1c et 4, attendre les réponses de Renaud avant de continuer. Étape 6 déclenchée uniquement après validation explicite.
 
@@ -137,19 +142,49 @@ Le label entre crochets est le `name` du workspace (fallback `workspace_slug`) �
 `cancelled` ne fait l'objet d'aucune question de report/abandon (§ 1c ci-dessous) et ne
 réapparaît jamais dans un sprint suivant — c'est un état terminal, distinct de `done`.
 
+Sous le score, un commentaire selon le taux :
+- ≥ 80 % : « Bonne semaine sur les tâches. »
+- 60–79 % : « Normal avec le buffer. Regardons les non-terminées. »
+- 50–59 % : « En dessous de la normale. Analyse nécessaire. »
+- < 50 % : « ⚠️ Moins de 50 %. Causes à identifier avant de planifier la suivante. »
+
+Une tâche non terminée déjà reportée depuis 3 sprints est nommée sans détour :
+`⚠️ [titre] est reportée depuis 3 sprints. À trancher.`
+
 **En mode conversationnel :** Pour chaque tâche non terminée, demander à Renaud :
 ```
 ⏳ "[titre]" — [<nom du workspace>] — priorité [low|medium|high]
-   → Reporter dans le sprint suivant ? (oui / non / transformer)
+   → Reporter dans le sprint suivant ? (oui / non / transformer / faite)
 ```
-Attendre la réponse avant de continuer. Ne pas poser toutes les questions en bloc.
+`faite` = la tâche est terminée mais pas encore marquée dans hal : elle n'est pas reportée et
+passera en `done` à la clôture (ÉTAPE 6e). Attendre la réponse avant de continuer. Ne pas poser
+toutes les questions en bloc.
 
 **En mode schedule :** Toutes les tâches non terminées sont reportées par défaut. Afficher :
 ```
 → [N] tâches reportées par défaut dans le sprint suivant (confirme ou ajuste après réception de ce plan).
 ```
 
-Si aucune tâche non terminée : sauter à l'étape 2 directement.
+Si aucune tâche non terminée : passer directement à 1d.
+
+### 1d. Projets en cours
+
+Pour **chaque** workspace retenu `w`, en parallèle :
+
+```
+mcp__plugin_hal_hal-mcp__list_projects(workspace_slug=w.workspace_slug)
+```
+
+Afficher, une section par workspace ayant au moins un projet dont le stage n'est pas fermant
+(`kind_stages` de `whoami` : ni `terminal` ni `won`) :
+
+```
+## <nom du workspace> — Projets en cours
+- [Projet] — stage : [stage] — prochaine action : [inférer depuis la description ou les tâches liées]
+```
+
+Si un workspace n'a aucun projet actif : « Pipeline <nom du workspace> vide — action à planifier
+cette semaine ? ». Ces projets alimentent la priorisation de l'ÉTAPE 5.
 
 ---
 
@@ -204,6 +239,69 @@ else
     [ -n "$dr" ] && [[ ! "$dr" < "$NEXT_MON" ]] && [[ ! "$dr" > "$NEXT_FRI" ]] && \
       printf "  %s — %s\n" "$dr" "$(grep "^entreprise:" "$f" | head -1 | sed 's/.*: *//;s/\[\[//g;s/\]\]//g')"
   done | sort
+
+  echo "=== Métriques de la semaine ==="
+  VAULT="$VAULT" WEEK_START="$WEEK_START" TODAY="$TODAY" python3 - <<'PY'
+import collections, datetime, os, pathlib, re
+
+root = pathlib.Path(os.environ["VAULT"]) / "CRM-JobSearch"
+week, today = os.environ["WEEK_START"], os.environ["TODAY"]
+prev = (datetime.date.fromisoformat(week) - datetime.timedelta(days=7)).isoformat()
+
+def field(text, key):
+    m = re.search(rf'^{key}:\s*"?([^"\n]*)', text, re.M)
+    return m.group(1).strip() if m else ""
+
+# An interview is one Entretiens/ note of type entretien, linked to its candidature.
+interviewed, iv_week, iv_prev = set(), 0, 0
+for f in (root / "Entretiens").glob("*.md"):
+    t = f.read_text()
+    if field(t, "type") != "entretien":
+        continue
+    o = re.search(r'^opportunite:\s*"?\[\[([^\]|]+)', t, re.M)
+    if o:
+        interviewed.add(o.group(1))
+    d = field(t, "date")[:10]
+    iv_week += week <= d <= today
+    iv_prev += prev <= d < week
+
+sent_week = sent_prev = undated_refusals = 0
+applied, converted = collections.Counter(), collections.Counter()
+refused_this_week = []
+for f in (root / "Opportunites").glob("*.md"):
+    t = f.read_text()
+    dc = field(t, "date_candidature")[:10]
+    sent_week += bool(dc) and week <= dc <= today
+    sent_prev += bool(dc) and prev <= dc < week
+    profile = field(t, "target_profile")[:2]
+    if profile:
+        applied[profile] += 1
+        converted[profile] += f.stem in interviewed
+    if "Refus" not in field(t, "statut"):
+        continue
+    # The refusal date lives in the body ("- **YYYY-MM-DD — ❌ Refus** …" or "## Refus — YYYY-MM-DD").
+    lines = [l for l in t.splitlines() if not l.startswith("statut:")]
+    hit = next((i for i, l in enumerate(lines) if "Refus" in l and re.search(r"\d{4}-\d{2}-\d{2}", l)), None)
+    if hit is None:
+        undated_refusals += 1
+        continue
+    date = re.search(r"\d{4}-\d{2}-\d{2}", lines[hit]).group(0)
+    if week <= date <= today:
+        reason = lines[hit]
+        if reason.startswith("#"):
+            reason = next((l for l in lines[hit + 1:] if l.strip()), "")
+        company = field(t, "entreprise").strip("[]")
+        refused_this_week.append(f"{company} — {reason.strip('-* ')[:200]}")
+
+print(f"candid_week={sent_week} candid_prev={sent_prev}")
+print(f"entretiens_week={iv_week} entretiens_prev={iv_prev}")
+print(f"refus_week={len(refused_this_week)} refus_non_dates={undated_refusals}")
+for r in refused_this_week:
+    print(f"  ❌ {r}")
+print("=== Profils (toutes candidatures) ===")
+for profile in sorted(applied):
+    print(f"{profile} : {applied[profile]} candidatures → {converted[profile]} avec au moins un entretien")
+PY
 fi
 ```
 
@@ -214,14 +312,39 @@ Sinon, afficher :
 ```
 ## Métriques jobsearch — semaine du [WEEK_START]
 
-| Métrique | Cette semaine |
-|---|---|
-| Candidatures envoyées | X |
-| Post LinkedIn publié | ✅/❌ |
+| Métrique | Cette semaine | Sem. précédente | Tendance |
+|---|---|---|---|
+| Candidatures envoyées | X | Y | ↑/↓/= |
+| Entretiens passés | X | Y | ↑/↓/= |
+| Refus reçus (datés) | X | | |
+| Post LinkedIn publié | ✅/❌ | | |
+
+Refus de la semaine et leur raison :
+- ❌ [entreprise] — [raison telle qu'écrite dans la note, ou « pas de motif donné »]
+[N refus non datés dans le vault — impossibles à placer dans une semaine, présent seulement si N > 0]
+
+### Profil qui convertit (toutes candidatures)
+| Profil | Candidatures | Avec entretien | Taux |
+|---|---|---|---|
+| P1 | X | Y | Z% |
+→ Profil le plus efficace : **P?**
 
 Relances prévues semaine prochaine :
 - [date] — [entreprise] — [statut]
 ```
+
+Un entretien se compte par sa note `Entretiens/` (`type: entretien`), liée à la candidature par
+`opportunite:` — jamais par le mot « entretien » dans le texte d'une candidature, qui compte aussi
+« refus sans entretien ». Un refus n'est daté que par sa ligne de suivi ; le statut seul ne dit pas
+quand il est arrivé, d'où la ligne des refus non datés plutôt qu'un chiffre qui les range au hasard.
+
+Alertes, sous le tableau :
+- Profil dominant en candidatures ≠ profil au meilleur taux → « ⚠️ Tu envoies surtout des
+  candidatures [P?] mais tu décroches plus d'entretiens en [P?]. »
+- `candid_week >= 3` et aucun entretien ni cette semaine ni la précédente → « ⚠️ Aucun entretien
+  en deux semaines. Revoir le ciblage ou les messages ? »
+- Post LinkedIn non détecté → « ❌ Pas de post LinkedIn cette semaine. » et 3 sujets proposés pour
+  la suivante, tirés de l'actualité de la semaine.
 
 ---
 
@@ -364,7 +487,7 @@ Objectif blocs : [X] relances + [Y] nouvelles candidatures 🔥
 
 Terminer par :
 
-> "Voilà le plan. Réponds **'valide'** (ou 'go', 'ok', 'c'est bon') pour que je crée le sprint dans hal et assigne les tâches. Tu peux aussi demander des ajustements avant validation."
+> "Voilà le bilan et le plan. Réponds **'valide'** (ou 'go', 'ok', 'c'est bon') pour que je crée le sprint dans hal, assigne les tâches, clôture le sprint écoulé et enregistre sa revue. Tu peux aussi demander des ajustements avant validation."
 
 ---
 
@@ -373,7 +496,7 @@ Terminer par :
 **UNIQUEMENT après validation explicite** ("valide", "go", "ok", "c'est bon", ou équivalent).
 **Ne jamais créer le sprint automatiquement, même en mode schedule.**
 
-Les étapes 6a–6e itèrent sur **chaque workspace retenu** `w` (ÉTAPE 0) — jamais deux appels figés. Un slug ne doit apparaître nulle part.
+Les étapes 6a–6f itèrent sur **chaque workspace retenu** `w` (ÉTAPE 0) — jamais deux appels figés. Un slug ne doit apparaître nulle part.
 
 ### 6a. Résoudre le numéro de sprint + repérer le sprint cible (idempotence)
 
@@ -481,11 +604,48 @@ mcp__plugin_hal_hal-mcp__create_task(
 )
 ```
 
-### 6e. Confirmer
+### 6e. Clôturer le sprint écoulé et enregistrer sa revue
+
+Sauter pour un workspace dont `sprint_id[w]` était null en 1a : il n'y a pas de sprint à clore.
+
+Les tâches que Renaud a déclarées `faite` en 1c passent en `done`, dans **leur propre** workspace
+(aucune en mode schedule sans réponse explicite) :
+
+```
+mcp__plugin_hal_hal-mcp__update_task_status(workspace_slug=<workspace de la tâche>, task_id=..., status="done")
+```
+
+Puis un document de revue par workspace retenu `w` — un sprint appartient à un workspace, sa revue
+s'écrit **dans ce workspace**, jamais ailleurs :
+
+```
+mcp__plugin_hal_hal-mcp__save_document(
+  workspace_slug=w.workspace_slug,
+  slug="sprint-review-[sprint_number du sprint clos de w]",
+  domain="memory",
+  kind="sprint_review",
+  title="Sprint Review [N] — Semaine du [WEEK_START]",
+  content_md="[revue de CE workspace : score, tâches terminées / reportées / annulées, décisions de 1c]"
+)
+```
+
+**Aucune destination à choisir** : pas de recherche du workspace par un tag, pas de repli sur le
+workspace par défaut. Le workspace est un périmètre de partage, pas un rangement thématique.
+
+**Contenu propre à chaque workspace.** Les métriques jobsearch (ÉTAPE 2) n'entrent que dans la
+revue du workspace dont les `allowed_tags` contiennent `jobsearch` ; les projets (1d), dans la
+revue de leur workspace.
+
+**`domain="memory"`** — le domaine doit appartenir aux `allowed_tags` du workspace de
+destination, et `memory` est le seul terme commun à tous. Ne jamais y coder en dur un domaine lié
+à un sujet (`jobsearch`) : il serait hors vocabulaire dans les autres workspaces.
+
+### 6f. Confirmer
 
 ```
 ✅ Sprint créé.
 - <name du workspace> Sprint [N] : [X] tâches reportées + [Y] nouvelles
+  → revue du sprint clos : hal/<workspace_slug>/sprint-review-[numéro du sprint clos], [Z] tâches marquées done
   (une ligne par workspace retenu)
 - Blocs job search : [X]h planifiées
 - Prochain bloc : [jour + date + horaire du premier bloc à venir, tel que planifié en étape 5]
