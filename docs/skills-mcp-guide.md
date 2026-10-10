@@ -14,7 +14,7 @@ Claude Code has two separate invocation systems:
 | **Skills** | `skills/<name>/SKILL.md` | Semantic trigger (description match) OR `plugin:skill` menu |
 | **Commands** | `commands/<name>.md` | Explicit `/command-name` slash syntax |
 
-Skills are always namespaced by their plugin: the skill `pm` in plugin `pm` → `pm:pm` in the menu.
+Skills are always namespaced by their plugin: the skill `pm` in plugin `work` → `work:pm` in the menu.
 Typing `/pm` raw looks for a **command** named `pm`, not a skill. Without `commands/pm.md`,
 Claude Code returns "compétence inconnue".
 
@@ -117,7 +117,7 @@ plugin system:
 
 ```bash
 mkdir -p .agents/skills
-ln -sf "$(pwd)/plugins/pm/skills/pm" .agents/skills/pm
+ln -sf "$(pwd)/plugins/work/skills/pm" .agents/skills/pm
 ```
 
 The SKILL.md frontmatter requires no changes — it already complies with the spec.
@@ -147,7 +147,7 @@ See `CLAUDE.md` → Versioning Policy for the full bump table.
 
 ```bash
 # Frontmatter compliance (agentskills.io)
-npx skills-ref validate ./plugins/pm/skills/pm
+npx skills-ref validate ./plugins/work/skills/pm
 
 # Version sync — every plugin at once, same check CI runs
 bash scripts/check_version_sync.sh

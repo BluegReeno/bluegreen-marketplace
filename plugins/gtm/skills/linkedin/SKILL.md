@@ -1,270 +1,71 @@
 ---
 name: linkedin
 description: >
-  Gestion de contenu LinkedIn Blue Green — idées de posts, backlog éditorial,
-  tendances, rédaction de drafts, suivi de publications.
-  Déclencher sur : /linkedin idea, /linkedin backlog, /linkedin trend,
-  /linkedin draft, /linkedin log, ou toute demande NL : "idée de post LinkedIn",
-  "mon backlog LinkedIn", "tendances LinkedIn sur X", "rédiger un post sur Y",
-  "j'ai publié le post sur Z".
-  NE PAS déclencher pour : projets internes (→ /pm), opportunités commerciales
-  (→ /crm).
-allowed-tools: "Bash(uv *) Bash(python3 *) Bash(python *) Bash(git *) Bash(mkdir *) Bash(cat *) Read Write Edit Glob mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__save_document mcp__plugin_hal_hal-mcp__log_interaction"
+  Le post LinkedIn hebdomadaire de Renaud, court, orienté recherche d'emploi, dans sa voix : idea
+  (garder une idée dans le backlog), draft (rédiger le post en lisant tone_of_voice), log (le post est
+  publié). Déclencher sur : "idée de post LinkedIn", "rédige le post sur X", "draft LinkedIn",
+  "j'ai publié le post sur Y". NE PAS déclencher pour : voir le backlog (→ list_tasks nommé dans la
+  phrase), opportunités commerciales (→ gtm:crm), tâches hors LinkedIn (→ work).
+allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__list_documents mcp__plugin_hal_hal-mcp__get_document mcp__plugin_hal_hal-mcp__save_document mcp__plugin_hal_hal-mcp__log_interaction mcp__plugin_hal_hal-mcp__list_interactions"
 ---
 
-# LinkedIn — Gestion de contenu via hal-mcp + Bright Data (Claude Code)
-
-Ce skill route les instructions NL vers le connecteur MCP `hal-mcp` (backend
-Supabase) et les outils Bright Data. Zéro script, zéro Bash — pur NL → mapping MCP.
-
-**Scope** : idées de posts LinkedIn, backlog éditorial, recherche de tendances,
-rédaction et sauvegarde de drafts, log de publications. Les projets internes
-(tâches, sprints) sont hors scope → skill `/pm`.
-
-Les idées de posts sont des **tâches** hal taguées `marketing` (le workspace
-`blue-green` n'autorise pas de tag `linkedin` dédié — voir `allowed_tags`).
-Toutes les commandes LinkedIn filtrent par `tags: ["marketing"]` pour lire le
-backlog, et passent `tags: ["marketing"]` à la création.
-
----
-
-## Pre-flight : vérifier hal-mcp
-
-Requis pour `idea`, `backlog`, `draft`, `log`. Pas nécessaire pour `trend`
-(Bright Data uniquement).
-
-1. Appeler `whoami` (aucun argument).
-2. **Succès** → connecteur opérationnel. Mettre en cache pour la commande en cours :
-   - `default_workspace_slug` — utilisé par la résolution de workspace
-   - `workspaces` — liste des memberships, sert pour les messages d'erreur
-   - `user_email` — utilisé si besoin de filtres assignee
-3. **Échec** (outil indisponible / connexion refusée / timeout) :
-
-> ❌ **hal-mcp non connecté.**
-> Le serveur est fourni par le plugin `hal` (`plugin:hal:hal-mcp`).
-> Reconnexion : `/mcp` → `plugin:hal:hal-mcp` → `authenticate`.
-> Relancer la commande après reconnexion.
-
----
-
-## Workspace resolution (s'applique à toutes les commandes /linkedin)
-
-Chaque appel hal-mcp doit passer un `workspace_slug`. Le pre-flight a déjà mis en
-cache la réponse `whoami`. Résoudre dans cet ordre :
-
-1. **Arg explicite** → utiliser ce slug directement.
-2. **Pas d'arg** → utiliser `default_workspace_slug` depuis le cache `whoami`.
-   - Non-null → l'utiliser comme `workspace_slug`.
-   - `null` avec `workspaces` non vide → lister les slugs dispo et demander.
-   - `null` avec `workspaces` vide → répondre et stopper :
-
-     > ❌ Aucun workspace assigné à ton compte.
-     > Demande à ton administrateur BlueGreen d'ajouter ton email aux workspaces concernés dans Supabase.
-
----
-
-## Tags (s'applique à toute écriture `tags` — `/linkedin idea`, `/linkedin backlog`, `/linkedin draft`, `/linkedin log`)
-
-**Tags.** `tags` means functional domain. Pick only from the calling workspace's `allowed_tags`, returned by `whoami`; if nothing fits, use `other`. Never invent a value, and never put in `tags` what another column already carries (`company_id`, `role`, `channel`, `project_id`). hal-mcp states the full doctrine in its server `instructions` and enforces it on every write.
-
----
-
-## /linkedin idea `<titre>`
-
-Capturer une idée de post LinkedIn comme tâche hal.
-
-### Étapes
-
-1. **Pre-flight** — voir ci-dessus.
-2. **Résoudre workspace** — règle standard.
-3. Collecter depuis la conversation ou l'argument :
-   - `title` (requis) — le titre de l'idée passé après `/linkedin idea`
-   - `description` (optionnel) — angle, message clé, public cible si mentionné
-   - `due_date` (optionnel) — si une date de publication est mentionnée
-4. Appeler `create_task` avec :
-   - `workspace_slug`
-   - `title`
-   - `tags: ["marketing"]`
-   - `description` (si fourni)
-   - `due_date` (si fourni)
-5. Output : `✅ Idée créée : <titre>`
-
----
-
-## /linkedin backlog `[workspace]`
-
-Afficher le backlog éditorial LinkedIn groupé par statut.
-
-### Étapes
-
-1. **Pre-flight** — voir ci-dessus.
-2. **Résoudre workspace** — règle standard.
-3. Appeler `list_tasks` avec :
-   - `workspace_slug`
-   - `tags: ["marketing"]`
-4. Grouper par `status`. Cinq statuts possibles (hal#98), ordre fixe :
-   `todo` → `in_progress` → `blocked` → `done` → `cancelled`.
-   - `blocked` — travail en cours mais bloqué. Section dédiée entre `in_progress`
-     et `done`, préfixer `⛔ `.
-   - `done` est terminal — préfixer `✓ `.
-   - `cancelled` est terminal — section dédiée **en dernier**, après `done` ;
-     préfixer `✗ `. Ce n'est pas du travail en cours, mais on ne le fait pas
-     disparaître silencieusement : le backlog éditorial doit rester traçable.
-5. Format d'affichage :
-
-```
-### todo (2)
-- Idée IA dans l'ingénierie · — · —
-- ⚡ Post retour conférence · renaud · 2026-07-01
-
-### in_progress (1)
-- Diagnostic numérique PME · renaud · —
-
-### ⛔ blocked (1)
-- Post partenariat X · renaud · —
-
-### ✓ done (1)
-- Lancement service Edifice · renaud · 2026-06-15
-
-### ✗ cancelled (1)
-- Post événement annulé · renaud · —
-```
-
-Ligne par tâche :
-`{⚡ si priority=high}{title} · {assignee short ou "—"} · {due_date ou "—"}`
-
-- `assignee short` : partie locale de `assignee_email` (avant `@`). `—` si null.
-- Groupes vides → ne pas afficher la section.
-- Aucune tâche (tous statuts confondus) → `Aucune idée LinkedIn dans le workspace <slug>.`
-
----
-
-## /linkedin trend `[sujet]`
-
-Rechercher les tendances LinkedIn sur un sujet pour informer la rédaction.
-
-### Étapes
-
-*Aucun pre-flight hal-mcp requis — Bright Data uniquement.*
-
-1. **Construire la requête de recherche** :
-   - Si `sujet` fourni → `"LinkedIn trending posts [sujet] 2026"`
-   - Si pas de sujet → `"LinkedIn trending posts BlueGreen intelligence artificielle ingénierie 2026"`
-2. Appeler `search_engine` avec la requête construite.
-3. Appeler `web_data_linkedin_posts` (sujet en query parameter) pour des exemples de posts engageants.
-4. Analyser les résultats et afficher :
-   - 3–5 thèmes tendance identifiés (avec exemples de titres)
-   - 2–3 posts LinkedIn avec format, angle, accroche remarquables
-   - Insights : formats qui fonctionnent (liste, story, question, data), ton dominant
-5. Output :
-
-```
-## Tendances LinkedIn — [sujet]
-
-### Thèmes en traction
-1. [thème 1] — [exemple de titre]
-2. [thème 2] — ...
-
-### Posts remarquables
-- **"[accroche]"** — [format] · [engagement estimé]
-  [angle / message clé]
-
-### Insights formats
-- [observation 1]
-- [observation 2]
-```
-
-**Fallback** : si `web_data_linkedin_posts` échoue → continuer avec les résultats
-`search_engine` seuls et le signaler.
-
----
-
-## /linkedin draft `<titre ou idée>`
-
-Rédiger un post LinkedIn et le sauvegarder comme document hal.
-
-### Étapes
-
-1. **Pre-flight** — voir ci-dessus.
-2. **Résoudre workspace** — règle standard.
-3. **Résoudre l'idée** — fuzzy match sur `title` via `list_tasks(tags=["marketing"])`.
-   Seuils : > 80 → match direct ; 50–80 → lister candidats, demander ;
-   < 50 → rédiger quand même à partir du titre fourni (sans tâche liée).
-4. **Rédiger le draft** (pur Claude, aucun MCP) :
-   - Tenir compte du contexte conversation (angle, public cible, ton)
-   - Format LinkedIn recommandé : accroche forte (1 ligne), corps (3–5 paragraphes courts),
-     CTA clair, 3–5 hashtags pertinents
-   - Limiter à ~1300 caractères (optimal pour l'algorithme LinkedIn)
-5. Appeler `save_document` avec :
-   - `workspace_slug`
-   - `title` : `"Draft LinkedIn : <titre>"`
-   - `content` : le texte du post rédigé (markdown)
-   - `project_id` (optionnel — si l'idée est liée à un projet hal mentionné)
-6. Si une tâche liée a été résolue (étape 3) → appeler `update_task_status` avec
-   `task_id` et `status: "in_progress"`.
-7. Output :
-
-```
-✅ Draft sauvegardé : Draft LinkedIn : <titre>
-[texte du post affiché pour relecture]
-```
-
----
-
-## /linkedin log `<titre ou note>`
-
-Marquer un post comme publié et enregistrer une trace dans hal.
-
-### Étapes
-
-1. **Pre-flight** — voir ci-dessus.
-2. **Résoudre workspace** — règle standard.
-3. **Résoudre la tâche** — fuzzy match sur `title` via `list_tasks(tags=["marketing"])`.
-   Seuils standard. Si score < 50 → demander confirmation avant de continuer.
-4. Collecter depuis la conversation ou demander si absent :
-   - `summary` (requis) — lien du post publié, ou note sur la publication
-   - `occurred_at` (optionnel) — date de publication ; défaut = maintenant
-5. Appeler `update_task_status` avec `workspace_slug`, `task_id`, `status: "done"`.
-6. Appeler `log_interaction` avec :
-   - `workspace_slug`
-   - `channel: "note"`
-   - `summary` : `"Post LinkedIn publié : <titre>\n<note ou lien>"`
-   - `occurred_at`
-   *(Note: `project_id` est nullable dans `halcrm_interactions` — l'omettre est intentionnel pour les posts LinkedIn qui ne sont pas liés à un projet CRM.)*
-7. Output : `✅ Post publié : <titre>`
-
-**Règle** : ne jamais bloquer le log. Si la tâche est introuvable (score < 50 et pas
-de confirmation), logger quand même via `log_interaction` en incluant le titre dans
-`summary`, sans appeler `update_task_status`.
-
----
-
-## Intent → tool mapping (LinkedIn)
-
-| L'utilisateur dit | Outil(s) MCP |
-|-------------------|-------------|
-| "idée de post sur X", "noter une idée LinkedIn" | `create_task` (tags: marketing) |
-| "mon backlog LinkedIn", "mes idées de posts", "qu'est-ce que j'ai à écrire" | `list_tasks` (tags: marketing) |
-| "tendances LinkedIn sur X", "qu'est-ce qui marche sur LinkedIn en ce moment" | `search_engine` + `web_data_linkedin_posts` |
-| "rédiger un post sur X", "draft LinkedIn X", "écrire le post Y" | `list_tasks` → fuzzy → AI rédige → `save_document` (+ `update_task_status` in_progress) |
-| "j'ai publié le post sur X", "post Y publié", "logger la publication" | `list_tasks` → fuzzy → `update_task_status` (done) + `log_interaction` |
-
----
-
-## Guardrails
-
-- **Confirmer avant toute écriture ambiguë.** Dans le doute, demander.
-- **Ne jamais auto-créer une tâche.** Proposer `/linkedin idea` si l'idée n'existe pas.
-- **`trend` ne touche pas hal-mcp.** Aucun appel `whoami` ni workspace résolution.
-- **Draft = document hal, pas une tâche.** Utiliser `save_document`, pas `create_task`.
-- **Format de sortie** : voir la section `Output :` de chaque commande.
-- **Erreur MCP** : `❌ [Entité] → [tool]: [raison d'erreur]`. Afficher immédiatement.
-
----
-
-## Out of scope
-
-- **Projets internes BG** (→ `/pm`) : tâches non-LinkedIn, sprints, notes d'avancement.
-- **CRM commercial** (→ `/crm`) : opportunités, contacts, propales, devis.
-- **Publication automatique** : ce skill gère le contenu, pas la publication sur LinkedIn.
-- **Table Supabase dédiée** : V2 uniquement — tracking avancé (impressions, engagement).
+# LinkedIn — un post par semaine, court, pour la recherche d'emploi
+
+Cadence : **un post par semaine**. Format : **court** (accroche d'une ligne, trois ou quatre
+paragraphes brefs, 800 caractères au plus). Angle : ce que le post montre de Renaud à un recruteur ou
+à un futur client, jamais une actualité générique. Voix : celle du document `tone_of_voice` de hal,
+lu à chaque `draft`.
+
+Premier mot de l'argument : `idea <titre>`, `draft <titre ou idée>`, `log <titre>`. Voir le backlog =
+`list_tasks` nommé dans la phrase (filtre `tags` du backlog). Rien n'est publié par ce skill :
+LinkedIn reste à la main. Les statistiques d'un post ne sont pas gérées ici.
+
+## Pre-flight
+
+`whoami`, une fois. Échec → « ❌ hal-mcp non connecté. Reconnexion : `/mcp` → `plugin:hal:hal-mcp` →
+`authenticate`. » Workspace : celui qui porte `tone_of_voice` (voir `draft`) ; en l'absence d'argument,
+`default_workspace_slug`, sinon demander. Un workspace `archived` n'accepte aucune écriture : s'arrêter
+en le nommant. Le backlog est l'ensemble des tâches taguées `marketing` : ce tag doit figurer dans
+`allowed_tags` du workspace ; sinon s'arrêter et le dire (ne jamais en inventer un, ni mettre le nom
+de LinkedIn dans `tags`).
+
+## `idea <titre>`
+
+`create_task(title, tags=["marketing"], description=<angle : ce que le post montre de Renaud>,
+due_date si une date est dite)`. Avant de créer, `list_tasks(tags=["marketing"])` : une idée au titre
+voisin existe → la montrer et demander. Sortie : `✅ Idée : <titre>`.
+
+## `draft <titre ou idée>`
+
+1. **Cadence.** `list_interactions(channel="linkedin", limit=1)` : un post logué depuis moins de sept jours
+   → le dire et demander s'il s'agit bien du post de la semaine suivante.
+2. **L'idée.** `list_tasks(tags=["marketing"], status="todo")` : retrouver l'idée par son titre (plusieurs
+   candidats → demander). Aucune idée correspondante → rédiger quand même, sans tâche liée.
+3. **La voix, par un vrai appel.** `list_documents(domain="marketing", kind="tone_of_voice")` puis
+   `get_document(slug)` : lire `content_md`. Faire de même pour `kind="brand_guidelines"` ; absent, le
+   dire et continuer. **`tone_of_voice` introuvable → s'arrêter** : « aucun document tone_of_voice dans
+   <workspace> » ; ne jamais rédiger de mémoire ni avec une voix générique.
+4. **Rédiger** dans cette voix, au format ci-dessus. Montrer le texte et son nombre de caractères ; une
+   relecture demandée = une nouvelle version, pas un nouveau document.
+5. **Enregistrer le brouillon** : lire d'abord `list_documents(summary_only=true)` et réutiliser le `kind`
+   de brouillon LinkedIn déjà employé dans `marketing` (`by_kind`) ; aucun → `linkedin_draft`.
+   `save_document(slug=<linkedin-AAAA-MM-JJ-titre>, domain="marketing", kind, title="Post LinkedIn — <titre>",
+   content_md=<le post>, knowledge=false)`. Même `slug` = même brouillon mis à jour.
+6. Tâche liée → `update_task_status(task_id, status="in_progress")`.
+
+## `log <titre>`
+
+1. Retrouver la tâche (`list_tasks(tags=["marketing"])`, statut `in_progress` d'abord) ; plusieurs
+   candidats ou aucun → demander, jamais choisir par rang.
+2. Demander le lien du post (ou une note) et la date de publication si ce n'est pas aujourd'hui.
+3. `update_task_status(task_id, status="done")`, puis `log_interaction(channel="linkedin",
+   summary="Post LinkedIn publié : <titre>\n<lien>", occurred_at)` — sans `project_id` : un post ne
+   concerne aucun projet.
+4. Tâche introuvable après question : logger quand même l'interaction, sans toucher à une tâche.
+
+## Garde-fous
+
+- Ne jamais auto-créer une tâche depuis `draft` ou `log` : proposer `idea`.
+- Un brouillon est un **document**, une idée est une **tâche** ; `knowledge` reste faux (un brouillon
+  n'est pas une connaissance).
+- Erreur hal : `❌ <entité> → <outil> : <raison>`, tel quel, sans réessai ni contournement.

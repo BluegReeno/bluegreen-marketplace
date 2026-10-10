@@ -16,7 +16,7 @@
     },
     {
       "name": "gtm",
-      "description": "GTM — Blue Green go-to-market: commercial pipeline (crm) and editorial content (linkedin).",
+      "description": "GTM — Blue Green go-to-market: call logging (call), commercial pipeline (crm) and the weekly LinkedIn post (linkedin).",
       "source": "./plugins/gtm",
       "version": "0.2.6",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
@@ -24,10 +24,19 @@
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
     },
     {
-      "name": "pm",
-      "description": "PM — project management: tasks, sprints, projects, docs, plus weekly sprint planning and review.",
-      "source": "./plugins/pm",
+      "name": "work",
+      "description": "Work — projects, tasks and sprints on hal: the sprint board, a project's status, and the weekly ritual that closes the sprint and plans the next.",
+      "source": "./plugins/work",
       "version": "0.3.0",
+      "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
+      "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
+      "repository": "https://github.com/BluegReeno/bluegreen-marketplace"
+    },
+    {
+      "name": "knowledge",
+      "description": "Knowledge — Documents and Knowledge pillars: file a paper (file) and index what is worth recalling (ingest).",
+      "source": "./plugins/knowledge",
+      "version": "0.1.0",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"

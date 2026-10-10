@@ -28,7 +28,7 @@ without a version bump, Claude Desktop won't surface the update and clients stay
 | Plugin | Directory | Skills | Who installs it |
 |--------|-----------|--------|-----------------|
 | `hal` | `plugins/hal/` | — (connector only) | **everyone** — carries `.mcp.json`, the mandatory base |
-| `pm` | `plugins/pm/` | `pm`, `sprint-planner` | anyone running projects and sprints |
+| `work` | `plugins/work/` | `pm`, `sprint-planner` | anyone running projects and sprints |
 | `gtm` | `plugins/gtm/` | `crm`, `linkedin` | Blue Green go-to-market |
 
 Split in #66 (`hal` 0.12.0), because a client who needs `/pm` should not download `/edifice`,
@@ -50,8 +50,8 @@ and an entry in `marketplace.json`. Creating a plugin means creating all three a
 
 What `ls plugins/*/` does not show:
 
-- `plugins/hal/.mcp.json` is the **only** connector in the repo — see § Common Gotchas.
-- `plugins/pm/CHANGELOG.md` documents the two unresolved cross-repo couplings.
+- `plugins/hal/.mcp.json` is the **only** connector in the repo — see § Common Gotchas. On the `next` branch it points at `hal-test-vps.bluegreen.ai` (migration step 3); `main` keeps the cloud URL until cutover.
+- `plugins/work/CHANGELOG.md` documents the two unresolved cross-repo couplings.
 - `tests/` at the repo root holds every test — never inside a plugin.
 
 ### Skills vs Commands — why both exist
@@ -60,10 +60,10 @@ Claude Code has two separate invocation systems:
 
 | System | Directory | Invocation |
 |--------|----------|-----------|
-| **Skill** | `skills/<name>/SKILL.md` | Semantic trigger OR `plugin:skill` menu (e.g., `pm:pm`) |
+| **Skill** | `skills/<name>/SKILL.md` | Semantic trigger OR `plugin:skill` menu (e.g., `work:pm`) |
 | **Command** | `commands/<name>.md` | Direct slash syntax: `/pm`, `/sprint-planner` |
 
-Skills are always namespaced by their **plugin** (`pm:pm`, `gtm:crm`, `pm:sprint-planner`) — typing
+Skills are always namespaced by their **plugin** (`work:pm`, `gtm:crm`, `work:sprint-planner`) — typing
 `/pm` raw looks for a **command**, not a skill. Each plugin's `commands/` files register the bare
 slash commands.
 The command file must be self-contained — the skill body is NOT pre-loaded when a command fires.
@@ -119,7 +119,7 @@ Illustrative only — the numbers below are a worked example, not repo state:
 |---------|--------|-------------|:-----------:|:-----------------:|:---------------------:|
 | starting point | `gtm` | — | 0.1.0 | 0.1.0 | 0.10.16 |
 | then — gtm bugfix | `gtm` | skill logic | **0.1.1** | **0.1.1** | **0.10.17** |
-| then — new `/pm` field | `pm` | pm interface | **0.2.0** | **0.2.0** | **0.10.18** |
+| then — new `/pm` field | `work` | work interface | **0.2.0** | **0.2.0** | **0.10.18** |
 
 ---
 

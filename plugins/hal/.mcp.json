@@ -2,7 +2,7 @@
   "mcpServers": {
     "hal-mcp": {
       "type": "http",
-      "url": "https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp",
+      "url": "https://hal-test-vps.bluegreen.ai/functions/v1/hal-mcp",
       "version": "0.3.0"
     }
   }

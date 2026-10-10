@@ -1,5 +1,0 @@
----
-description: Clore le sprint de la semaine et planifier le suivant (hal, métriques jobsearch, calendriers, LinkedIn alerts)
----
-
-Run the `sprint-planner` skill from the `pm` plugin: close the current sprint and plan the next one: review the current sprint per workspace (completion rate, done / unfinished / cancelled, report/abandon decisions), pull the week's jobsearch metrics from the Obsidian vault (applications vs the week before, the profile that converts into interviews, refusals, relances due next week), list active projects per workspace, scanning LinkedIn job alert emails for new 🔥 opportunities, reading the Google Calendars declared by your hal workspaces to detect conflicts with fixed job-search blocks, and presenting a full sprint plan with capacity calculation and 4-tier task prioritisation (MUST / SHOULD / COULD / BACKLOG). Only after explicit validation ("valide", "go", "ok") does it create the sprint in hal, mark the tasks confirmed done, and save one sprint review document per workspace. Never writes to hal automatically.

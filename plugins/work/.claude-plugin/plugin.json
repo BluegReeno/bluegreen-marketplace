@@ -1,0 +1,6 @@
+{
+  "name": "work",
+  "version": "0.3.0",
+  "description": "Work — projects, tasks and sprints on hal: the sprint board, a project's status, and the weekly ritual that closes the sprint and plans the next.",
+  "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" }
+}

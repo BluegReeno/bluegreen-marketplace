@@ -23,18 +23,18 @@ no command of its own. Then add what you actually use.
 
 | Plugin | Commands | What it does |
 |--------|----------|--------------|
-| **`pm`** | `/pm`, `/sprint-planner` | Project management: tasks, sprints, projects, docs (`list`, `tasks`, `new`, `task`, `log`, `doc`, `sprint`, `update`), plus the weekly ritual that closes the sprint and plans the next |
+| **`work`** | `/pm`, `/sprint-planner` | The Work pillar: the sprint board (`/pm tasks`), a project's status (`/pm plan`), everything else as plain sentences over the hal tools — plus the weekly ritual that closes the sprint and plans the next |
 | **`gtm`** | `/crm`, `/linkedin` | Commercial pipeline — opportunities, contacts, BANT qualification, interaction log — and the LinkedIn editorial pipeline (idea, backlog, trend, draft, publish log) |
 
 ### Pick your install
 
 | You are | Install | Why |
 |---------|---------|-----|
-| Running projects and sprints | `hal` + `pm` | Tasks and sprints only — none of the Blue Green commercial surface |
-| Blue Green, end to end | `hal` + `pm` + `gtm` | Everything |
+| Running projects and sprints | `hal` + `work` | Tasks and sprints only — none of the Blue Green commercial surface |
+| Blue Green, end to end | `hal` + `work` + `gtm` | Everything |
 
 ```
-/plugin install pm@bluegreen-marketplace
+/plugin install work@bluegreen-marketplace
 /plugin install gtm@bluegreen-marketplace
 ```
 
@@ -94,7 +94,7 @@ only version table; read it there.
 | Plugin | Skills | Serves |
 |--------|--------|--------|
 | `hal` | — (connector only) | the foundation — every other plugin calls through it |
-| `pm` | `pm`, `sprint-planner` | tasks, sprints, projects, documents |
+| `work` | `pm`, `sprint-planner` | tasks, sprints, projects, documents |
 | `gtm` | `crm`, `linkedin` | pipeline, contacts, logged exchanges |
 
 ```
@@ -102,7 +102,7 @@ plugins/
 ├── hal/                         # the connector — no skill, no command
 │   ├── .claude-plugin/plugin.json
 │   └── .mcp.json                # hal-mcp HTTP server (OAuth) — the only one in the repo
-├── pm/
+├── work/
 │   └── skills/                  # pm, sprint-planner
 └── gtm/
     └── skills/                  # crm, linkedin

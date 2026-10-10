@@ -1,4 +1,8 @@
-# Changelog — pm
+# Changelog — work
+
+Renamed from `pm` on the `next` branch (hal audit q39): the plugin takes the name of its pillar, the
+skills keep theirs (`work:pm`, `work:sprint-planner`). Entries below predate the rename and name the
+plugin `pm`.
 
 All notable changes to this plugin are documented here.
 
@@ -32,6 +36,27 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 [#65](https://github.com/BluegReeno/bluegreen-marketplace/issues/65).
 
 ---
+
+## [Unreleased] — renamed `pm` → `work` and rewritten once against the target contract (hal audit q38, q39, q49; roadmap step 3)
+
+Not released yet (MINOR — the plugin name and the behaviour changed). Rename this heading to the
+version when releasing, after `release.sh work <version>` has bumped the version fields. Installers
+of `pm` must install `work`: skills become `work:pm` and `work:sprint-planner`; the bare commands
+`/pm` and `/sprint-planner` do not move.
+
+- **`pm` cut to what tools cannot do alone** — two geste outillés, `/pm tasks` and `/pm plan
+  <project>`; everything else is one sentence and one tool call. Workspace chosen by name, else
+  `default_workspace_slug`; vocabularies (`kinds_enabled`, `kind_stages`, `allowed_tags`, `labels`)
+  read from `whoami`, never recopied.
+- **Four project kinds** (`opportunity`, `client`, `provider`, `internal`), a counterpart required on
+  the first three, a parent that must be `internal`; opportunities stay with `gtm:crm`.
+- **Archived workspaces** are read-only: the skill says so instead of attempting the write.
+- **Documents carry a link, not a file**: `save_document` with `storage {provider, uri}`,
+  `get_document_link` to read it back.
+- **`sprint-planner` reads every live workspace with sprints** (`whoami`: not archived and
+  `sprints_enabled`) — Renaud's `renaud` (personal) and `renaud-newjob` (jobsearch) together, none
+  named in the skill. One `sprint_review` document written in each workspace at « valide »; the
+  job-search metrics, LinkedIn alerts and the 🔥 offers only where a `jobsearch` workspace is live.
 
 ## [0.3.0] — 2026-10-07 — sprint-review retired (hal audit q12): sprint-planner closes the sprint, saves one sprint_review document per workspace and carries the review's metrics (dated refusals, interviews from Entretiens/ notes, profile that converts); pm:pm loses its /edifice routing line
 

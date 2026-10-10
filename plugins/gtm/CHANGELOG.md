@@ -12,6 +12,28 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [Unreleased] — rewritten once against the target contract (hal audit q17, q25, q49; roadmap step 3)
+
+Not released yet (MINOR — the commands changed). Rename this heading to the version when releasing,
+after `release.sh gtm <version>` has bumped the version fields.
+
+- **`call` added**, ported by hand from PR #101 (`feat/hal-192-gtm-call`): resolve the project, fetch
+  the Granola or pasted transcript, correct it, extract signals, write the interaction and the
+  `call_analysis` document (`knowledge=true`, hal#235), index. Rewritten for the four project kinds
+  (an ongoing mission is a `client` project, no BANT), archived workspaces (refused by name) and
+  `renaud-newjob` (the `jobsearch`-type workspace) for interviews. `/crm log` is retired for it.
+- **`crm` cut to four gestes** — `new` (duplicate check, vocabulary, BANT draft), `qualify` (BANT
+  merge), `stage` (reason before a loss, `client` project created on a win), `review` (pipeline,
+  dormant first). `update`, `contact`, `doc`, `list`, `log` and `log update` are gone: single tool
+  calls, named in the sentence. Stages are read from `kind_stages.opportunity`; an opportunity needs
+  a counterpart (company or contact).
+- **`linkedin` repaired** — `idea`, `draft`, `log`. `draft` reads `marketing/tone_of_voice`
+  (`list_documents` then `get_document`) and stops when it is missing; posts are short (800
+  characters), one per week, oriented toward the job search, saved with the right `save_document`
+  arguments (`content_md`, `slug`, `domain`, `kind`). `backlog` and `trend` removed; `stats` is not
+  built (bgm#35).
+- **`commands/` removed**: `crm.md` and `linkedin.md` were 322 lines that drifted from the skills.
+
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)
 
 ## [0.2.5] — 2026-09-25 — crm resolves companies and contacts with list_*(search=…) — since hal#171 the lists return a 100-row page, not every row

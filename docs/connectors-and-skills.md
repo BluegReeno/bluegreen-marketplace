@@ -187,7 +187,7 @@ symlink them at the repo root:
 ```bash
 # run from the repo root
 mkdir -p .agents/skills
-ln -sf "$(pwd)/plugins/pm/skills/pm"          .agents/skills/pm
+ln -sf "$(pwd)/plugins/work/skills/pm"          .agents/skills/pm
 ln -sf "$(pwd)/plugins/gtm/skills/crm"        .agents/skills/crm
 ln -sf "$(pwd)/plugins/gtm/skills/linkedin"   .agents/skills/linkedin
 ```
