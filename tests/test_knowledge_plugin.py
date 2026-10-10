@@ -51,6 +51,13 @@ class TestIngest(unittest.TestCase):
     def test_never_reads_the_env_file(self):
         self.assertIn("Ne jamais lire ni afficher `.env`", self.text)
 
+    def test_env_file_is_selectable_and_its_host_shown(self):
+        # The checkout's .env may still aim at the frozen cloud: the target's file is chosen by
+        # HAL_ENV_FILE and the host (never a key) is shown before anything writes.
+        self.assertIn("HAL_ENV_FILE", self.text)
+        self.assertNotIn('"$HAL/.env"', self.text)
+        self.assertIn("l'hôte seul", self.text)
+
     def test_date_is_required_for_course_and_video(self):
         self.assertIn("`--date`", self.text)
         self.assertIn("jamais l'inventer", self.text)

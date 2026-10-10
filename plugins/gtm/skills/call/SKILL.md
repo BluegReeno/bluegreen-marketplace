@@ -57,8 +57,16 @@ pas de mise à jour d'opportunité. Tout ce qui n'est pas marqué « entretien �
 
 ```bash
 HAL="${HAL_REPO:-$HOME/Projects/hal}"
-test -f "$HAL/scripts/kb/call_analysis.py" && test -f "$HAL/.env" && uv --version
+ENVF="${HAL_ENV_FILE:-$HAL/.env}"
+test -f "$HAL/scripts/kb/call_analysis.py" && test -f "$ENVF" && uv --version
+grep '^SUPABASE_URL=' "$ENVF" | sed -E 's#^SUPABASE_URL=https?://([^/]+).*#\1#'
 ```
+
+La dernière ligne affiche **l'hôte seul** de l'instance que l'indexation écrira (jamais une clé).
+Il doit être celui de hal-mcp : sur la cible de test, `HAL_ENV_FILE` pointe sur le `.env` de
+`hal-test-vps`, pas sur le `.env` du checkout, qui peut encore viser le cloud gelé. Un hôte différent
+de celui du connecteur `hal-mcp` → s'arrêter et le dire : les passages iraient dans une autre base
+que les lignes lues. L'hôte figure dans le plan de § 8.
 
 Un échec → s'arrêter avant de lire ou d'écrire : « gtm:call a besoin du checkout hal et de uv sur le
 Mac (introuvable : <quoi>). En Cowork, rien n'est écrit : relance depuis Claude Code. »
@@ -194,7 +202,7 @@ dans `allowed_tags`) : **proposer**, jamais sans oui. L'écriture attend § 8.
 
 ## 8. Écrire — après **une** confirmation
 
-Afficher le plan complet et attendre le oui : `WS`, contact `C`, projet `P` (ou « entreprise seulement » /
+Afficher le plan complet et attendre le oui : `WS`, l'hôte de l'indexation (§ 1b), contact `C`, projet `P` (ou « entreprise seulement » /
 « aucun »), date, interaction (créée ou mise à jour), `sensitive`, `tags` et `domain` choisis dans
 `allowed_tags` de `WS`, puces § 6, propositions stage/tâche, nombre de signaux par profil. `--dry-run`
 s'arrête ici.
@@ -249,7 +257,7 @@ Même `slug` (`call-analysis-<I>`) sur une relance = upsert, aucun doublon.
 
 ```bash
 uv run --project "$HAL" --group kb python "$HAL/scripts/kb/ingest.py" \
-  --pending --workspace "$WS" --env-file "$HAL/.env"
+  --pending --workspace "$WS" --env-file "$ENVF"
 ```
 
 Lire `indexed`, `unchanged`, `chunks`, `anchored x/y = z%` et le bloc `UNANCHORED — …`. `--pending`

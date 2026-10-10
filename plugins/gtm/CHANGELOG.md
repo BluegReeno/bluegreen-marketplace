@@ -32,6 +32,7 @@ after `release.sh gtm <version>` has bumped the version fields.
   characters), one per week, oriented toward the job search, saved with the right `save_document`
   arguments (`content_md`, `slug`, `domain`, `kind`). `backlog` and `trend` removed; `stats` is not
   built (bgm#35).
+- **`call` indexes where hal-mcp is** — the ingest step takes its environment file from `HAL_ENV_FILE` (default the checkout's `.env`, which may still aim at the frozen cloud) and shows the host, never a key, in the plan.
 - **`commands/` removed**: `crm.md` and `linkedin.md` were 322 lines that drifted from the skills.
 
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)

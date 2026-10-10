@@ -30,9 +30,15 @@ Arguments : `pending [workspace]` (rattrapage) ou `<fichier | texte collé> [--k
 2. **Le Mac.**
    ```bash
    HAL="${HAL_REPO:-$HOME/Projects/hal}"
-   test -f "$HAL/scripts/kb/ingest.py" && test -f "$HAL/.env" && uv --version
+   ENVF="${HAL_ENV_FILE:-$HAL/.env}"
+   test -f "$HAL/scripts/kb/ingest.py" && test -f "$ENVF" && uv --version
+   grep '^SUPABASE_URL=' "$ENVF" | sed -E 's#^SUPABASE_URL=https?://([^/]+).*#\1#'
    ```
-   Un échec → **refuser en le nommant** : « knowledge:ingest a besoin du checkout hal, de son `.env` et de
+   La dernière ligne affiche **l'hôte seul** de l'instance que le script écrira. Il doit être celui du
+   connecteur `hal-mcp` : sur la cible de test, `HAL_ENV_FILE` désigne le `.env` de `hal-test-vps`, le
+   `.env` du checkout pouvant encore viser le cloud gelé. Hôte différent → s'arrêter et le dire ; sinon
+   le montrer avec le plan, avant tout run qui écrit.
+   Un échec → **refuser en le nommant** : « knowledge:ingest a besoin du checkout hal, de son fichier d'environnement (`.env` ou `HAL_ENV_FILE`) et de
    `uv` sur le Mac (introuvable : <quoi>). Rien n'est écrit. Pour qu'un document attende l'indexation,
    coche-le `knowledge` (`knowledge:file`) : le prochain rattrapage sur le Mac l'indexera. » Jamais
    une source écrite sans passages. Ne jamais lire ni afficher `.env`.
@@ -47,7 +53,7 @@ fiche `sensitive` ou non cochée est sautée et comptée.
 
 1. D'abord à blanc :
    ```bash
-   uv run --project "$HAL" --group kb python "$HAL/scripts/kb/ingest.py" --pending --workspace "$WS" --dry-run --env-file "$HAL/.env"
+   uv run --project "$HAL" --group kb python "$HAL/scripts/kb/ingest.py" --pending --workspace "$WS" --dry-run --env-file "$ENVF"
    ```
    Montrer le nombre de sources et de passages, les `skipped` (no text / confid. / not knowledge) et le
    bloc `CONFIDENTIAL` s'il existe. Si la détection de langue n'est pas sûre, le script s'arrête en
@@ -70,7 +76,7 @@ fiche `sensitive` ou non cochée est sautée et comptée.
 4. À blanc, puis sur le oui :
    ```bash
    uv run --project "$HAL" --group kb python "$HAL/scripts/kb/ingest.py" <fichier> --workspace "$WS" \
-     --kind <kind> --date <date> [--from html] [--title "…"] [--sensitive] [--dry-run] --env-file "$HAL/.env"
+     --kind <kind> --date <date> [--from html] [--title "…"] [--sensitive] [--dry-run] --env-file "$ENVF"
    ```
 5. **Vérifier que c'est trouvable** : `kb_search(workspace_slug=WS, query=<une phrase distinctive de la
    source>)` ; la source doit revenir. Sinon le dire, ne pas conclure « indexé ».

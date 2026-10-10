@@ -21,6 +21,8 @@ stay named tools in the sentence (`list_documents`, `get_document`, `get_documen
 - `ingest` — index what is worth recalling: the catch-up of knowledge-flagged documents and call
   transcripts (`--pending`), or one source from a file (course, video transcript, document). Runs
   the hal checkout's `scripts/kb/ingest.py` on the Mac and refuses by name anywhere else.
+  The environment file is `HAL_ENV_FILE` (default the checkout's `.env`); its host is shown before any
+  write, so the passages land in the instance hal-mcp reads.
 - `file` — file a paper: extract the facts, choose workspace, domain, kind and slug, answer the
   « fiche or knowledge base » question, reference the file in the workspace's storage
   (`storage {provider, uri}`), write the fiche with `save_document`.

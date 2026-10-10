@@ -80,6 +80,16 @@ class TestCallSkillAgainstTheTargetContract(unittest.TestCase):
         self.assertNotIn("halcrm", self.text)
 
 
+class TestCallSkillTargetsTheRightInstance(unittest.TestCase):
+    def setUp(self):
+        self.text = read(SKILL)
+
+    def test_env_file_is_selectable_and_its_host_shown(self):
+        self.assertIn("HAL_ENV_FILE", self.text)
+        self.assertNotIn('--env-file "$HAL/.env"', self.text)
+        self.assertIn("l'hôte seul", self.text)
+
+
 class TestCallSkillHygiene(unittest.TestCase):
     def setUp(self):
         self.text = read(SKILL)
