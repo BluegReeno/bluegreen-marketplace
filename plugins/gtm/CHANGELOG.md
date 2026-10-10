@@ -12,10 +12,11 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
-## [Unreleased] — rewritten once against the target contract (hal audit q17, q25, q49; roadmap step 3)
+## [0.3.0] — Unreleased, on `next` until cutover — rewritten once against the target contract (hal audit q17, q25, q49; roadmap step 3)
 
-Not released yet (MINOR — the commands changed). Rename this heading to the version when releasing,
-after `release.sh gtm <version>` has bumped the version fields.
+MINOR — the commands changed. The version is bumped once on `next` (hal
+`migration-closing-plan.md` § 5); the heading takes its date the day `next` is fast-forwarded into
+`main`.
 
 - **`call` added**, ported by hand from PR #101 (`feat/hal-192-gtm-call`): resolve the project, fetch
   the Granola or pasted transcript, correct it, extract signals, write the interaction and the
@@ -33,6 +34,11 @@ after `release.sh gtm <version>` has bumped the version fields.
   arguments (`content_md`, `slug`, `domain`, `kind`). `backlog` and `trend` removed; `stats` is not
   built (bgm#35).
 - **`call` indexes where hal-mcp is** — the ingest step takes its environment file from `HAL_ENV_FILE` (default the checkout's `.env`, which may still aim at the frozen cloud) and shows the host, never a key, in the plan.
+- **`call` takes what PR #109 had** (hal q56: `next` won, #109 closed): § 3a lists the Granola
+  calls with no CR, found by the `[granola:<8>]` mark the interaction `summary` now carries; § 11
+  prepares the next meeting from hal rows only (`kb_search`, `list_tasks`, `list_documents`,
+  `get_document_link`); « Acceptance — S01 » maps each step of the story to the tool calls, split
+  between `jobsearch:log-cr` (vault, until cutover — hal q54) and this skill (hal).
 - **`commands/` removed**: `crm.md` and `linkedin.md` were 322 lines that drifted from the skills.
 
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)
