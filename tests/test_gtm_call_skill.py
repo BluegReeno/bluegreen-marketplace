@@ -90,6 +90,27 @@ class TestCallSkillTargetsTheRightInstance(unittest.TestCase):
         self.assertIn("l'hôte seul", self.text)
 
 
+class TestCallSkillCarriesWhatPr109Had(unittest.TestCase):
+    """hal q56: next won over bluegreen-marketplace#109, which gave up three sections."""
+
+    def setUp(self):
+        self.text = read(SKILL)
+
+    def test_inventory_finds_calls_by_the_granola_mark_the_write_sets(self):
+        self.assertIn("### 3a. Inventaire", self.text)
+        self.assertIn('search="granola:<8', self.text)
+        self.assertIn("[granola:<8 premiers caractères>]", self.text)
+
+    def test_prepare_the_next_meeting_reads_hal_only(self):
+        self.assertIn("## 11. Préparer le rendez-vous suivant", self.text)
+        for name in ("kb_search", "list_documents", "get_document_link", "list_sprints"):
+            self.assertIn(name, hal_tools_allowed(SKILL), name)
+
+    def test_acceptance_s01_splits_vault_and_hal(self):
+        self.assertIn("## Acceptance — S01", self.text)
+        self.assertIn("q54", self.text)
+
+
 class TestCallSkillHygiene(unittest.TestCase):
     def setUp(self):
         self.text = read(SKILL)
