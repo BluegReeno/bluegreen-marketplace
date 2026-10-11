@@ -42,8 +42,8 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 MINOR — the plugin name and the behaviour changed. The version is bumped once on `next` (hal
 `migration-closing-plan.md` § 5); the heading takes its date the day `next` is fast-forwarded into
 `main`. Installers
-of `pm` must install `work`: skills become `work:pm` and `work:sprint-planner`; the bare commands
-`/pm` and `/sprint-planner` do not move.
+of `pm` must install `work`: skills become `work:pm` and `work:sprint-planner`, reached as
+`/work:pm` and `/work:sprint-planner`.
 
 - **`pm` cut to what tools cannot do alone** — two geste outillés, `/pm tasks` and `/pm plan
   <project>`; everything else is one sentence and one tool call. Workspace chosen by name, else
@@ -58,6 +58,12 @@ of `pm` must install `work`: skills become `work:pm` and `work:sprint-planner`; 
   `sprints_enabled`) — Renaud's `renaud` (personal) and `renaud-newjob` (jobsearch) together, none
   named in the skill. One `sprint_review` document written in each workspace at « valide »; the
   job-search metrics, LinkedIn alerts and the 🔥 offers only where a `jobsearch` workspace is live.
+- **`commands/` removed** (same move as `gtm`, q17): `commands/pm.md` and
+  `commands/sprint-planner.md` registered the same names as the skills, `work:pm` and
+  `work:sprint-planner`. The command shadows the skill, and its body only said « run the skill
+  (Skill tool, `work:sprint-planner`) » — so the Skill tool served the command again, then
+  « already loaded », and `SKILL.md` was never read (hal S05 run `20261011-165111`: invoked on 3
+  steps of 12, instructions never rendered). A test now forbids a command named like a skill.
 
 ## [0.3.0] — 2026-10-07 — sprint-review retired (hal audit q12): sprint-planner closes the sprint, saves one sprint_review document per workspace and carries the review's metrics (dated refusals, interviews from Entretiens/ notes, profile that converts); pm:pm loses its /edifice routing line
 

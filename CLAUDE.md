@@ -67,6 +67,9 @@ Skills are always namespaced by their **plugin** (`work:pm`, `gtm:crm`, `work:sp
 `/pm` raw looks for a **command**, not a skill. Each plugin's `commands/` files register the bare
 slash commands.
 The command file must be self-contained — the skill body is NOT pre-loaded when a command fires.
+**A command never takes the name of a skill of its plugin**: both answer to `<plugin>:<name>`, the
+command wins, and the skill becomes unreachable through the Skill tool (`work:sprint-planner`,
+hal S05 run 2026-10-11). `gtm` and `work` ship skills only; `tests/test_plugin_shape.py` enforces it.
 
 See `docs/skills-mcp-guide.md` for the full reference (MCP detection, cross-platform).
 
