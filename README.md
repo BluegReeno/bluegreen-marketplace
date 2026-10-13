@@ -23,7 +23,7 @@ no command of its own. Then add what you actually use.
 
 | Plugin | Commands | What it does |
 |--------|----------|--------------|
-| **`work`** | `/pm`, `/sprint-planner` | The Work pillar: the sprint board (`/pm tasks`), a project's status (`/pm plan`), everything else as plain sentences over the hal tools — plus the weekly ritual that closes the sprint and plans the next |
+| **`work`** | `/work:pm`, `/work:sprint-planner` | The Work pillar: the sprint board (`/pm tasks`), a project's status (`/pm plan`), everything else as plain sentences over the hal tools — plus the weekly ritual that closes the sprint and plans the next |
 | **`gtm`** | `/crm`, `/linkedin` | Commercial pipeline — opportunities, contacts, BANT qualification, interaction log — and the LinkedIn editorial pipeline (idea, backlog, trend, draft, publish log) |
 
 ### Pick your install
