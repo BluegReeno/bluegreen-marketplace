@@ -61,7 +61,7 @@ Claude Code has two separate invocation systems:
 | System | Directory | Invocation |
 |--------|----------|-----------|
 | **Skill** | `skills/<name>/SKILL.md` | Semantic trigger OR `plugin:skill` menu (e.g., `work:pm`) |
-| **Command** | `commands/<name>.md` | Direct slash syntax: `/pm`, `/sprint-planner` |
+| **Command** | `commands/<name>.md` | Direct slash syntax `/<name>` — no plugin ships one today |
 
 Skills are always namespaced by their **plugin** (`work:pm`, `gtm:crm`, `work:sprint-planner`) — typing
 `/pm` raw looks for a **command**, not a skill. Each plugin's `commands/` files register the bare
