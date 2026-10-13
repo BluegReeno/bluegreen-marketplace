@@ -75,6 +75,12 @@ reportées**. Commentaire : ≥ 80 % bonne semaine ; 60–79 % normal ; 50–59 
 
 **Report.** Pour chaque tâche ouverte, une question : reporter / abandonner (→ `cancelled`) /
 transformer / faite (terminée mais pas encore marquée : elle passe en `done` à la clôture, étape 6).
+En mode conversationnel, **une tâche par message** : après le bilan, poser la question de la
+première tâche ouverte, s'arrêter et attendre ; la suivante après la réponse. Jamais une question
+groupée sur plusieurs tâches, jamais une recommandation « tout reporter » à sa place — c'est le
+défaut du mode planifié seulement. Une réponse qui tranche plusieurs tâches d'un coup (« reporte
+tout », « seule X est faite ») vaut pour toutes celles qu'elle couvre : ne pas reposer la question.
+Le plan (étape 5) vient après le dernier report décidé.
 
 **Projets.** `list_projects` par workspace, ceux dont l'étape n'est ni `terminal` ni `won` dans
 `kind_stages[kind]`. Une ligne par projet : étape, contrepartie si le kind en a une, prochaine
