@@ -58,6 +58,13 @@ of `pm` must install `work`: skills become `work:pm` and `work:sprint-planner`, 
   `sprints_enabled`) — Renaud's `renaud` (personal) and `renaud-newjob` (jobsearch) together, none
   named in the skill. One `sprint_review` document written in each workspace at « valide »; the
   job-search metrics, LinkedIn alerts and the 🔥 offers only where a `jobsearch` workspace is live.
+- **sprint-planner: the carry-over is asked one task per message** (step 1). « Une question à la fois »
+  was already the rule, and the PM mode d'emploi Renaud validated (hal q28) says « report décidé
+  tâche par tâche » — yet three hal S05 runs out of three (`20261011-165111`, `20261013-095037`,
+  `20261013-100257`) listed the eight open tasks and asked one grouped question, twice behind a
+  « tout reporter » recommendation. Step 1 now says it as a procedure: the first task's question,
+  stop, the next after the answer; an answer that covers several tasks covers them; the plan comes
+  after the last decision.
 - **`commands/` removed** (same move as `gtm`, q17): `commands/pm.md` and
   `commands/sprint-planner.md` registered the same names as the skills, `work:pm` and
   `work:sprint-planner`. The command shadows the skill, and its body only said « run the skill
