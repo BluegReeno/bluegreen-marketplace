@@ -1,0 +1,11 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-pme",
+    "since": "2026-10-14T00:00:00+02:00",
+    "until": "2026-10-14T23:59:59+02:00"
+  },
+  "output": "{\n  \"interactions\": [],\n  \"total\": 0,\n  \"offset\": 0,\n  \"returned\": 0,\n  \"truncated\": false\n}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T12:55:22.775Z",
+  "model": "claude-sonnet-5-5"
+}

@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-edifice",
+    "search": "Mercier"
+  },
+  "output": "{\n  \"contacts\": [],\n  \"total\": 0,\n  \"offset\": 0,\n  \"returned\": 0,\n  \"truncated\": false\n}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T12:55:00.470Z",
+  "model": "claude-sonnet-5-5"
+}

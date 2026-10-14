@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-famille",
+    "search": "scolarit"
+  },
+  "output": "{\n  \"documents\": [\n    {\n      \"slug\": \"certificat-scolarite-leo-2026\",\n      \"domain\": \"ecole\",\n      \"kind\": \"school-certificate\",\n      \"title\": \"Certificat de scolarité — Léo, CM1\",\n      \"person_name\": \"Léo Doe\",\n      \"valid_until\": \"2027-07-04\",\n      \"has_file\": false,\n      \"sensitive\": false,\n      \"project_id\": null,\n      \"knowledge\": false\n    }\n  ],\n  \"total\": 1,\n  \"returned\": 1,\n  \"truncated\": false\n}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T12:56:42.146Z",
+  "model": "claude-sonnet-5-5"
+}
