@@ -1,0 +1,9 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-jobsearch"
+  },
+  "output": "[\n  {\n    \"id\": \"audit-jd-sp-37\",\n    \"name\": \"S37\",\n    \"sprint_number\": 37,\n    \"status\": \"actuel\",\n    \"starts_at\": \"2026-09-14\",\n    \"ends_at\": \"2026-09-20\",\n    \"updated_at\": \"2026-10-14T09:00:00+00:00\"\n  }\n]",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T15:55:01.417Z",
+  "model": "claude-sonnet-5-5"
+}

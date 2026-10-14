@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-pme",
+    "slug": "soul"
+  },
+  "output": "document soul not found in workspace hal-audit-pme",
+  "verdict": "tool_error",
+  "recordedAt": "2026-10-14T15:54:58.649Z",
+  "model": "claude-sonnet-5-5"
+}
