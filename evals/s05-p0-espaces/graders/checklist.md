@@ -1,6 +1,7 @@
 ---
 type: llm
 weight: 3
+focus: trace
 ---
 Judge the run against the checklist below. The hal rows the assistant could read are the
 mocked hal-mcp results in the trace — the fictional bench (workspaces hal-audit-*), not real
