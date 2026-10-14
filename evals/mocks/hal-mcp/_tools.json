@@ -1,0 +1,1609 @@
+{
+ "tools": [
+  {
+   "name": "list_projects",
+   "title": "List Projects",
+   "description": "List the projects of a workspace — one table, four kinds: opportunity (someone to convince), client (a customer being delivered to), provider (a provider or a body serving us), internal (nobody on the other side). Filters by kind (one the workspace enables — see whoami kinds_enabled), stage, tags (overlap match), parent_project_id (the projects an internal project groups) and/or converted_from_id (the client project born of an opportunity). stage is validated against workspace kind_stages — returns error if unknown. Each row carries its counterpart as `company {id, name}` and `contact {id, name, email}`. Sorted newest-first (created_at DESC) and capped at 50 rows by default — pass `limit` to raise it. Response is {projects, total, returned, truncated}: `truncated` is true when `total > returned`, i.e. rows were withheld.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "opportunity",
+       "client",
+       "provider",
+       "internal"
+      ],
+      "description": "One of the kinds the workspace enables (whoami → kinds_enabled); a disabled kind is refused by name."
+     },
+     "stage": {
+      "type": "string"
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Overlap filter (&&): returns projects that have ANY of the specified tags. A tag outside the workspace vocabulary is refused by name, not answered with an empty page; [] means no filter."
+     },
+     "limit": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Max rows to return, newest-first. Default 50."
+     },
+     "parent_project_id": {
+      "type": "string",
+      "description": "Return only the projects grouped under this internal project."
+     },
+     "converted_from_id": {
+      "type": "string",
+      "description": "Return only the client project(s) converted from this opportunity."
+     }
+    },
+    "required": [
+     "workspace_slug"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "create_project",
+   "title": "Create Project",
+   "description": "Create a project. kind is required, one of opportunity, client, provider, internal — and one the workspace enables (whoami → kinds_enabled; a disabled kind is refused by name). An opportunity, client or provider project needs a counterpart: company_id or primary_contact_id; an internal project carries neither. stage must belong to workspace kind_stages for that kind. Tags must belong to the workspace's allowed_tags. `converted_from_id` (client projects only) links the project to the opportunity it was won from — the source must be an opportunity of the same workspace, but its stage is never checked and it need not be won; `parent_project_id` links any project to the internal project that groups it — a bad parent (not internal, cross-workspace, or already nested) returns a readable error. Refused by name on an archived workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "stage": {
+      "type": "string"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "opportunity",
+       "client",
+       "provider",
+       "internal"
+      ],
+      "description": "Who is on the other side: opportunity (someone to convince), client (a customer being delivered to), provider (a provider or a body serving us, administrative procedures included), internal (nobody). Must be enabled in the workspace."
+     },
+     "company_id": {
+      "type": "string",
+      "description": "The counterpart company. Required (with or instead of primary_contact_id) for opportunity, client and provider; forbidden for internal."
+     },
+     "primary_contact_id": {
+      "type": "string",
+      "description": "The counterpart contact. Required (with or instead of company_id) for opportunity, client and provider; forbidden for internal."
+     },
+     "location": {
+      "type": "string"
+     },
+     "description": {
+      "type": "string"
+     },
+     "amount_ht": {
+      "type": "number"
+     },
+     "currency": {
+      "type": "string"
+     },
+     "due_date": {
+      "type": "string"
+     },
+     "project_ref": {
+      "type": "string"
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Functional tags from the workspace allowed_tags vocabulary"
+     },
+     "converted_from_id": {
+      "type": "string",
+      "description": "Id of the opportunity this project was won from (kind must be client). The opportunity's stage is not checked — converting from an unwon opportunity is allowed."
+     },
+     "parent_project_id": {
+      "type": "string",
+      "description": "Id of the internal project that groups this one (one level only)."
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "name",
+     "stage",
+     "kind"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "update_project_stage",
+   "title": "Update Project Stage",
+   "description": "Update a project's stage. On a stage that actually changes: sets closed_at when moving to a terminal stage, clears it otherwise; sets won_at when moving to one of the workspace's won stages for that kind (kind_stages.<kind>.won, a subset of terminal), clears it otherwise. Re-asserting the stage a project already holds leaves both dates untouched, so a retry or an idempotent re-sync never moves the date it was won or closed. Only an opportunity declares won stages, so won_at stays NULL for every other kind. Refused by name on an archived workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "project_id": {
+      "type": "string"
+     },
+     "stage": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "project_id",
+     "stage"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "update_project",
+   "title": "Update Project",
+   "description": "Update editable fields of a project: name, kind, amount_ht, currency, project_ref, location, description, due_date, company_id, primary_contact_id, tags, converted_from_id, parent_project_id. `tags` replaces the previous array. The row as it will be stored is judged whole: the kind must be enabled in the workspace, the counterpart rule must hold (opportunity, client and provider carry a company or a contact; internal carries neither), and a changed kind must keep the project's current stage legal — move the stage first with update_project_stage otherwise. A bad `converted_from_id`/`parent_project_id` (wrong kind, cross-workspace, self, or already nested) returns a readable error. To change stage use update_project_stage instead. Refused by name on an archived workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "project_id": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "opportunity",
+       "client",
+       "provider",
+       "internal"
+      ],
+      "description": "Reclassify the project. Must be enabled in the workspace, and the current stage must belong to the new kind's stages."
+     },
+     "amount_ht": {
+      "type": "number"
+     },
+     "currency": {
+      "type": "string"
+     },
+     "project_ref": {
+      "type": "string"
+     },
+     "location": {
+      "type": "string"
+     },
+     "description": {
+      "type": "string"
+     },
+     "due_date": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD"
+     },
+     "company_id": {
+      "type": "string"
+     },
+     "primary_contact_id": {
+      "type": "string"
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Replaces the project's tags. Must belong to the workspace's allowed_tags."
+     },
+     "converted_from_id": {
+      "type": "string",
+      "description": "Id of the opportunity this project was won from (kind must be client). The opportunity's stage is not checked — converting from an unwon opportunity is allowed."
+     },
+     "parent_project_id": {
+      "type": "string",
+      "description": "Id of the internal project that groups this one (one level only)."
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "project_id"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "create_company",
+   "title": "Create Company",
+   "description": "Create a company (an organisation, whatever its role toward the workspace). `ecosystem` and `activity_type` must belong to the workspace's declared vocabulary (allowed_ecosystems / allowed_activity_types); a workspace with no declared vocabulary accepts any value. Refused by name on an archived workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "ecosystem": {
+      "type": "string",
+      "description": "Must belong to the workspace's allowed_ecosystems (when declared)."
+     },
+     "activity_type": {
+      "type": "string",
+      "description": "Must belong to the workspace's allowed_activity_types (when declared)."
+     },
+     "address": {
+      "type": "string"
+     },
+     "website": {
+      "type": "string"
+     },
+     "notes": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "name"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "list_companies",
+   "title": "List Companies",
+   "description": "List CRM companies in a workspace, ordered by name. To find one company, pass `search` (case-insensitive substring on name) rather than reading the whole list. Capped at 100 rows by default — pass `limit` to raise it. Response is {companies, total, offset, returned, truncated}: `truncated` is true when rows remain after this page — pass `offset` = offset + returned for the next one.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "search": {
+      "type": "string",
+      "description": "Case-insensitive substring match on name"
+     },
+     "limit": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Max rows to return, by name. Default 100."
+     },
+     "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Rows to skip. For the next page, pass offset + returned from the previous response. Default 0."
+     }
+    },
+    "required": [
+     "workspace_slug"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "update_company",
+   "title": "Update Company",
+   "description": "Partial update of a company's fields (name, ecosystem, activity_type, address, website, notes). Provided fields are updated; omitted fields are unchanged. `ecosystem` and `activity_type` must belong to the workspace's declared vocabulary (allowed_ecosystems / allowed_activity_types); a workspace with no declared vocabulary accepts any value. Refused by name on an archived workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "company_id": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "ecosystem": {
+      "type": "string",
+      "description": "Must belong to the workspace's allowed_ecosystems (when declared)."
+     },
+     "activity_type": {
+      "type": "string",
+      "description": "Must belong to the workspace's allowed_activity_types (when declared)."
+     },
+     "address": {
+      "type": "string"
+     },
+     "website": {
+      "type": "string"
+     },
+     "notes": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "company_id"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "create_contact",
+   "title": "Create Contact",
+   "description": "Create a CRM contact. If company_id is provided, it must belong to the same workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "company_id": {
+      "type": "string"
+     },
+     "role": {
+      "type": "string"
+     },
+     "email": {
+      "type": "string"
+     },
+     "phone": {
+      "type": "string"
+     },
+     "linkedin": {
+      "type": "string"
+     },
+     "tone": {
+      "type": "string"
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "notes": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "name"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "list_contacts",
+   "title": "List Contacts",
+   "description": "List CRM contacts in a workspace, ordered by name. Optional filter by company_id. To find one contact, pass `search` (case-insensitive substring on name OR email) rather than reading the whole list. Capped at 100 rows by default — pass `limit` to raise it. Response is {contacts, total, offset, returned, truncated}: `truncated` is true when rows remain after this page — pass `offset` = offset + returned for the next one.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "company_id": {
+      "type": "string"
+     },
+     "search": {
+      "type": "string",
+      "description": "Case-insensitive substring match on name or email"
+     },
+     "limit": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Max rows to return, by name. Default 100."
+     },
+     "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Rows to skip. For the next page, pass offset + returned from the previous response. Default 0."
+     }
+    },
+    "required": [
+     "workspace_slug"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "update_contact",
+   "title": "Update Contact",
+   "description": "Partial update of a CRM contact's fields (name, email, phone, role, linkedin, tone, tags, notes, company_id). Provided fields are updated; omitted fields are unchanged. `tags` replaces the previous array. If company_id is provided, it must belong to the same workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "contact_id": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "email": {
+      "type": "string"
+     },
+     "phone": {
+      "type": "string"
+     },
+     "role": {
+      "type": "string"
+     },
+     "linkedin": {
+      "type": "string"
+     },
+     "tone": {
+      "type": "string"
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Replaces the contact's tags. Must belong to the workspace's allowed_tags."
+     },
+     "notes": {
+      "type": "string"
+     },
+     "company_id": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "contact_id"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "log_interaction",
+   "title": "Log Interaction",
+   "description": "Log a CRM interaction. `channel` is a closed vocabulary — see the schema enum ('note' = recorded observation, no exchange). occurred_at defaults to now.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "channel": {
+      "type": "string",
+      "enum": [
+       "email",
+       "call",
+       "meeting",
+       "whatsapp",
+       "linkedin",
+       "note",
+       "other"
+      ],
+      "description": "How the touchpoint was logged. 'note' = recorded observation, no exchange."
+     },
+     "summary": {
+      "type": "string"
+     },
+     "project_id": {
+      "type": "string"
+     },
+     "contact_id": {
+      "type": "string"
+     },
+     "occurred_at": {
+      "type": "string"
+     },
+     "created_by": {
+      "type": "string"
+     },
+     "transcript": {
+      "type": "string"
+     },
+     "sensitive": {
+      "type": "boolean",
+      "description": "Third-party verbatim — a recorded call, someone else's words. kb_search returns it to a member of this workspace, flagged and with a warning; RLS is what withholds it from anyone else."
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "channel",
+     "summary"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "list_interactions",
+   "title": "List Interactions",
+   "description": "List a workspace's CRM interactions, most recent first (occurred_at DESC). Filters: contact_id, project_id, channel, since/until (ISO, inclusive, on occurred_at), search (case-insensitive substring on summary). The transcript field is omitted — a listing exists to FIND a row (then use update_interaction), not to read it. `sensitive` IS returned: it is one bit and it tells the caller which rows kb_search will hand back flagged as third-party verbatim. Capped at 50 rows by default — pass `limit` to raise it. Response is {interactions, total, offset, returned, truncated}: `truncated` is true when rows remain after this page — pass `offset` = offset + returned for the next one.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "contact_id": {
+      "type": "string"
+     },
+     "project_id": {
+      "type": "string"
+     },
+     "channel": {
+      "type": "string",
+      "enum": [
+       "email",
+       "call",
+       "meeting",
+       "whatsapp",
+       "linkedin",
+       "note",
+       "other"
+      ],
+      "description": "Filter by channel."
+     },
+     "since": {
+      "type": "string",
+      "description": "ISO datetime: interactions with occurred_at >= since"
+     },
+     "until": {
+      "type": "string",
+      "description": "ISO datetime: interactions with occurred_at <= until. A bare date (YYYY-MM-DD) covers that whole day (UTC)."
+     },
+     "search": {
+      "type": "string",
+      "description": "Case-insensitive substring match on summary"
+     },
+     "limit": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Max rows to return, newest-first. Default 50."
+     },
+     "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Rows to skip. For the next page, pass offset + returned from the previous response. Default 0."
+     }
+    },
+    "required": [
+     "workspace_slug"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "update_interaction",
+   "title": "Update Interaction",
+   "description": "Partial update of a CRM interaction's attributes (summary, transcript, channel, occurred_at, contact_id, project_id, sensitive, tags). Provided fields are updated; omitted fields are unchanged. `tags` replaces the previous array. `created_at` and `created_by` cannot be changed — they record when/who logged the interaction, not the interaction's own timeline (use `occurred_at` for that).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "interaction_id": {
+      "type": "string"
+     },
+     "summary": {
+      "type": "string"
+     },
+     "transcript": {
+      "type": "string"
+     },
+     "channel": {
+      "type": "string",
+      "enum": [
+       "email",
+       "call",
+       "meeting",
+       "whatsapp",
+       "linkedin",
+       "note",
+       "other"
+      ],
+      "description": "How the touchpoint was logged. 'note' = recorded observation, no exchange."
+     },
+     "occurred_at": {
+      "type": "string"
+     },
+     "contact_id": {
+      "type": "string"
+     },
+     "project_id": {
+      "type": "string"
+     },
+     "sensitive": {
+      "type": "boolean",
+      "description": "Third-party verbatim — a recorded call, someone else's words. kb_search returns it to a member of this workspace, flagged and with a warning; RLS is what withholds it from anyone else."
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Replaces the interaction's tags. Must belong to the workspace's allowed_tags."
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "interaction_id"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "create_sprint",
+   "title": "Create Sprint",
+   "description": "Create a sprint. Requires sprints_enabled on the workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "sprint_number": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "passes",
+       "dernier",
+       "actuel",
+       "suivant",
+       "a_venir"
+      ]
+     },
+     "starts_at": {
+      "type": "string"
+     },
+     "ends_at": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "name",
+     "sprint_number"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "list_sprints",
+   "title": "List Sprints",
+   "description": "List sprints in a workspace. Optional status filter (passes|dernier|actuel|suivant|a_venir). Use status='actuel' to resolve the current sprint. Requires sprints_enabled on the workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "passes",
+       "dernier",
+       "actuel",
+       "suivant",
+       "a_venir"
+      ]
+     }
+    },
+    "required": [
+     "workspace_slug"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "update_sprint",
+   "title": "Update Sprint",
+   "description": "Update an existing sprint: rename it, change its status, or adjust its dates. At least one optional field must be provided. Valid status values: 'passes' | 'dernier' | 'actuel' | 'suivant' | 'a_venir'. Returns the updated sprint object.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string",
+      "description": "Workspace slug (e.g. 'blue-green' or 'renaud')"
+     },
+     "sprint_id": {
+      "type": "string",
+      "description": "ID of the sprint to update"
+     },
+     "name": {
+      "type": "string",
+      "description": "New sprint name"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "passes",
+       "dernier",
+       "actuel",
+       "suivant",
+       "a_venir"
+      ],
+      "description": "New status — 'actuel' for the running sprint, 'suivant' for next sprint, 'dernier' for last, 'passes' for archived, 'a_venir' for future"
+     },
+     "starts_at": {
+      "type": "string",
+      "description": "New start date (YYYY-MM-DD)"
+     },
+     "ends_at": {
+      "type": "string",
+      "description": "New end date (YYYY-MM-DD)"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "sprint_id"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "transition_sprint",
+   "title": "Transition Sprint",
+   "description": "Roll over the current sprint: demotes the workspace's 'actuel' sprint to 'dernier' and promotes the given sprint to 'actuel', in one transaction. Use this instead of two update_sprint calls — update_sprint rejects setting a second 'actuel'. Requires sprints_enabled on the workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "incoming_sprint_id": {
+      "type": "string",
+      "description": "Sprint to promote to 'actuel'"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "incoming_sprint_id"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "assign_task_to_sprint",
+   "title": "Assign Task to Sprint",
+   "description": "Assign or move a task to a sprint. Overwrites the task's current sprint, so this is also how you carry an unfinished task over from one sprint to the next. Requires sprints_enabled on the workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "task_id": {
+      "type": "string"
+     },
+     "sprint_id": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "task_id",
+     "sprint_id"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "create_task",
+   "title": "Create Task",
+   "description": "Create a task in a workspace. Optionally link to a project, sprint, or assign to a workspace member by email. Tags must belong to the workspace's allowed_tags vocabulary.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "title": {
+      "type": "string"
+     },
+     "project_id": {
+      "type": "string"
+     },
+     "assignee_email": {
+      "type": "string"
+     },
+     "due_date": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD"
+     },
+     "sprint_id": {
+      "type": "string"
+     },
+     "description": {
+      "type": "string"
+     },
+     "priority": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "urgent",
+         "high",
+         "medium",
+         "low"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "external_ref": {
+      "type": "string",
+      "description": "Loose-coupling pointer (Obsidian note id, free text)"
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Functional tags from the workspace allowed_tags vocabulary"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "title"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "list_tasks",
+   "title": "List Tasks",
+   "description": "List tasks in a workspace. Filters: project_id, assignee_email, status (todo|in_progress|done|blocked|cancelled), sprint_id, tags (overlap match — returns tasks that have ANY of the listed tags). Returns assignee_email surfaced from auth.users. Sorted newest-first (created_at DESC) and capped at 100 rows by default — pass `limit` to raise it. Response is {tasks, total, returned, truncated}: `truncated` is true when `total > returned`, i.e. rows were withheld.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "project_id": {
+      "type": "string"
+     },
+     "assignee_email": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "todo",
+       "in_progress",
+       "done",
+       "blocked",
+       "cancelled"
+      ]
+     },
+     "sprint_id": {
+      "type": "string"
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Overlap filter (&&): returns tasks that have ANY of the specified tags. A tag outside the workspace vocabulary is refused by name, not answered with an empty page; [] means no filter."
+     },
+     "limit": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Max rows to return, newest-first. Default 100."
+     }
+    },
+    "required": [
+     "workspace_slug"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "update_task_status",
+   "title": "Update Task Status",
+   "description": "Update the status of a task in a workspace. Valid values: todo, in_progress, done, blocked, cancelled. `cancelled_reason` is accepted only when status is 'cancelled' (optional free text). Setting status to 'done' stamps `completed_at`; moving away from 'done' clears it; a task moved to 'cancelled' never carries a `completed_at`.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "task_id": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "todo",
+       "in_progress",
+       "done",
+       "blocked",
+       "cancelled"
+      ]
+     },
+     "cancelled_reason": {
+      "type": "string",
+      "description": "Only valid when status is 'cancelled'."
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "task_id",
+     "status"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "update_task",
+   "title": "Update Task",
+   "description": "Partial update of a task's attributes (title, description, due_date, project_id, assignee_email, priority, external_ref, tags). Provided fields are updated; omitted fields are unchanged. `tags` replaces the previous array. Does NOT change status (use update_task_status) or sprint (use assign_task_to_sprint).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "task_id": {
+      "type": "string"
+     },
+     "title": {
+      "type": "string"
+     },
+     "description": {
+      "type": "string"
+     },
+     "due_date": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD"
+     },
+     "project_id": {
+      "type": "string"
+     },
+     "assignee_email": {
+      "type": "string"
+     },
+     "priority": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "urgent",
+         "high",
+         "medium",
+         "low"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "external_ref": {
+      "type": "string"
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Replaces the task's tags. Must belong to the workspace's allowed_tags."
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "task_id"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "save_document",
+   "title": "Save Document",
+   "description": "Create or update a document fiche (upsert on workspace_slug+slug): one record per paper produced or received — metadata, facts, an optional body (content_md) and an optional file in the workspace's own storage. Domain must belong to the workspace's allowed_tags vocabulary. Extract key facts (SIREN, IBAN, dates, contacts) at ingestion and pass them in `facts`. A file is referenced, never uploaded: pass `storage {provider, uri, version?}` — hal keeps records and links, the file stays in the workspace's storage (whoami → storage, folders). A new document needs content_md or storage; without either, the call updates an existing document's metadata and is refused if the slug does not exist — which is also how a document already filed is attached to a project: pass its slug and `project_id`. Every document gets a fiche; only some enter the knowledge base. Set `knowledge: true` when the answer to this one question is yes: will someone want to recall a SENTENCE of this document without knowing which document it is in? (A methodology, a procedure, a course, a lesson learned: yes. A RIB, a KBIS, a photo, a budget sheet, a daily log: no — the fiche is enough to find them.) A document saved with `knowledge` false or `sensitive` true is taken out of the knowledge base if it was in it, and the result says how many passages went (`unindexed`). `kind` is free text, which is how it drifts (`linkedin_draft` next to `linkedin-draft`): before coining one, read `list_documents(summary_only=true)` — `by_kind` lists the kinds already in use per domain — and reuse the one that fits. Refused by name on an archived workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "slug": {
+      "type": "string",
+      "description": "Stable document slug, lowercase letters, digits and single hyphens, e.g. 'kbis-2026-04'. Upsert key with workspace_slug."
+     },
+     "domain": {
+      "type": "string",
+      "description": "Functional domain from the workspace's allowed_tags vocabulary; also the top-level folder of the file in the workspace's storage."
+     },
+     "kind": {
+      "type": "string",
+      "description": "Free-form kind: 'kbis', 'rib', 'id_card', 'tone_of_voice', ... Reuse a kind already in use in the domain (list_documents summary_only → by_kind) before coining a new one."
+     },
+     "title": {
+      "type": "string"
+     },
+     "person_name": {
+      "type": "string",
+      "description": "For per-person docs (hr): 'Renaud Laborbe'"
+     },
+     "content_md": {
+      "type": "string",
+      "description": "Markdown content for content-valued docs (tone of voice, registries)"
+     },
+     "facts": {
+      "type": "object",
+      "additionalProperties": {},
+      "description": "Key facts extracted by the calling agent: {siren, iban, greffe, ...}"
+     },
+     "storage": {
+      "type": "object",
+      "properties": {
+       "provider": {
+        "type": "string",
+        "enum": [
+         "gdrive",
+         "synology"
+        ],
+        "description": "Where the file lives: gdrive (Google Drive) or synology (the NAS vault)."
+       },
+       "uri": {
+        "type": "string",
+        "minLength": 1,
+        "description": "The file's address in that storage: a Drive URL, a path on the NAS."
+       },
+       "version": {
+        "type": "string",
+        "description": "The storage's own version marker for the file, when it has one."
+       }
+      },
+      "required": [
+       "provider",
+       "uri"
+      ],
+      "additionalProperties": false,
+      "description": "The file, in the workspace's storage: {provider, uri, version?}. Replaces the previous link on an existing document."
+     },
+     "issued_date": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD"
+     },
+     "valid_until": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — KBIS validity, insurance renewal, ..."
+     },
+     "sensitive": {
+      "type": "boolean",
+      "description": "Confidential: ID cards, RIB → get_document_link warns before the link is shared. A sensitive document never enters the knowledge base: `sensitive: true` sets `knowledge` to false in the same write."
+     },
+     "knowledge": {
+      "type": "boolean",
+      "description": "true = this document belongs in the knowledge base (kb_search recalls its passages once it is indexed). Default false. Cannot be true together with `sensitive`."
+     },
+     "project_id": {
+      "type": "string",
+      "description": "Id of the project of this workspace the document belongs to. One document, at most one project."
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "slug",
+     "domain",
+     "kind",
+     "title"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "list_documents",
+   "title": "List Documents",
+   "description": "Browse the workspace document vault. Start here; use summary_only=true first when exploring. `search` finds a document by its name: a case-insensitive substring of its title OR its slug, combinable with every filter. Filter by domain, kind, person_name, expiring_before, project_id (the documents of one project) and/or knowledge (the documents flagged for the knowledge base). Each line carries `knowledge`. Returns compact index lines only — use get_document for the full fiche. Capped at 200 rows by default — pass `limit` to raise it. Response is {documents, total, offset, returned, truncated}: `truncated` is true when rows remain after this page — pass `offset` = offset + returned for the next one (summary_only has its own {total, by_domain, by_kind, expiring_within_30d} shape, unaffected: `by_kind` is, per domain, the kinds in use with their counts).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "search": {
+      "type": "string",
+      "description": "Case-insensitive substring matched on the title OR the slug. Matched literally: a comma, a percent sign or an underscore is a character, not syntax. One exception, imposed by PostgREST: an asterisk matches anything."
+     },
+     "domain": {
+      "type": "string"
+     },
+     "kind": {
+      "type": "string"
+     },
+     "person_name": {
+      "type": "string"
+     },
+     "expiring_before": {
+      "type": "string",
+      "description": "ISO date: docs with valid_until on or before this date (includes already expired)"
+     },
+     "project_id": {
+      "type": "string",
+      "description": "Return only the documents attached to this project."
+     },
+     "knowledge": {
+      "type": "boolean",
+      "description": "true: only the documents flagged for the knowledge base; false: only those that are not."
+     },
+     "summary_only": {
+      "type": "boolean",
+      "description": "Manifest mode: counts per domain, the kinds in use per domain, and docs expiring within 30 days. Cannot be combined with filters or search."
+     },
+     "limit": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Max rows to return. Default 200."
+     },
+     "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Rows to skip. For the next page, pass offset + returned from the previous response. Default 0."
+     }
+    },
+    "required": [
+     "workspace_slug"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "get_document",
+   "title": "Get Document",
+   "description": "Full fiche for one document — metadata + extracted facts + content_md + `storage` (the file's link, when it has one). Answers most questions without opening the file. Use get_document_link when the human needs the file itself.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "slug": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "slug"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "get_document_link",
+   "title": "Get Document Link",
+   "description": "The link to a document's file in the workspace's own storage — a Drive URL, a path on the NAS vault — exactly as the fiche records it: no bucket, no signed URL, nothing expires. Refused by name when the document has no file (content_md only — use get_document). For sensitive documents, always confirm with the user before sharing the link outside the conversation.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string"
+     },
+     "slug": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "slug"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "kb_index",
+   "title": "Index a source into the Knowledge Base",
+   "description": "Write one source and its passages into the knowledge base, so kb_search can find them. hal embeds every chunk itself with the model `kb_embedding.json` pins, which is what keeps the index and the query in one vector space — pre-computed vectors are accepted ONLY when the configured index runtime runs on the Mac, and only when they declare the same weights and dimensions. Re-indexing is idempotent and cheap: a source whose `content_sha256` is unchanged is reported `unchanged` and nothing is written or embedded. Otherwise the source's chunks are replaced in one transaction — there is no half-indexed state. At most 300 chunks per source; a larger one is refused by name rather than truncated. `language` is required and never defaulted: it is the Postgres text-search configuration every chunk's full-text index is built with, so a source indexed under the wrong one loses its exact terms on the keyword half of kb_search. Requires knowledge_enabled on the workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string",
+      "description": "The workspace this source belongs to."
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "call",
+       "call_analysis",
+       "course",
+       "video",
+       "document"
+      ],
+      "description": "What sort of source this is."
+     },
+     "title": {
+      "type": "string",
+      "description": "Human title, shown with every passage kb_search returns."
+     },
+     "uri": {
+      "type": "string",
+      "description": "The idempotence key, unique per workspace. A hal row gets a synthetic one: hal://hal_interactions/<id>, hal://hal_documents/<id>."
+     },
+     "origin_table": {
+      "type": "string",
+      "enum": [
+       "hal_interactions",
+       "hal_documents"
+      ],
+      "description": "When the text lives in a hal row, which table. Pass origin_id with it."
+     },
+     "origin_id": {
+      "type": "string",
+      "description": "The hal row's id. Pass origin_table with it."
+     },
+     "content_md": {
+      "type": "string",
+      "description": "Exactly the markdown that was chunked — what re-chunking will read, without re-fetching the original."
+     },
+     "content_sha256": {
+      "type": "string",
+      "description": "Hash of everything indexed about the source, not of content_md alone: the markdown, the language, the title, the kind, the sensitive flag, `occurred_on`, the source metadata (minus origin_updated_at), the chunker record and every chunk (its text and its own metadata). Unchanged ⇒ nothing is written and nothing is re-embedded, so a field left out of the hash is frozen at first index — this answer is returned BEFORE the source row is upserted. `scripts/kb/ingest.py` computes it; a second caller must hash the same inputs."
+     },
+     "language": {
+      "type": "string",
+      "enum": [
+       "french",
+       "english",
+       "simple"
+      ],
+      "description": "The source's language, as a Postgres text-search configuration. Every chunk inherits it and its full-text index is built with it — an English passage stemmed as French loses its exact terms. Required and never defaulted: `simple` is the no-stemming fallback for a language hal has no configuration for. One language per source."
+     },
+     "occurred_on": {
+      "type": "string",
+      "description": "When the content HAPPENED (YYYY-MM-DD) — the day of the call, the day the video was published — not when it was indexed. It is what kb_search's `since` and `until` compare: a source without it is excluded from any search narrowed by period. Part of what `content_sha256` covers, so changing it re-indexes the source."
+     },
+     "sensitive": {
+      "type": "boolean",
+      "description": "Third-party verbatim. Inherited by every chunk; RLS decides who sees it, and kb_search returns it flagged."
+     },
+     "metadata": {
+      "type": "object",
+      "additionalProperties": {},
+      "description": "Chapters, author, contact_id, company_id, project_id. The date is `occurred_on`, a parameter of its own."
+     },
+     "chunker": {
+      "type": "object",
+      "additionalProperties": {},
+      "description": "What produced the chunks: name, version, max_tokens."
+     },
+     "precomputed": {
+      "type": "object",
+      "properties": {
+       "model": {
+        "type": "string",
+        "description": "The weights the vectors were produced with."
+       },
+       "dimensions": {
+        "type": "integer",
+        "exclusiveMinimum": 0
+       },
+       "runtime": {
+        "type": "string",
+        "description": "Which runtime of kb_embedding.json produced them."
+       }
+      },
+      "required": [
+       "model",
+       "dimensions",
+       "runtime"
+      ],
+      "additionalProperties": false,
+      "description": "Declare pre-computed vectors. Accepted only when the configured index runtime runs on the Mac AND these weights and dimensions match kb_embedding.json."
+     },
+     "chunks": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "ordinal": {
+         "type": "integer",
+         "minimum": 0,
+         "description": "Position in the source. Unique within it."
+        },
+        "unit": {
+         "type": "string",
+         "enum": [
+          "passage",
+          "signal"
+         ],
+         "description": "Default 'passage'."
+        },
+        "heading_path": {
+         "type": "string",
+         "description": "Where the passage sits in the document, e.g. 'Chapitre 2 > Les fissures'."
+        },
+        "text": {
+         "type": "string",
+         "description": "The passage itself — what kb_search returns verbatim."
+        },
+        "t_start": {
+         "type": "integer",
+         "minimum": 0,
+         "description": "Seconds into the recording. Video and call only."
+        },
+        "metadata": {
+         "type": "object",
+         "additionalProperties": {},
+         "description": "What is true of THIS passage — a signal's fields, a chapter, a speaker, a step. What is true of the whole source belongs in the source's `metadata`, never repeated on every chunk. Stored and returned by kb_search; never embedded."
+        },
+        "embedding": {
+         "type": "array",
+         "items": {
+          "type": "number"
+         },
+         "description": "Only with `precomputed`; ignored otherwise."
+        }
+       },
+       "required": [
+        "ordinal",
+        "text"
+       ],
+       "additionalProperties": false
+      },
+      "description": "The source's passages, in order."
+     }
+    },
+    "required": [
+     "workspace_slug",
+     "kind",
+     "title",
+     "uri",
+     "content_md",
+     "content_sha256",
+     "language",
+     "chunks"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "kb_search",
+   "title": "Search the Knowledge Base",
+   "description": "Recall passages from the knowledge base by meaning AND by words at once: the query is embedded, the nearest passages are fused with a full-text search by reciprocal rank, and at most 10 come back. Each passage is matched in ITS OWN language — French passages against a French stemmer, English ones against an English one — so an exact term finds its passage whichever of the two it was written in. It RECALLS and never counts nor composes: for a figure (\"how many of my refusals mention X\"), write SQL over the data, never this verb over ten passages. Searches every workspace you belong to by default, so a lesson stored under one hat is findable from another; pass `workspace_slug` to narrow it. Narrow by what the passage comes from with `kind` (one value or a list: \"what was I told in calls\" is kind=[call, call_analysis]) and by when it happened with `since` / `until` (inclusive dates): both are applied BEFORE the best candidates are chosen, so a narrow search still returns its full list. A source that records no date cannot be placed in a period: it is left out as soon as `since` or `until` is passed, and `undated_excluded` says how many sources were. Each passage names its source, its heading path, its time offset for a call or a video, the `language` it was matched in, the day its content happened (`occurred_on`), its own `metadata` — a signal's fields, a chapter, a speaker — and the trace of the model that embedded it (`embedding_runtime_model`, `embedding_dimensions`). When nothing matches you get an explicit \"the base does not know\" — never a fabricated passage, and never a keyword-only answer dressed as a hybrid one: if the embedding runtime does not respond, this fails by name. Passages flagged `sensitive` (third-party verbatim) ARE returned to a member of their workspace, carrying the flag and a warning — what you may see is decided by the database, not by this verb. Requires knowledge_enabled on the workspace.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "workspace_slug": {
+      "type": "string",
+      "description": "Restrict the search to one workspace. Default: every workspace you belong to."
+     },
+     "query": {
+      "type": "string",
+      "description": "What to recall, in natural language. Meaning and words both count: a rephrasing finds the passage, and so does an exact term."
+     },
+     "limit": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Max passages to return. Default 10, hard cap 10."
+     },
+     "kind": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "call",
+         "call_analysis",
+         "course",
+         "video",
+         "document"
+        ]
+       },
+       {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "enum": [
+          "call",
+          "call_analysis",
+          "course",
+          "video",
+          "document"
+         ]
+        },
+        "minItems": 1
+       }
+      ],
+      "description": "Only passages whose source is of this kind — one value, or a list for several."
+     },
+     "since": {
+      "type": "string",
+      "description": "Only passages whose content happened on or after this date (YYYY-MM-DD). Excludes sources that record no date."
+     },
+     "until": {
+      "$ref": "#/properties/since",
+      "description": "Only passages whose content happened on or before this date (YYYY-MM-DD). Excludes sources that record no date."
+     }
+    },
+    "required": [
+     "query"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  },
+  {
+   "name": "whoami",
+   "title": "Who Am I",
+   "description": "Read-only identity probe, and the carrier of every per-workspace setting. Returns the authenticated user's email, the workspaces they belong to, and the default workspace slug per the resolution rule over the non-archived memberships (single → that one; multiple → the is_default=true row; otherwise null). Each workspace carries: slug, role, is_default, name; type (company, jobsearch, personal — what set its defaults); archived (true: no write is accepted, the workspace leaves the briefing, the planner and the default lists, kb_search still reads it); kinds_enabled (which of opportunity, client, provider, internal a project may take here); labels (the words to show the user: xrm, work, company, contact, interaction, task, sprint, and kinds.<kind>); storage ({provider, root} or {} while undeclared) and folders ([{name, domain, rule?}]) — where its files live and how they are filed; sprints_enabled, knowledge_enabled; calendar_id (the workspace's shared calendar) and member_calendar_id (this member's own); and its four controlled vocabularies, empty when undeclared: allowed_tags (functional domains for tags and document domains), allowed_ecosystems and allowed_activity_types (create_company/update_company), and kind_stages (keyed by enabled kind: {active, terminal, won} stage arrays — a terminal stage stamps closed_at, a won stage stamps won_at; won is a subset of terminal and is empty for every kind but opportunity). Call this before writing: it is the only discovery path for these values. Doubles as the connectivity probe: a successful call proves the MCP is reachable AND the user is provisioned. Requires user authentication; secret-mode callers (apikey) receive an error.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {}
+   },
+   "annotations": {
+    "readOnlyHint": true
+   },
+   "execution": {
+    "taskSupport": "forbidden"
+   }
+  }
+ ],
+ "ttlMs": 300000,
+ "cacheScope": "private"
+}
