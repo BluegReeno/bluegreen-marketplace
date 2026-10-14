@@ -71,6 +71,10 @@ of `pm` must install `work`: skills become `work:pm` and `work:sprint-planner`, 
   (Skill tool, `work:sprint-planner`) » — so the Skill tool served the command again, then
   « already loaded », and `SKILL.md` was never read (hal S05 run `20261011-165111`: invoked on 3
   steps of 12, instructions never rendered). A test now forbids a command named like a skill.
+- **`pm`: an unassigned task is said « non attribuée »**, never guessed from its title (hal S03
+  `s6-taches`: the family's seven open tasks listed with no word on who carries them; « passeport
+  Sofia » is not Sofia's until the row says so). « les tâches en cours de <workspace> » joins the
+  triggers — the question was answered by the bare runner, no skill.
 
 ## [0.3.0] — 2026-10-07 — sprint-review retired (hal audit q12): sprint-planner closes the sprint, saves one sprint_review document per workspace and carries the review's metrics (dated refusals, interviews from Entretiens/ notes, profile that converts); pm:pm loses its /edifice routing line
 

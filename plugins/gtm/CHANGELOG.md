@@ -41,6 +41,10 @@ MINOR — the commands changed. The version is bumped once on `next` (hal
   between `jobsearch:log-cr` (vault, until cutover — hal q54) and this skill (hal).
 - **`call` states the `heure` contract** — `HH:MM–HH:MM`, `HH:MM` alone when the end is unknown, or `null`; hal's `call_analysis.py render` now refuses anything else (hal S01: « 10:00–<à compléter> » reached the indexed document).
 - **`commands/` removed**: `crm.md` and `linkedin.md` were 322 lines that drifted from the skills.
+- **`crm review` reads a company workspace only** (step 0): never the candidatures of a `jobsearch`
+  workspace nor a `personal` one. No slug and no company default → the one live company workspace
+  with `opportunity`, or ask among several — never fold them (hal S02 `sc3`, three runs out of three:
+  « Quel est mon pipeline ? » answered with the job-search funnel, the pme pursuit never in it).
 
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)
 

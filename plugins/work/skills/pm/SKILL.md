@@ -6,7 +6,7 @@ description: >
   (le point sur un projet : description, tâches ouvertes, dernier échange). Le reste — créer une
   tâche, dire « c'est fait », annuler, repousser, ouvrir un projet, loguer une note, changer
   d'étape, démarrer un sprint — se dit en une phrase et appelle un seul outil hal. Déclencher
-  sur : "mes tâches", "tableau du sprint", "où en est <projet>", "fais le point sur", "nouvelle
+  sur : "mes tâches", "les tâches en cours de <workspace>", "tableau du sprint", "où en est <projet>", "fais le point sur", "nouvelle
   tâche", "c'est fait", "annule", "repousse", "nouveau projet", "logue une note sur le projet".
   NE PAS déclencher pour : opportunités, contacts, propales (→ gtm:crm), planifier la semaine
   (→ work:sprint-planner), candidatures (→ plugin jobsearch).
@@ -48,6 +48,10 @@ Le tableau des tâches, groupé par statut.
   dernier, jamais fondu dans `done`**, avec son `cancelled_reason`).
 - Ligne : `⚡` si `priority` vaut `high` ou `urgent`, titre, responsable (partie locale de
   `assignee_email`), échéance, tags.
+- **Responsable absent = « non attribuée », dit.** `assignee_email` nul → l'écrire sur la ligne ;
+  si aucune tâche du tableau n'est attribuée, une seule ligne en tête : `Aucune tâche attribuée`.
+  Ne jamais déduire le responsable du titre (« Renouvellement passeport Sofia » n'est pas une
+  tâche de Sofia tant que la ligne ne le dit pas).
 
 ## `/pm plan <projet>`
 

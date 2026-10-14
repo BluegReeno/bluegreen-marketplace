@@ -88,6 +88,11 @@ bant:
 
 ## `review`
 
+0. **Quel pipeline.** Le pipeline commercial est celui d'un workspace `type: company` — jamais les
+   candidatures d'un workspace `jobsearch` (→ plugin jobsearch), jamais un workspace `personal`, même
+   quand ils ont des projets `opportunity`. Sans slug nommé : `default_workspace_slug` s'il est de type
+   `company` ; sinon les workspaces `company` non archivés dont `kinds_enabled` contient `opportunity` —
+   un seul → lui, plusieurs → les nommer et demander lequel, sans en lire aucun d'office ni les fondre.
 1. `list_projects(kind="opportunity", limit=…)` jusqu'à `truncated: false`. Garder les étapes `active`.
 2. Pour chaque opportunité, la date du dernier échange : `list_interactions(project_id, limit=1)` ; sans
    échange, `updated_at`.
