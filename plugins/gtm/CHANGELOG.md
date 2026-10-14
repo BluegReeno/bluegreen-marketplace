@@ -45,6 +45,10 @@ MINOR — the commands changed. The version is bumped once on `next` (hal
   workspace nor a `personal` one. No slug and no company default → the one live company workspace
   with `opportunity`, or ask among several — never fold them (hal S02 `sc3`, three runs out of three:
   « Quel est mon pipeline ? » answered with the job-search funnel, the pme pursuit never in it).
+- **`crm review` reads the open tasks of a dormant pursuit before proposing a relance** (step 4):
+  an existing relance is named with its due date, never proposed again (hal S02 `sc3`, run
+  `20261014-105458`: the overdue « Relancer Hélène Mercier sur le devis » unseen, two relances
+  proposed, one a duplicate).
 
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)
 
