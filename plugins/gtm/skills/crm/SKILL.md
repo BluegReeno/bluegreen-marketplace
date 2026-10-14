@@ -40,17 +40,30 @@ nom, en passant `limit` si `truncated` est vrai. Plusieurs candidats → demande
 
 ## `new <nom>`
 
-1. **Doublon d'abord.** Chercher l'entreprise (`list_companies search`) puis l'opportunité
-   (`list_projects kind=opportunity`, y compris les fermées). Une opportunité de même nom ou de même
-   entreprise existe → la montrer et demander : reprendre l'existante ou créer quand même.
-2. **Le tiers est obligatoire** : une opportunité porte une entreprise (`company_id`) ou, à défaut, un
-   contact (`primary_contact_id`), sinon hal refuse. Entreprise inconnue → `create_company` avec un
-   `ecosystem` et un `activity_type` pris dans les listes du workspace (les proposer, ne pas inventer) ;
-   contact inconnu → `create_contact` (rôle, email, `company_id`). Chaque création est confirmée.
-3. **Ébauche BANT** depuis la conversation ou le CR collé, au format ci-dessous ; champ inconnu = `"?"`.
-4. `create_project(kind="opportunity", stage=<première étape de kind_stages.opportunity.active>, name,
-   company_id | primary_contact_id, amount_ht si dit, description=<bloc BANT>, tags)`.
-5. Sortie : `✅ <nom> → create_project : <stage>` et le bloc BANT écrit.
+Trois temps — lire, proposer, écrire — et rien n'est écrit avant le oui : la lecture ne vaut pas accord.
+
+1. **Lire — doublon d'abord.** Chercher l'entreprise (`list_companies search`), le contact
+   (`list_contacts search`) puis l'opportunité (`list_projects kind=opportunity`, y compris les
+   fermées). Une opportunité de même nom ou de même entreprise existe → la montrer et demander :
+   reprendre l'existante ou créer quand même.
+2. **Proposer — un seul bloc, aucun `create_*`.** Les lignes à créer, avec les valeurs choisies :
+   - entreprise (si inconnue) : nom, `ecosystem`, `activity_type` pris dans les listes du workspace
+     (proposer, ne pas inventer ; rien ne convient → `other`, en le disant) ;
+   - contact (si inconnu) : nom, rôle, email, rattaché à l'entreprise ;
+   - opportunité : nom, `stage` = première étape de `kind_stages.opportunity.active`, `tags`,
+     `amount_ht` = le montant dit, affiché avec son hypothèse (« 3 000 € HT, supposé » : un
+     montant sans mention est pris HT, corrigé dans le oui s'il est TTC), et l'ébauche BANT au
+     format de `qualify`, champ inconnu = `"?"`.
+
+   Le tiers est obligatoire : une opportunité porte une entreprise (`company_id`) ou, à défaut, un
+   contact (`primary_contact_id`), sinon hal refuse — tiers manquant → demander, sans rien créer.
+   Ce que le message dit (apporteur, montant, besoin) est repris tel quel, jamais redemandé. Finir
+   par « Je crée ? » et **s'arrêter là** : le tour se termine sur la question.
+3. **Écrire — après « oui » / « valide » seulement**, en une passe, dans l'ordre : `create_company` →
+   `create_contact(company_id)` → `create_project(kind="opportunity", stage, name,
+   company_id | primary_contact_id, amount_ht, description=<bloc BANT>, tags)`. Une
+   correction glissée dans le oui (« plutôt `partner` ») est appliquée au bloc, sans nouvelle question.
+4. Sortie : `✅ <nom> → create_project : <stage>` et le bloc BANT écrit.
 
 ## `qualify <nom>`
 
@@ -106,7 +119,7 @@ bant:
 
 ## Garde-fous
 
-- Confirmer avant toute écriture ambiguë ; `--dry-run` affiche les appels (outil + arguments) sans les exécuter.
+- `new` confirme toujours (§ `new`) ; les autres gestes confirment avant toute écriture ambiguë ; `--dry-run` affiche les appels (outil + arguments) sans les exécuter.
 - Ne jamais auto-créer : doublon douteux ou tiers manquant → demander.
 - Erreur hal : `❌ <entité> → <outil> : <raison>`, tel quel, sans réessai ni contournement. Une valeur
   refusée est relue dans le message (il énumère les valeurs permises), pas devinée.

@@ -69,6 +69,18 @@ class TestCrm(unittest.TestCase):
         self.assertIn("de fermer", text)
         self.assertIn("Pas de raison, pas de fermeture", text)
 
+    def test_new_proposes_the_three_rows_and_writes_only_after_the_yes(self):
+        # hal S02 sc1-intro, two opus runs out of two: company, contact and project created in the
+        # first turn, no question asked. The gate is a step of its own, before any create_*.
+        section = self.text[self.text.index("## `new <nom>`"):self.text.index("## `qualify <nom>`")]
+        flat_section = flat(section)
+        self.assertIn("aucun `create_*`", flat_section)
+        self.assertIn("Je crée ?", flat_section)
+        self.assertIn("après « oui » / « valide » seulement", flat_section)
+        for tool in ("create_company", "create_contact(", "create_project("):
+            self.assertGreater(section.index(tool), section.index("après « oui »"), f"{tool} before the gate")
+        self.assertLess(section.index("Proposer"), section.index("Écrire"))
+
     def test_bant_merge_never_overwrites(self):
         self.assertIn("jamais écraser", self.text)
 

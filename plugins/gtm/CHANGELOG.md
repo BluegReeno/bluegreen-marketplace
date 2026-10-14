@@ -49,6 +49,11 @@ MINOR — the commands changed. The version is bumped once on `next` (hal
   an existing relance is named with its due date, never proposed again (hal S02 `sc3`, run
   `20261014-105458`: the overdue « Relancer Hélène Mercier sur le devis » unseen, two relances
   proposed, one a duplicate).
+- **`crm new` proposes before it creates** — step 2 shows the company, the contact and the
+  opportunity it would create, with the `ecosystem`, `activity_type`, `stage`, `tags`, `amount_ht`
+  (an amount said without HT/TTC is shown as « HT, supposé », corrected in the yes) and the BANT draft, then stops on « Je crée ? »; the three
+  `create_*` run only after the yes, company → contact → project (hal S02 `sc1-intro`, eval case
+  `s02-sc1-intro`, two `opus` runs out of two: the three rows created in the first turn, no question).
 
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)
 
