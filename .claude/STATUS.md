@@ -1,6 +1,6 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-10-07
+Last updated: 2026-10-14
 
 > History up to 2026-09-09 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
@@ -12,6 +12,9 @@ Three plugins live — `hal` 0.12.0 (connector only), `gtm` 0.2.6, `pm` 0.3.0, t
 
 ## In Progress
 
+- [ ] PR [#116](https://github.com/BluegReeno/bluegreen-marketplace/pull/116) → `next` — `gtm:crm new`
+      proposes before it creates (hal block-3 A1). Harness sc1-intro 7/7; the eval's checklist judge
+      sees the final answer only (`focus: last_message`) — generator follow-up in hal, not here.
 - [ ] PR [#101](https://github.com/BluegReeno/bluegreen-marketplace/pull/101) — `gtm:call`, `/crm log`
       retired (`hal#192` phase B). Written against `gtm` 0.3.0 / top-level 0.10.31, both overtaken
       by the 2026-10-07 releases: rebase, renumber, then release through `release.sh`. No CI run.
