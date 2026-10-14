@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-pme",
+    "contact_id": "audit-bg-ct-mercier"
+  },
+  "output": "{\n  \"interactions\": [\n    {\n      \"id\": \"audit-bg-in-1\",\n      \"workspace_slug\": \"hal-audit-pme\",\n      \"project_id\": \"audit-bg-pr-valdor\",\n      \"contact_id\": \"audit-bg-ct-mercier\",\n      \"channel\": \"email\",\n      \"occurred_at\": \"2026-09-08T08:12:00+00:00\",\n      \"summary\": \"Devis de 18 000 € HT envoyé. Hélène doit le présenter au comité du 22/09.\",\n      \"transcript\": null,\n      \"tags\": [\n        \"commercial\"\n      ],\n      \"sensitive\": false,\n      \"created_by\": null,\n      \"created_at\": \"2026-10-14T09:00:00+00:00\",\n      \"updated_at\": \"2026-10-14T09:00:00+00:00\"\n    },\n    {\n      \"id\": \"audit-bg-in-2\",\n      \"workspace_slug\": \"hal-audit-pme\",\n      \"project_id\": \"audit-bg-pr-valdor\",\n      \"contact_id\": \"audit-bg-ct-mercier\",\n      \"channel\": \"meeting\",\n      \"occurred_at\": \"2026-09-02T12:00:00+00:00\",\n      \"summary\": \"Découverte : 1 200 tickets/mois l'été, 60 % sur la facturation. Veut une démo sur leurs vraies questions.\",\n      \"transcript\": null,\n      \"tags\": [\n        \"commercial\"\n      ],\n      \"sensitive\": false,\n      \"created_by\": null,\n      \"created_at\": \"2026-10-14T09:00:00+00:00\",\n      \"updated_at\": \"2026-10-14T09:00:00+00:00\"\n    }\n  ],\n  \"total\": 2,\n  \"offset\": 0,\n  \"returned\": 2,\n  \"truncated\": false\n}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T12:55:18.721Z",
+  "model": "claude-sonnet-5-5"
+}

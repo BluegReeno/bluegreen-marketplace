@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-famille",
+    "project_id": "audit-fa-pr-chambre"
+  },
+  "output": "{\"tasks\":[],\"total\":0,\"offset\":0,\"returned\":0,\"truncated\":false}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T12:56:46.068Z",
+  "model": "claude-sonnet-5-5"
+}

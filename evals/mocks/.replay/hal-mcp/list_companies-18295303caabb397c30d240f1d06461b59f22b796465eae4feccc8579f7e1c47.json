@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-pme",
+    "search": "Solaris"
+  },
+  "output": "{\"companies\": [], \"total\": 0, \"offset\": 0, \"returned\": 0, \"truncated\": false}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T12:54:57.364Z",
+  "model": "claude-sonnet-5-5"
+}

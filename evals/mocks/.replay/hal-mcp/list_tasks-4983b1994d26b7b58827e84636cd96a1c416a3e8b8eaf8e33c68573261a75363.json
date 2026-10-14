@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-pme",
+    "project_id": "audit-bg-pr-valdor"
+  },
+  "output": "{\n  \"tasks\": [\n    {\n      \"id\": \"audit-bg-tk-1\",\n      \"workspace_slug\": \"hal-audit-pme\",\n      \"project_id\": \"audit-bg-pr-valdor\",\n      \"title\": \"Relancer Hélène Mercier sur le devis\",\n      \"description\": null,\n      \"assignee_user_id\": null,\n      \"assignee_email\": null,\n      \"external_ref\": null,\n      \"tags\": [\n        \"commercial\"\n      ],\n      \"due_date\": \"2026-09-15\",\n      \"priority\": \"high\",\n      \"status\": \"todo\",\n      \"cancelled_reason\": null,\n      \"completed_at\": null,\n      \"sprint_id\": \"audit-bg-sp-37\",\n      \"created_at\": \"2026-10-14T09:00:00+00:00\",\n      \"updated_at\": \"2026-10-14T09:00:00+00:00\"\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"returned\": 1,\n  \"truncated\": false\n}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T12:55:25.418Z",
+  "model": "claude-sonnet-5-5"
+}
