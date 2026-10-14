@@ -39,6 +39,7 @@ MINOR — the commands changed. The version is bumped once on `next` (hal
   prepares the next meeting from hal rows only (`kb_search`, `list_tasks`, `list_documents`,
   `get_document_link`); « Acceptance — S01 » maps each step of the story to the tool calls, split
   between `jobsearch:log-cr` (vault, until cutover — hal q54) and this skill (hal).
+- **`call` states the `heure` contract** — `HH:MM–HH:MM`, `HH:MM` alone when the end is unknown, or `null`; hal's `call_analysis.py render` now refuses anything else (hal S01: « 10:00–<à compléter> » reached the indexed document).
 - **`commands/` removed**: `crm.md` and `linkedin.md` were 322 lines that drifted from the skills.
 
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)

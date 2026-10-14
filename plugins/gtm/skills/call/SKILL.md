@@ -45,7 +45,7 @@ derniers jours) : § 1, puis § 3a, et s'arrêter là.
 ```json
 { "caller": "log-cr", "company": "<entreprise>", "contacts": ["<nom>"], "date": "YYYY-MM-DD",
   "granola_id": "<uuid>" | null, "format": "Teams|Meet|Zoom|Présentiel" | null,
-  "heure": "HH:MM–HH:MM" | null, "feeling": "🔥|🟡|❌",
+  "heure": "HH:MM–HH:MM" | "HH:MM" | null, "feeling": "🔥|🟡|❌",
   "type_entretien": "RH|Technique|Manager|Final", "opportunite": "<candidature dans le vault>" }
 ```
 
@@ -257,7 +257,8 @@ dossier de travail sous le scratch de session `call.txt` (transcript corrigé) e
 
 **Les huit clés de `source` sont obligatoires, `null` quand inconnues** : `granola_id` (uuid),
 `opportunite` (nom du projet hal ou de la candidature), `type_entretien` (entretien seulement),
-`format`, `heure` (§ 3b), `outcome` (toujours `null`), `feeling`, `interlocuteurs`. Puis :
+`format`, `heure` (§ 3b ; `HH:MM–HH:MM`, `HH:MM` seul si la fin manque, sinon `null` — `render` refuse
+tout autre texte), `outcome` (toujours `null`), `feeling`, `interlocuteurs`. Puis :
 
 ```bash
 uv run --project "$HAL" python "$HAL/scripts/kb/call_analysis.py" render \
