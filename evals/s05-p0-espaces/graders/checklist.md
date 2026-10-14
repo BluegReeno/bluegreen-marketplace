@@ -2,10 +2,14 @@
 type: llm
 weight: 3
 ---
-Judge the run against the checklist below. The hal rows the assistant could read are the
-mocked hal-mcp results in the trace — the fictional bench (workspaces hal-audit-*), not real
-data. Judge the final answer and the tool calls; a value the answer cites that no tool result
-carries is invented. Vote PASS only if every item holds.
+You see the assistant's final message only. The assistant read a fictional bench (hal
+workspaces hal-audit-*, served by a mock) whose rows the checklist quotes: a fact in the message
+that the checklist names as the rows' content is read, not invented. Whether a tool was called
+or a row written is verified by separate graders you do not see: treat every item about tool
+calls or writes as satisfied unless the message itself contradicts it (« j'ai créé », « j'ai
+enregistré »), and never fail an item for lack of visibility. Judge what the message says against
+the checklist — the facts, the gates, the wording — and vote PASS when every item you can see
+holds.
 
 Checklist:
 1. The two workspaces with sprints are named — hal-audit-pme (« Blue Green (audit) ») and
