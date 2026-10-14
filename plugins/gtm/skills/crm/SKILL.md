@@ -7,7 +7,7 @@ description: >
   "qualifie X", "passe X en devis envoyé", "X est perdu", "X est gagné", "quel est mon pipeline",
   "qu'est-ce qui dort". NE PAS déclencher pour : loguer un appel (→ gtm:call), corriger un contact
   ou une interaction, attacher un document (→ outil nommé dans la phrase), tâches et sprints (→ work).
-allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_companies mcp__plugin_hal_hal-mcp__create_company mcp__plugin_hal_hal-mcp__list_contacts mcp__plugin_hal_hal-mcp__create_contact mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__update_project mcp__plugin_hal_hal-mcp__update_project_stage mcp__plugin_hal_hal-mcp__list_interactions"
+allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_companies mcp__plugin_hal_hal-mcp__create_company mcp__plugin_hal_hal-mcp__list_contacts mcp__plugin_hal_hal-mcp__create_contact mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__create_project mcp__plugin_hal_hal-mcp__update_project mcp__plugin_hal_hal-mcp__update_project_stage mcp__plugin_hal_hal-mcp__list_interactions mcp__plugin_hal_hal-mcp__list_tasks"
 ---
 
 # CRM — le pipeline, quatre gestes
@@ -88,14 +88,21 @@ bant:
 
 ## `review`
 
+0. **Quel pipeline.** Le pipeline commercial est celui d'un workspace `type: company` — jamais les
+   candidatures d'un workspace `jobsearch` (→ plugin jobsearch), jamais un workspace `personal`, même
+   quand ils ont des projets `opportunity`. Sans slug nommé : `default_workspace_slug` s'il est de type
+   `company` ; sinon les workspaces `company` non archivés dont `kinds_enabled` contient `opportunity` —
+   un seul → lui, plusieurs → les nommer et demander lequel, sans en lire aucun d'office ni les fondre.
 1. `list_projects(kind="opportunity", limit=…)` jusqu'à `truncated: false`. Garder les étapes `active`.
 2. Pour chaque opportunité, la date du dernier échange : `list_interactions(project_id, limit=1)` ; sans
    échange, `updated_at`.
 3. Afficher groupé par étape, **les plus dormantes d'abord** dans chaque groupe :
    `<project_ref ou —> · <entreprise ou contact> · <montant ou —> · <nom> · dernier échange <date> (<n> j)`.
    Fermées : un compte par étape terminale, sans détail.
-4. Sortir **sans** la `description` (BANT et notes internes). Proposer, sans les créer, une relance ou
-   une perte pour ce qui dort depuis plus d'un mois.
+4. Sortir **sans** la `description` (BANT et notes internes). Pour ce qui dort depuis plus d'un mois,
+   lire d'abord ses tâches ouvertes (`list_tasks(project_id, status="todo"|"in_progress")`) : une
+   relance déjà posée est nommée avec son échéance (« relance due le 15/09, en retard »), jamais
+   reproposée ; sinon proposer, sans la créer, une relance ou une perte.
 
 ## Garde-fous
 
