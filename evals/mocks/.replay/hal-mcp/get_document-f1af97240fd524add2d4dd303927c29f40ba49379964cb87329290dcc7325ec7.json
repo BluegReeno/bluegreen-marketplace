@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-famille",
+    "slug": "attestation-mutuelle-2026"
+  },
+  "output": "{\n  \"id\": \"b7e2a4c1-5d3f-4a68-9c21-8f0e6d4b2a37\",\n  \"workspace_slug\": \"hal-audit-famille\",\n  \"slug\": \"attestation-mutuelle-2026\",\n  \"domain\": \"sante\",\n  \"kind\": \"insurance-certificate\",\n  \"title\": \"Attestation Mutuelle Horizon — famille\",\n  \"person_name\": null,\n  \"project_id\": null,\n  \"content_md\": \"# Attestation Mutuelle Horizon — famille\\n\\n- **contrat**: 44-118-903\\n- **beneficiaires**: ['John', 'Sofia', 'Léo', 'Inès']\\n\",\n  \"facts\": {\n    \"contrat\": \"44-118-903\",\n    \"beneficiaires\": [\"John\", \"Sofia\", \"Léo\", \"Inès\"]\n  },\n  \"storage\": null,\n  \"issued_date\": \"2026-01-01\",\n  \"valid_until\": \"2026-12-31\",\n  \"sensitive\": false,\n  \"knowledge\": false,\n  \"created_at\": \"2026-10-14T09:00:00+00:00\",\n  \"updated_at\": \"2026-10-14T09:00:00+00:00\"\n}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T15:53:10.535Z",
+  "model": "claude-sonnet-5-5"
+}
