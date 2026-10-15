@@ -34,7 +34,9 @@ reconstitué.
    dérive à éviter).
 4. `slug` : minuscules, chiffres, tirets, stable et daté (`kbis-2026-06`). Deux papiers successifs
    sont deux fiches, pas une écrasée. `list_documents(search=<slug>)` avant d'écrire : un slug existant
-   = mise à jour de cette fiche, à confirmer.
+   = mise à jour de cette fiche, à confirmer. **Une fiche déjà là** (même sans papier donné) →
+   `get_document` et montrer ses faits (`facts`, validité, fichier rattaché ou non) avant toute question :
+   « déjà rangé » se dit avec ce qui est rangé.
 5. Métadonnées : `valid_until` si le papier expire, `issued_date` s'il est daté, `person_name` s'il
    concerne une personne, `project_id` s'il appartient à un projet (le retrouver par `list_projects`),
    `sensitive` pour une pièce d'identité, un RIB, un avis fiscal ou social.
