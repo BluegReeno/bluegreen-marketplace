@@ -72,6 +72,12 @@ of `pm` must install `work`: skills become `work:pm` and `work:sprint-planner`, 
   (migration block 4, 2026-10-15, `p6-valide`): a « valide » received before any plan, then 41
   writes on the next message — the carry-over answer, no « valide » — with three open points
   settled « par mes choix par défaut ».
+- **sprint-planner: a targeted question gets its part only** (« Question ciblée ou rituel
+  complet »). « Où en sont les projets Blue Green ? » reads that workspace's projects and stops —
+  no bilan of the other parts, no carry-over question, no plan; a workspace named in the question
+  restricts the read to it. The full ritual starts on its own trigger phrases. hal migration block
+  5 (eval `s05-r3-projets`, 2026-10-15): three runs out of three answered with both workspaces'
+  bilan, candidatures included, and the first carry-over question.
 - **`commands/` removed** (same move as `gtm`, q17): `commands/pm.md` and
   `commands/sprint-planner.md` registered the same names as the skills, `work:pm` and
   `work:sprint-planner`. The command shadows the skill, and its body only said « run the skill

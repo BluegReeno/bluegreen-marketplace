@@ -30,5 +30,20 @@ class TestSprintPlannerGate(unittest.TestCase):
         self.assertIn("**Points ouverts**", self.body)
 
 
+class TestSprintPlannerScope(unittest.TestCase):
+    """eval `s05-r3-projets` (2026-10-15): a question about one workspace's projects got the
+    whole ritual, both workspaces and the first carry-over question, three runs out of three."""
+
+    def setUp(self):
+        self.body = " ".join(read(SKILL).split())
+
+    def test_a_targeted_question_gets_its_part_only(self):
+        scope = self.body.split("## Question ciblée ou rituel complet", 1)[1].split("## Étape 0", 1)[0]
+        for rule in ("reçoit **cette partie seulement**",
+                     "restreint la lecture et la réponse à celui-là",
+                     "pas de question de report, pas de plan, aucune écriture"):
+            self.assertIn(rule, scope, rule)
+
+
 if __name__ == "__main__":
     unittest.main()
