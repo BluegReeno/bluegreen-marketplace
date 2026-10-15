@@ -1,6 +1,6 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-10-14
+Last updated: 2026-10-15
 
 > History up to 2026-09-09 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
@@ -12,9 +12,6 @@ Three plugins live — `hal` 0.12.0 (connector only), `gtm` 0.2.6, `pm` 0.3.0, t
 
 ## In Progress
 
-- [ ] PR [#116](https://github.com/BluegReeno/bluegreen-marketplace/pull/116) → `next` — `gtm:crm new`
-      proposes before it creates (hal block-3 A1). Harness sc1-intro 7/7; the eval's checklist judge
-      sees the final answer only (`focus: last_message`) — generator follow-up in hal, not here.
 - [ ] PR [#101](https://github.com/BluegReeno/bluegreen-marketplace/pull/101) — `gtm:call`, `/crm log`
       retired (`hal#192` phase B). Written against `gtm` 0.3.0 / top-level 0.10.31, both overtaken
       by the 2026-10-07 releases: rebase, renumber, then release through `release.sh`. No CI run.
@@ -54,6 +51,7 @@ Three plugins live — `hal` 0.12.0 (connector only), `gtm` 0.2.6, `pm` 0.3.0, t
 
 ## Done (current sprint)
 
+- [x] PR [#116](https://github.com/BluegReeno/bluegreen-marketplace/pull/116) merged into `next` — `gtm:crm new` proposes before it creates (hal block-3 A1); harness sc1-intro 7/7 — 2026-10-14
 - [x] Released `pm` **0.3.0** (`sprint-review` retired, q12) and `gtm` **0.2.6** (no `/edifice` routing); `edifice` archived (#106, tag `archive/edifice-plugin`) — 2026-10-07
 - [x] `#100` — `sprint-planner` no longer names any appointment: capacity is 35h minus the job-search blocks, the LinkedIn post and the events actually read from the declared calendars (the IC Ingénieurs weekly meeting, stopped end of August, was still costing 1h and pushing Monday's block). Planned-week dates now derive from the weekday, with catch-up of a week left without a sprint; `pm` **0.2.1**, top-level **0.10.31**. `sprint-review` kept the old `next monday` / `next friday` lines until it was retired in `pm` 0.3.0 — 2026-09-30
 - [x] `/doctor` audit of the marketplace skills: 5 `404: Not Found` files and the unused `.claude/rules/` removed, `/handoff` pointer replaced by `session:wrap-up`, repo tree and Release Process trimmed out of CLAUDE.md (release procedure now in `.claude/skills/release/`), `Bash(pip *)` dropped from `edifice` allowed-tools, `sprint-planner` / `sprint-review` descriptions shortened — 2026-09-30
