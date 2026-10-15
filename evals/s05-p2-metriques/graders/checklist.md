@@ -15,10 +15,11 @@ Checklist:
 The week count is eval-only (the seed's week is the one of 2026-09-14, the run is later):
 an honest « aucune cette semaine » is correct, an invented count is not. Judge the rest:
 1. The pipeline is read from the hal rows: five applications, one refusal — Lumio, for
-   lack of fintech experience, in the words of the refusal row (`jd-in-4`: « manque
-   d'expérience fintech »), not paraphrased into a new reason. Run 20261014-104238 quoted
-   that row word for word and was failed against « profil jugé trop peu fintech », a
-   wording no row holds — this line used to carry it. Interviews: two or three are both right — Nexora and
+   lack of fintech experience, in the words of one of its two rows, not paraphrased into
+   a new reason: the project's description (« profil jugé trop peu fintech ») or the
+   refusal interaction `jd-in-4` (« manque d'expérience fintech ») — either quote, or
+   both, is right. Runs 20261014-104238 and 20261015-115053 were each failed for quoting
+   one of them against the other. Interviews: two or three are both right — Nexora and
    Veridian, and Lumio counted or not, as long as its case study is named. What counts as
    an interview depends on each firm's process (Renaud, 2026-10-13; runs 3, 2, 2 until
    then); an interview count that names neither Nexora nor Veridian is wrong.
