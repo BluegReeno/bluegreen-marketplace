@@ -12,6 +12,11 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [Unreleased]
+
+- `ingest`'s description points « retrouver un passage d'appel » to `gtm:call` § 12, which looks it
+  up with `kb_search` (hal S01 on the real rows, 2026-10-15: the question answered with no hal call).
+
 ## [0.1.0] — 2026-10-09 — created: `ingest` and `file` (hal audit q29, q35, q41)
 
 The plugin of the Documents and Knowledge pillars (q39). Two skills, the only gestures of the

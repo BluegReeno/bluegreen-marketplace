@@ -111,6 +111,41 @@ class TestCallSkillCarriesWhatPr109Had(unittest.TestCase):
         self.assertIn("q54", self.text)
 
 
+class TestCallSkillBlock4Rules(unittest.TestCase):
+    """hal migration block 4 (S01 on the real rows, 2026-10-15): one rule for a summary-only
+    source, no pick on a non-answer, indexing scoped to the call, a passage looked up in hal."""
+
+    def setUp(self):
+        self.text = read(SKILL)
+        self.body = " ".join(self.text.split())
+
+    def test_a_summary_is_never_a_transcript(self):
+        # l1 refused to analyse a Granola summary, l2 analysed the same file: the rule is stated.
+        self.assertIn("### Un résumé n'est pas un transcript", self.text)
+        self.assertIn("Aucun `call_analysis` ne s'écrit sans transcript.", self.body)
+        self.assertIn("granola:SANS TRANSCRIPT", self.text)
+
+    def test_a_non_answer_is_asked_again(self):
+        self.assertIn("Une question à options attend une option nommée.", self.body)
+        self.assertIn("reposer la même question", self.body)
+
+    def test_ingest_never_sweeps_the_workspace(self):
+        # `--pending` alone indexes every pending row of the workspace (a `retex-*` fiche, run of
+        # 2026-10-15). Every invocation in a code block carries `--only`.
+        blocks = re.findall(r"```bash\n(.*?)```", self.text, re.S)
+        calls = [b for b in blocks if "ingest.py" in b]
+        self.assertTrue(calls)
+        for block in calls:
+            self.assertIn('--only "$URI"', block)
+
+    def test_a_passage_is_looked_up_in_hal_first(self):
+        self.assertIn("## 12. Retrouver un passage", self.text)
+        section = self.text.split("## 12. Retrouver un passage", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("kb_search(", section)
+        self.assertIn("avant toute réponse", section)
+        self.assertIn("retrouve le passage", frontmatter(SKILL)["description"])
+
+
 class TestCallSkillHygiene(unittest.TestCase):
     def setUp(self):
         self.text = read(SKILL)
