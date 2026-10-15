@@ -55,6 +55,28 @@ MINOR — the commands changed. The version is bumped once on `next` (hal
   `create_*` run only after the yes, company → contact → project (hal S02 `sc1-intro`, eval case
   `s02-sc1-intro`, two `opus` runs out of two: the three rows created in the first turn, no question).
 
+- **`call`: one rule for a summary-only source** (§ 3). A Granola AI summary, notes or a CR is
+  never a transcript: never a signal, a quote nor an interaction's `transcript`, and no
+  `call_analysis` is written without a transcript. Granola without one → `granola:SANS TRANSCRIPT`
+  and one question: (a) paste the transcript, (b) the interaction alone, no analysis, no ingestion,
+  (c) nothing on the hal side yet. A re-run on the same source does the same — never an analysis
+  added « to complete » the first pass. The refusal was the rule the skill already implied (§ 5:
+  quotes copied word for word, anchored by `render` in the transcript; « rien que le transcript
+  n'énonce pas »). hal S01 on the real rows (migration block 4, 2026-10-15): `l1-log` refused,
+  `l2-relance` wrote and indexed a 17-signal analysis quoted from the summary.
+- **`call`: a non-answer is asked again** — a question with options waits for an option named;
+  « continue tel que tu l'as proposé » picks none (same run: option (b) taken on it, « la seule
+  possible »).
+- **`call` indexes only what the call produced** (§ 9): one `ingest.py --pending --only <uri>` per
+  source — the interaction when it carries a transcript, the analysis `D` (`document.id` of
+  `save_document`) — each expected to show `rows seen 1`; nothing produced, no ingestion. `--pending`
+  alone swept the workspace's queue (same run: `retex-monday-2026-10` indexed by a call log).
+- **`call` § 12 — retrouver un passage**: « retrouve le passage de l'entretien … » goes through
+  `kb_search(kind=["call","call_analysis"])` before any answer, quotes what it returns with its date,
+  and says an absence only of what it read (« hal n'a pas ce passage »), never of a vault CR it did
+  not open (same run, `s8-passage`: no hal call, and « il n'y a pas de compte-rendu » while the CR
+  was there). `knowledge:ingest` points the question here.
+
 ## [0.2.6] — 2026-10-07 — crm and linkedin lose their /edifice routing line — the edifice plugin is archived (hal audit q20)
 
 ## [0.2.5] — 2026-09-25 — crm resolves companies and contacts with list_*(search=…) — since hal#171 the lists return a 100-row page, not every row

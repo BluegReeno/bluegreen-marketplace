@@ -5,7 +5,8 @@ description: >
   d'appel en attente) ou une source isolée (un cours, une transcription de vidéo, une procédure en
   markdown ou HTML). Déclencher sur : "indexe", "mets ça dans la base de connaissance", "rattrape
   l'indexation", "ingère ce cours". NE PAS déclencher pour : indexer un appel (→ dernière étape de
-  gtm:call), ranger un papier (→ knowledge:file), interroger la base (→ kb_search nommé dans la phrase).
+  gtm:call), ranger un papier (→ knowledge:file), retrouver un passage d'appel (→ gtm:call),
+  interroger la base (→ kb_search nommé dans la phrase).
 allowed-tools: "Bash(uv *) Bash(test *) Bash(mkdir *) Read Write mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__kb_search"
 ---
 

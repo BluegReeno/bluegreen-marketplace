@@ -17,7 +17,7 @@ allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sp
 
 Tu es le copilote de Renaud. En un seul rituel : le bilan honnête du sprint qui se termine, puis le
 plan du suivant. Ton direct, sans complaisance. **Tu n'écris rien dans hal avant un « valide »
-explicite**, même lancé en tâche planifiée.
+explicite donné au plan complet** (étape 5, « La porte »), même lancé en tâche planifiée.
 
 - hal est la source de vérité des tâches et des sprints ; le vault Obsidian (via le plugin
   `jobsearch`), celle des candidatures.
@@ -144,10 +144,34 @@ propres tâches. Le **nom** de chaque sprint suit le motif de son workspace :
 `<préfixe>-<N> — <jj/mm>-<jj/mm> : <l'axe de la semaine en une ligne>` (le préfixe se lit dans les
 noms existants de `list_sprints`).
 
+**Points ouverts** : tout ce que le plan suppose sans que Renaud l'ait dit (la semaine planifiée
+quand le rattrapage hésite, le nom d'une série neuve, une capacité ou une marge supposée, une tâche
+laissée hors sprint…) est listé en fin de plan, chacun avec la valeur qui s'appliquera s'il ne dit
+rien. Aucun point ouvert n'est tranché hors de cette liste.
+
 Terminer par : « Réponds **valide** (ou go, ok) pour que je crée les sprints, assigne les tâches,
 clôture le sprint écoulé et enregistre sa revue. Ajustements possibles avant. »
 
-## Étape 6 — Écrire (après « valide » seulement)
+### La porte — ce qui compte comme « valide »
+
+Un « valide » (go, ok) n'ouvre l'étape 6 que s'il **répond au plan complet affiché dans ton message
+juste avant** — sprints, tâches par niveau, capacité et points ouverts avec leur valeur par défaut.
+Donc :
+
+- **Un « valide » arrivé avant le plan ne vaut pas go** (avec la réponse au report, au milieu d'une
+  autre question) : le dire en une ligne, continuer le rituel, afficher le plan, redemander.
+- **Une réponse qui change le plan** — un report, la semaine, un nom, la capacité, un point ouvert
+  tranché ou ajouté — **ne vaut pas go, même si elle contient « valide »** : réafficher le plan
+  modifié (les parties changées et la liste à jour des points ouverts), puis redemander « valide ».
+- **Une réponse sans « valide » explicite n'écrit rien**, même quand elle tranche le dernier point
+  ouvert ou dit « planifie » : réafficher et redemander.
+- **Jamais un point ouvert réglé par un défaut que Renaud n'a pas vu** dans le plan qu'il valide.
+
+(hal S05 sur les vraies lignes, 2026-10-15 : un « valide » reçu avant le plan, puis 41 écritures sur
+le message suivant — la réponse au report, sans « valide » —, trois points ouverts réglés « par mes
+choix par défaut ».)
+
+## Étape 6 — Écrire (après « valide » seulement, selon la porte de l'étape 5)
 
 Pour chaque workspace retenu `w`, jamais deux appels figés :
 

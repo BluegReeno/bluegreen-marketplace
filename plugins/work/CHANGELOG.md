@@ -65,6 +65,13 @@ of `pm` must install `work`: skills become `work:pm` and `work:sprint-planner`, 
   « tout reporter » recommendation. Step 1 now says it as a procedure: the first task's question,
   stop, the next after the answer; an answer that covers several tasks covers them; the plan comes
   after the last decision.
+- **sprint-planner: the « valide » gate is stated** (step 5, « La porte »). A go counts only when it
+  answers the full plan shown in the message just before — open points listed with the value each
+  takes by default; a « valide » sent before the plan is not a go; an answer that changes the plan
+  re-shows it and asks again; an answer without « valide » writes nothing. hal S05 on the real rows
+  (migration block 4, 2026-10-15, `p6-valide`): a « valide » received before any plan, then 41
+  writes on the next message — the carry-over answer, no « valide » — with three open points
+  settled « par mes choix par défaut ».
 - **`commands/` removed** (same move as `gtm`, q17): `commands/pm.md` and
   `commands/sprint-planner.md` registered the same names as the skills, `work:pm` and
   `work:sprint-planner`. The command shadows the skill, and its body only said « run the skill
