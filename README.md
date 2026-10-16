@@ -40,7 +40,7 @@ no command of its own. Then add what you actually use.
 
 **Requires**: nothing beyond the **hal-mcp** connector that `hal` brings (authenticated via OAuth); `/linkedin trend` also uses the Bright Data connector.
 
-The connector targets **hal-mcp 0.3.0** on Supabase `zgkvbjqlvebttbnkklpo` (the version in
+The connector targets **hal-mcp 0.3.0** on the self-hosted Supabase `supabase.bluegreen.ai` (the version in
 `plugins/hal/.mcp.json`). Powered by [hal](https://github.com/BluegReeno/hal).
 
 **Task and project tags come from the workspace, not from this page.** Each workspace declares
@@ -70,7 +70,7 @@ The `hal-mcp` **connector** (the MCP server) works on all three providers; the `
 | **Gemini Enterprise** | Data stores → Custom MCP Server → paste URL + **manual** OAuth endpoints (see guide) |
 | **ChatGPT** | Settings → Apps & Connectors → Developer mode → Add connector → OAuth |
 
-MCP server URL: `https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp`
+MCP server URL: `https://supabase.bluegreen.ai/functions/v1/hal-mcp`
 
 **Full step-by-step for every provider** — including the Gemini OAuth gotchas —
 is in [`docs/connectors-and-skills.md`](docs/connectors-and-skills.md).

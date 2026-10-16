@@ -21,8 +21,8 @@ they only call the connector's tools. The full `/pm` / `/crm` skill experience l
 | | Value |
 |---|---|
 | MCP server | `hal-mcp` — Supabase Edge Function |
-| Project ref | `zgkvbjqlvebttbnkklpo` |
-| URL | `https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp` |
+| Host | self-hosted Supabase on `bluegreen-vps` (the cloud project `zgkvbjqlvebttbnkklpo` is frozen since the cutover of 2026-10-16) |
+| URL | `https://supabase.bluegreen.ai/functions/v1/hal-mcp` |
 | Transport | **Streamable HTTP** (required by all three; Gemini Enterprise refuses SSE) |
 | Auth — chat/web/mobile | **OAuth 2.1** via Supabase Auth (`/auth/v1`), with discovery + dynamic client registration |
 | Auth — Claude Code CLI / Desktop | **`apikey` header** (`secret:hal_api_key` mode) — no OAuth dance |
@@ -54,7 +54,7 @@ The connector authenticates via the `apikey` header. If it isn't already wired, 
 
 ```
 claude mcp add --transport http hal-mcp \
-  https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp \
+  https://supabase.bluegreen.ai/functions/v1/hal-mcp \
   --header "apikey: <HAL_API_KEY>"
 ```
 
@@ -83,11 +83,11 @@ manually (no discovery, no dynamic registration). Status: **Preview** — UI lab
 **Google Cloud console → Gemini Enterprise:**
 1. Nav menu → **Data stores** → **Create data store**.
 2. On **Select a data source**, type **Custom MCP Server** in the search field → select it.
-3. **MCP Server URL**: `https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp`
+3. **MCP Server URL**: `https://supabase.bluegreen.ai/functions/v1/hal-mcp`
 4. **Transport: Streamable HTTP** (the only option Gemini Enterprise supports).
 5. **Authentication settings** (all manual):
-   - **Authorization URI**: `https://zgkvbjqlvebttbnkklpo.supabase.co/auth/v1/authorize`
-   - **Token URI**: `https://zgkvbjqlvebttbnkklpo.supabase.co/auth/v1/token`
+   - **Authorization URI**: `https://supabase.bluegreen.ai/auth/v1/authorize`
+   - **Token URI**: `https://supabase.bluegreen.ai/auth/v1/token`
    - **Client ID** / **Client Secret**: from a Supabase OAuth client (see box below)
    - **Scopes**: as required by the client registration
 6. Google fixes the **redirect URI** to `https://vertexaisearch.cloud.google.com/oauth-redirect`
@@ -121,7 +121,7 @@ the URL. Edit `~/.gemini/settings.json`:
 ```json
 "mcpServers": {
   "hal-mcp": {
-    "httpUrl": "https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp",
+    "httpUrl": "https://supabase.bluegreen.ai/functions/v1/hal-mcp",
     "oauth": { "enabled": true }
   }
 }
@@ -144,7 +144,7 @@ ChatGPT needs **Developer Mode** for a connector that exposes write tools (not j
 1. `Settings → Apps & Connectors → Advanced settings → Developer mode` → toggle **ON**
    (confirm the warning). On Business/Enterprise/Edu a workspace admin must enable it first.
 2. `Settings → Apps & Connectors → Add new connector` (a.k.a. **Create**).
-3. **MCP Server URL**: `https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp`
+3. **MCP Server URL**: `https://supabase.bluegreen.ai/functions/v1/hal-mcp`
 4. **Authentication = OAuth** → **Create**. ChatGPT discovers the auth server, registers itself
    dynamically (PKCE), and opens the Supabase consent flow. No endpoints to paste.
 
@@ -168,7 +168,7 @@ For the MCP connector, add it to your Codex MCP config (path varies by install):
 
 ```json
 "hal-mcp": {
-  "url": "https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp",
+  "url": "https://supabase.bluegreen.ai/functions/v1/hal-mcp",
   "auth": { "type": "oauth" }
 }
 ```
@@ -214,16 +214,16 @@ No frontmatter change needed. The chat apps (claude.ai, ChatGPT, Gemini Enterpri
 
 ```bash
 # OAuth discovery — must return JSON with authorization_servers
-curl https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp/.well-known/oauth-protected-resource
+curl https://supabase.bluegreen.ai/functions/v1/hal-mcp/.well-known/oauth-protected-resource
 
 # Supabase OAuth server enabled — must NOT return {"error_code":"feature_disabled"}
-curl https://zgkvbjqlvebttbnkklpo.supabase.co/auth/v1/.well-known/oauth-authorization-server
+curl https://supabase.bluegreen.ai/auth/v1/.well-known/oauth-authorization-server
 
 # Tool list over the apikey header (Claude Code path)
 # Never share <HAL_API_KEY> — treat it like a password
 npx @modelcontextprotocol/inspector \
   --header "apikey: <HAL_API_KEY>" \
-  https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp
+  https://supabase.bluegreen.ai/functions/v1/hal-mcp
 ```
 
 For the server-side OAuth and Edge Function implementation details, see the `renaud-marketplace`

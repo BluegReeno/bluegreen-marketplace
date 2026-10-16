@@ -1,6 +1,6 @@
 {
   "name": "knowledge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Knowledge — Documents and Knowledge pillars: file a paper (file) and index what is worth recalling (ingest).",
   "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" }
 }

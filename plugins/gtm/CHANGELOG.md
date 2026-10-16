@@ -12,7 +12,7 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
-## [0.3.0] — Unreleased, on `next` until cutover — rewritten once against the target contract (hal audit q17, q25, q49; roadmap step 3)
+## [0.3.0] — 2026-10-16 — rewritten once against the target contract (hal audit q17, q25, q49; roadmap step 3)
 
 MINOR — the commands changed. The version is bumped once on `next` (hal
 `migration-closing-plan.md` § 5); the heading takes its date the day `next` is fast-forwarded into

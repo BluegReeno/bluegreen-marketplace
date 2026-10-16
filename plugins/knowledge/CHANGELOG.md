@@ -12,7 +12,7 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
-## [Unreleased]
+## [0.1.1] — 2026-10-16 — file shows a filed paper's facts; ingest points call passages to gtm:call
 
 - `file`: a paper already filed is shown with what is filed — `get_document`, its facts, its
   validity, a file attached or not — before any question (hal migration block 5, eval
