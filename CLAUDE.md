@@ -50,7 +50,7 @@ and an entry in `marketplace.json`. Creating a plugin means creating all three a
 
 What `ls plugins/*/` does not show:
 
-- `plugins/hal/.mcp.json` is the **only** connector in the repo — see § Common Gotchas. On the `next` branch it points at `hal-test-vps.bluegreen.ai` (migration step 3); `main` keeps the cloud URL until cutover.
+- `plugins/hal/.mcp.json` is the **only** connector in the repo — see § Common Gotchas. It points at `supabase.bluegreen.ai`, the self-hosted instance on `bluegreen-vps`, since the cutover of 2026-10-16 (hal migration block 5); the Supabase cloud project is frozen.
 - `plugins/work/CHANGELOG.md` documents the two unresolved cross-repo couplings.
 - `tests/` at the repo root holds every test — never inside a plugin.
 

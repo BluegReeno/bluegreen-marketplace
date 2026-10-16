@@ -37,7 +37,7 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
-## [0.4.0] — Unreleased, on `next` until cutover — renamed `pm` → `work` and rewritten once against the target contract (hal audit q38, q39, q49; roadmap step 3)
+## [0.4.0] — 2026-10-16 — renamed `pm` → `work` and rewritten once against the target contract (hal audit q38, q39, q49; roadmap step 3)
 
 MINOR — the plugin name and the behaviour changed. The version is bumped once on `next` (hal
 `migration-closing-plan.md` § 5); the heading takes its date the day `next` is fast-forwarded into
