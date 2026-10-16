@@ -14,6 +14,10 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ## [Unreleased]
 
+- `file`: a paper already filed is shown with what is filed — `get_document`, its facts, its
+  validity, a file attached or not — before any question (hal migration block 5, eval
+  `s03-s1-ranger`, 2026-10-15: two runs of three named the existing fiche by its title and
+  validity only, the school and class unread).
 - `ingest`'s description points « retrouver un passage d'appel » to `gtm:call` § 12, which looks it
   up with `kb_search` (hal S01 on the real rows, 2026-10-15: the question answered with no hal call).
 

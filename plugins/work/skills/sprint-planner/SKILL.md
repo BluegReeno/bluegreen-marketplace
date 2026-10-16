@@ -30,6 +30,20 @@ explicite donné au plan complet** (étape 5, « La porte »), même lancé en t
   (les annulées jamais), calendrier résolu en décalant les blocs. Mode conversationnel : une
   question à la fois, réponse attendue.
 
+## Question ciblée ou rituel complet
+
+« Sprint planning », « planifier la semaine », « bilan du sprint », « weekly review » lancent le
+rituel complet, étapes 0 à 6. **Une question qui ne demande qu'une partie du rituel** — les projets,
+les métriques de candidature, les alertes, les rendez-vous de la semaine, la capacité, ce qui doit
+passer — reçoit **cette partie seulement**, lue comme l'étape qui la porte. Un workspace nommé dans
+la question (« les projets Blue Green ») restreint la lecture et la réponse à celui-là ; les autres
+ne sont ni détaillés ni mêlés. Pas de bilan des autres parties, pas de question de report, pas de
+plan, aucune écriture. Terminer par une ligne qui propose le rituel complet.
+
+(hal migration, eval `s05-r3-projets`, 2026-10-15 : « Où en sont les projets Blue Green ? » a reçu
+trois fois sur trois le bilan des deux workspaces, candidatures comprises, et la première question
+de report.)
+
 ## Étape 0 — Quels workspaces
 
 `whoami` en tout premier. Échec → `hal:DOWN <raison>`, stop. **Workspaces retenus** = ceux où
