@@ -17,6 +17,8 @@ Entries up to `0.11.6` cover the monolith era, when this plugin also shipped the
 
 ---
 
+## [0.13.0] — 2026-10-16 — connector on the self-hosted instance supabase.bluegreen.ai (hal migration cutover) — reconnect and sign in again
+
 ## [0.12.0] — 2026-08-02 — reduce hal to the MCP connector — breaking
 
 ### Breaking
