@@ -38,9 +38,10 @@ dans quel workspace on écrit, quoi confirmer, comment présenter.
 Le tableau des tâches, groupé par statut.
 
 - **Portée.** `sprints_enabled` vrai → `list_sprints(status="actuel")`, puis `list_tasks` filtré
-  sur ce `sprint_id`. Aucun sprint actuel → les tâches ouvertes du workspace, avec une ligne
-  `⚠️ Aucun sprint actuel dans <slug>`. Workspace sans sprints → ses tâches ouvertes, **sans note**
-  « pas de sprint » : c'est son mode normal.
+  sur ce `sprint_id`. Aucun sprint actuel → les tâches ouvertes du workspace
+  (`list_tasks(status="open")`), avec une ligne `⚠️ Aucun sprint actuel dans <slug>`. Workspace
+  sans sprints → ses tâches ouvertes (`status="open"`), **sans note** « pas de sprint » : c'est son
+  mode normal.
 - `--mine` → `assignee_email` = `user_email` de `whoami`. `--all` → aucun filtre, `limit` ≥ `total`.
 - `list_tasks` rend `{tasks, total, returned, truncated}` (100 lignes par défaut). Lire `.tasks`.
   Hors `--all`, si `truncated`, **le dire avant tout décompte** : `⚠️ <returned>/<total> tâches lues`.
@@ -58,7 +59,7 @@ Le tableau des tâches, groupé par statut.
 Retrouver le projet : `list_projects` n'a pas de recherche par nom (il filtre par `kind`, `stage`,
 `tags`, `parent_project_id`, `converted_from_id`) ; filtrer la liste côté skill. Plusieurs
 candidats → les lister et demander. Puis trois lectures, rien d'écrit : sa `description` (c'est le
-dossier, la montrer en entier), `list_tasks(project_id)` (les ouvertes), `list_interactions(project_id,
+dossier, la montrer en entier), `list_tasks(project_id, status="open")`, `list_interactions(project_id,
 limit=1)` (le dernier échange). Pour un projet `internal` qui en groupe d'autres, ajouter
 `list_projects(parent_project_id=…)`. Pour les trois autres kinds, afficher la contrepartie
 (`company`, `contact`, déjà dans la ligne du projet).
@@ -102,11 +103,22 @@ dans ce workspace** (`kinds_enabled` ; sinon refus par son nom) — et un `stage
   « normale » → `medium`. Jamais le mot français.
 - `tags` = le **domaine fonctionnel**, pris dans `allowed_tags` du workspace, `other` à défaut. Ce
   qu'une autre colonne porte déjà (projet, sprint, responsable) n'y va pas.
-- **Retrouver une tâche** : `list_tasks` sans filtre de statut (« c'est fait » vise aussi une
-  `todo`), rapprocher sur le titre. Un seul candidat net → agir. Plusieurs → les lister et demander.
-  Aucun → proposer de créer, jamais sans confirmation. Si `truncated` et aucun match, le dire : on a
-  comparé `<returned>/<total>` tâches, ce n'est pas une preuve d'absence.
+- **Retrouver une tâche** : `list_tasks(status="open")` — `todo`, `in_progress` et `blocked` en un
+  appel. Jamais `status="todo"` seul : un seul statut cache les autres, et la tâche qu'on dit faite
+  est souvent celle déjà `in_progress` (hal#319). Rapprocher sur le titre **et** la description. Un
+  seul candidat net → agir. Plusieurs → les lister et demander. Aucun → proposer de créer, jamais
+  sans confirmation. Si `truncated` et aucun match, le dire : on a comparé `<returned>/<total>`
+  tâches, ce n'est pas une preuve d'absence.
 - « C'est fait » après une action décrite : proposer l'écriture, ne pas l'enchaîner d'office.
+- **Fermer sur le résultat, pas sur le plan.** `done` fige le titre et la description comme ce qui
+  s'est passé ; le prochain lecteur les lira au pied de la lettre. Avant de proposer `done` :
+  1. **Le résultat diffère du plan** (un mail au lieu d'un rendez-vous, un autre montant, une autre
+     date) → proposer d'abord `update_task` sur le titre ou la description, avec ce qui s'est
+     réellement passé (« observations envoyées au SIE le 19/10 », pas « RDV pris »), puis `done`.
+     Une seule confirmation couvre les deux écritures.
+  2. **La description cite d'autres tâches** (un id, « suivi dans la tâche … ») → les lire dans la
+     liste `open` avant de conclure, et dire pour chacune si elle se ferme aussi ou reste ouverte.
+     Le travail qu'on dit fait est peut-être suivi sur la tâche citée, pas sur celle-ci.
 
 ## Sprints
 

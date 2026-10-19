@@ -37,6 +37,24 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.5.0] — 2026-10-19 — `pm` finds open tasks with `status="open"` and closes on the outcome (hal#319)
+
+MINOR — observable behaviour change. Requires hal-mcp with the `open` filter on `list_tasks`
+(hal#319); against an older server `status="open"` is refused by the schema enum, by name.
+
+- **Open tasks in one call.** `/pm tasks` without a current sprint, `/pm plan` and « retrouver une
+  tâche » call `list_tasks(status="open")` — `todo` + `in_progress` + `blocked`. On 2026-10-19 a
+  session read `status="todo"` only, never saw the `in_progress` deposit task, and closed the
+  `todo` sub-task that cited it.
+- **Close on the outcome, not the plan.** Before proposing `done`: when what happened differs from
+  the title or description, propose the `update_task` rewrite first (one confirmation covers both
+  writes); when the description cites other tasks, read them and say which close and which stay
+  open. The same day a task « prendre RDV » went to `done` unchanged after a mail was sent instead,
+  and the evening briefing reported the appointment as taken.
+- The same three rules now live in hal-mcp's server instructions and tool descriptions, so a
+  conversation that never loads this skill gets them too. Eval cases `s07-c1-deposes` and
+  `s07-c2-resultat` (generated from hal `scripts/audit/stories/s07.yaml`) cover both.
+
 ## [0.4.0] — 2026-10-16 — renamed `pm` → `work` and rewritten once against the target contract (hal audit q38, q39, q49; roadmap step 3)
 
 MINOR — the plugin name and the behaviour changed. The version is bumped once on `next` (hal
