@@ -12,6 +12,8 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.2.0] — 2026-10-20 — file places a paper with hal-mcp get_filing_path
+
 ## [0.1.1] — 2026-10-16 — file shows a filed paper's facts; ingest points call passages to gtm:call
 
 - `file`: a paper already filed is shown with what is filed — `get_document`, its facts, its
