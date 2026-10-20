@@ -3,7 +3,7 @@
 Frontmatter is parsed by hand (no PyYAML at CI time).
 
 HAL_TOOLS is the tool list of the target `hal-mcp` (supabase/functions/hal-mcp/index.ts in the hal
-repo, 29 registerTool calls, read 2026-10-09). A skill that names a tool outside it is calling
+repo, 30 registerTool calls, read 2026-10-20 — get_filing_path added by hal#322). A skill that names a tool outside it is calling
 something that does not exist; when hal adds, renames or removes a tool, this list changes in the
 same commit as the skills.
 """
@@ -20,11 +20,11 @@ create_contact list_contacts update_contact
 log_interaction list_interactions update_interaction
 create_sprint list_sprints update_sprint transition_sprint assign_task_to_sprint
 create_task list_tasks update_task_status update_task
-save_document list_documents get_document get_document_link
+save_document list_documents get_document get_document_link get_filing_path
 kb_index kb_search whoami
 """.split())
 
-# A hal tool is spelled verb_noun; these verbs are the ones the 29 names start with.
+# A hal tool is spelled verb_noun; these verbs are the ones the 30 names start with.
 _TOOL_LIKE = re.compile(
     r"\b(?:list|create|update|get|save|log|assign|transition)_[a-z_]+\b|\bkb_[a-z_]+\b|\bwhoami\b"
 )
