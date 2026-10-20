@@ -25,22 +25,26 @@ no command of its own. Then add what you actually use.
 |--------|----------|--------------|
 | **`work`** | `/work:pm`, `/work:sprint-planner` | The Work pillar: the sprint board (`/pm tasks`), a project's status (`/pm plan`), everything else as plain sentences over the hal tools — plus the weekly ritual that closes the sprint and plans the next |
 | **`gtm`** | `/crm`, `/linkedin` | Commercial pipeline — opportunities, contacts, BANT qualification, interaction log — and the LinkedIn editorial pipeline (idea, backlog, trend, draft, publish log) |
+| **`knowledge`** | `/knowledge:file`, `/knowledge:ingest` | The Documents and Knowledge pillars: file a paper as a hal fiche in the workspace's storage (`file`), and index what is worth recalling — call transcripts, courses, procedures — so `kb_search` finds it (`ingest`) |
+| **`docs`** | `/docs:brand`, `/docs:study-report`, `/docs:proposal` | Blue Green branded Word deliverables from Markdown: the brand identity and renderer (`brand`), study reports and commercial proposals (content only) |
 
 ### Pick your install
 
 | You are | Install | Why |
 |---------|---------|-----|
 | Running projects and sprints | `hal` + `work` | Tasks and sprints only — none of the Blue Green commercial surface |
+| Filing documents and building a knowledge base | `hal` + `knowledge` | Papers filed as fiches, sources indexed for `kb_search` |
 | Producing Blue Green documents | `docs` | Branded Word reports and proposals from Markdown — `hal` only for the proposal's CRM context |
-| Blue Green, end to end | `hal` + `work` + `gtm` + `docs` | Everything |
+| Blue Green, end to end | `hal` + `work` + `gtm` + `knowledge` + `docs` | Everything |
 
 ```
 /plugin install work@bluegreen-marketplace
 /plugin install gtm@bluegreen-marketplace
+/plugin install knowledge@bluegreen-marketplace
 /plugin install docs@bluegreen-marketplace
 ```
 
-**Requires**: `docs` needs [`uv`](https://docs.astral.sh/uv/) and pandoc (or `--with pypandoc_binary`). The others need nothing beyond the **hal-mcp** connector that `hal` brings (authenticated via OAuth); `/linkedin trend` also uses the Bright Data connector.
+**Requires**: `docs` needs [`uv`](https://docs.astral.sh/uv/) and pandoc (or `--with pypandoc_binary`). `knowledge:ingest` runs on the Mac only: it needs a hal checkout, its environment file and `uv`. The others need nothing beyond the **hal-mcp** connector that `hal` brings (authenticated via OAuth); `/linkedin trend` also uses the Bright Data connector.
 
 The connector targets **hal-mcp 0.3.0** on the self-hosted Supabase `supabase.bluegreen.ai` (the version in
 `plugins/hal/.mcp.json`). Powered by [hal](https://github.com/BluegReeno/hal).
@@ -98,6 +102,7 @@ only version table; read it there.
 | `hal` | — (connector only) | the foundation — every other plugin calls through it |
 | `work` | `pm`, `sprint-planner` | tasks, sprints, projects, documents |
 | `gtm` | `crm`, `linkedin` | pipeline, contacts, logged exchanges |
+| `knowledge` | `file`, `ingest` | filed documents, the knowledge base |
 | `docs` | `brand`, `study-report`, `proposal` | brand identity, branded Word deliverables |
 
 ```
@@ -109,6 +114,8 @@ plugins/
 │   └── skills/                  # pm, sprint-planner
 ├── gtm/
 │   └── skills/                  # crm, linkedin
+├── knowledge/
+│   └── skills/                  # file, ingest
 └── docs/
     ├── skills/brand/            # brand.yaml, assets/, templates/ — the Blue Green identity
     ├── skills/                  # study-report, proposal — content only
