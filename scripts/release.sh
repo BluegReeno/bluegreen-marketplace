@@ -28,7 +28,7 @@ Usage: ./scripts/release.sh <plugin> <new-version> "<changelog line>" [--mcp-ver
   --mcp-version <v> optional: also bump plugins/<plugin>/.mcp.json server version
 
 Example:
-  ./scripts/release.sh hal 0.10.2 "fix edifice crop_region off-by-one"
+  ./scripts/release.sh pm 0.2.2 "fix sprint-planner date range"
 EOF
 }
 

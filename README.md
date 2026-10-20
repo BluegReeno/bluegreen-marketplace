@@ -1,4 +1,4 @@
-> **bluegreen-marketplace** is the Claude Code plugin distribution layer for [hal](https://github.com/BluegReeno/hal) — the AI foundation a small firm runs on: its pipeline, its work, its memory, its documents. Install a plugin to wire that foundation into your Claude client, and `edifice` on top of it if your firm also works on site.
+> **bluegreen-marketplace** is the Claude Code plugin distribution layer for [hal](https://github.com/BluegReeno/hal) — the AI foundation a small firm runs on: its pipeline, its work, its memory, its documents. Install a plugin to wire that foundation into your Claude client.
 
 # BlueGreen Marketplace
 
@@ -23,29 +23,26 @@ no command of its own. Then add what you actually use.
 
 | Plugin | Commands | What it does |
 |--------|----------|--------------|
-| **`edifice`** | `/edifice` | Pull a building inspection mission from Supabase, qualify with AI, generate the DOCX report (`list`, `pull`, `improve`, `report`, `push`, `front`) |
-| **`pm`** | `/pm`, `/sprint-planner`, `/sprint-review` | Project management: tasks, sprints, projects, docs (`list`, `tasks`, `new`, `task`, `log`, `doc`, `sprint`, `update`), plus weekly planning and review |
+| **`work`** | `/work:pm`, `/work:sprint-planner` | The Work pillar: the sprint board (`/pm tasks`), a project's status (`/pm plan`), everything else as plain sentences over the hal tools — plus the weekly ritual that closes the sprint and plans the next |
 | **`gtm`** | `/crm`, `/linkedin` | Commercial pipeline — opportunities, contacts, BANT qualification, interaction log — and the LinkedIn editorial pipeline (idea, backlog, trend, draft, publish log) |
 
 ### Pick your install
 
 | You are | Install | Why |
 |---------|---------|-----|
-| A building inspector (IC Ingénieurs Conseils) | `hal` + `edifice` | Missions and reports only — no CRM, no sprints |
-| Running projects and sprints | `hal` + `pm` | Tasks and sprints only — none of the Blue Green commercial surface |
+| Running projects and sprints | `hal` + `work` | Tasks and sprints only — none of the Blue Green commercial surface |
 | Producing Blue Green documents | `docs` | Branded Word reports and proposals from Markdown — `hal` only for the proposal's CRM context |
-| Blue Green, end to end | `hal` + `edifice` + `pm` + `gtm` + `docs` | Everything |
+| Blue Green, end to end | `hal` + `work` + `gtm` + `docs` | Everything |
 
 ```
-/plugin install edifice@bluegreen-marketplace
-/plugin install pm@bluegreen-marketplace
+/plugin install work@bluegreen-marketplace
 /plugin install gtm@bluegreen-marketplace
 /plugin install docs@bluegreen-marketplace
 ```
 
-**Requires**: [`uv`](https://docs.astral.sh/uv/) (`brew install uv` on Mac) and a paired Edifice account — both for `edifice` only. `docs` needs `uv` and pandoc (or `--with pypandoc_binary`). `pm` and `gtm` need nothing beyond the **hal-mcp** connector that `hal` brings (authenticated via OAuth); `/linkedin trend` also uses the Bright Data connector.
+**Requires**: `docs` needs [`uv`](https://docs.astral.sh/uv/) and pandoc (or `--with pypandoc_binary`). The others need nothing beyond the **hal-mcp** connector that `hal` brings (authenticated via OAuth); `/linkedin trend` also uses the Bright Data connector.
 
-The connector targets **hal-mcp 0.3.0** on Supabase `zgkvbjqlvebttbnkklpo` (the version in
+The connector targets **hal-mcp 0.3.0** on the self-hosted Supabase `supabase.bluegreen.ai` (the version in
 `plugins/hal/.mcp.json`). Powered by [hal](https://github.com/BluegReeno/hal).
 
 **Task and project tags come from the workspace, not from this page.** Each workspace declares
@@ -59,12 +56,14 @@ See [`plugins/hal/README.md`](plugins/hal/README.md) for full setup instructions
 > **Coming from `hal` 0.11.x?** That version bundled all four skill families. Updating to 0.12.0
 > removes `/edifice`, `/pm`, `/crm` and `/linkedin` from it — install the plugin that owns the
 > command you need and it comes straight back. Nothing else changed: same server, same tools.
+> `/edifice` is the exception since 2026-10-07: that plugin is archived (git tag
+> `archive/edifice-plugin`) — hal-mcp no longer serves its tools.
 
 ---
 
 ## Connecting from Claude, Gemini, or OpenAI
 
-The `hal-mcp` **connector** (the MCP server) works on all three providers; the `/edifice`, `/pm`, `/crm`, and `/linkedin` **skills** only run on the agent/CLI surfaces (Claude Code, Gemini CLI, OpenAI Codex).
+The `hal-mcp` **connector** (the MCP server) works on all three providers; the `/pm`, `/crm`, and `/linkedin` **skills** only run on the agent/CLI surfaces (Claude Code, Gemini CLI, OpenAI Codex).
 
 | Provider | One-line path |
 |----------|---------------|
@@ -73,7 +72,7 @@ The `hal-mcp` **connector** (the MCP server) works on all three providers; the `
 | **Gemini Enterprise** | Data stores → Custom MCP Server → paste URL + **manual** OAuth endpoints (see guide) |
 | **ChatGPT** | Settings → Apps & Connectors → Developer mode → Add connector → OAuth |
 
-MCP server URL: `https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp`
+MCP server URL: `https://supabase.bluegreen.ai/functions/v1/hal-mcp`
 
 **Full step-by-step for every provider** — including the Gemini OAuth gotchas —
 is in [`docs/connectors-and-skills.md`](docs/connectors-and-skills.md).
@@ -97,8 +96,7 @@ only version table; read it there.
 | Plugin | Skills | Serves |
 |--------|--------|--------|
 | `hal` | — (connector only) | the foundation — every other plugin calls through it |
-| `edifice` | `edifice` | the field vertical |
-| `pm` | `pm`, `sprint-planner`, `sprint-review` | tasks, sprints, projects, documents |
+| `work` | `pm`, `sprint-planner` | tasks, sprints, projects, documents |
 | `gtm` | `crm`, `linkedin` | pipeline, contacts, logged exchanges |
 | `docs` | `brand`, `study-report`, `proposal` | brand identity, branded Word deliverables |
 
@@ -107,14 +105,8 @@ plugins/
 ├── hal/                         # the connector — no skill, no command
 │   ├── .claude-plugin/plugin.json
 │   └── .mcp.json                # hal-mcp HTTP server (OAuth) — the only one in the repo
-├── edifice/
-│   ├── skills/edifice/SKILL.md  # /edifice — building inspection reports
-│   ├── scripts/                 # build_context, render_*, download_photos + obsidian/ bundle
-│   ├── templates/               # DOCX report templates
-│   ├── organizations/           # client config
-│   └── artifacts/               # committed artifact front-ends (built from ui/)
-├── pm/
-│   └── skills/                  # pm, sprint-planner, sprint-review
+├── work/
+│   └── skills/                  # pm, sprint-planner
 ├── gtm/
 │   └── skills/                  # crm, linkedin
 └── docs/

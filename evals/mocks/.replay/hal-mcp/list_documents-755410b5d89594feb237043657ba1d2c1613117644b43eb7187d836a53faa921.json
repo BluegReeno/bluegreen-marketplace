@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-pme",
+    "search": "mutuelle"
+  },
+  "output": "{\"documents\":[],\"total\":0,\"returned\":0,\"truncated\":false}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T15:53:03.878Z",
+  "model": "claude-sonnet-5-5"
+}

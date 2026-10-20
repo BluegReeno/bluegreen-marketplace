@@ -1,0 +1,14 @@
+{
+  "input": {
+    "query": "DSI",
+    "workspace_slug": "hal-audit-jobsearch",
+    "kind": [
+      "call",
+      "call_analysis"
+    ]
+  },
+  "output": "{\"hits\": [{\"document_slug\": \"call-analysis-20025b5a86e943bea5e26eefad5361ba\", \"title\": \"Analyse — Veridian Énergie — Nathalie Garcin, Antoine Lefèvre — 2026-09-10\", \"passage\": \"Le périmètre exact entre le poste rattaché au DG et la DSI n'est pas encore arbitré : le DG le veut côté opérations, la DSI revendique la donnée et les outils. · authority\\n> Ce n'est pas encore arbitré. Le DG veut que ce soit côté opérations, clairement, c'est pour ça que le poste lui est rattaché.\", \"score\": 0.82, \"occurred_at\": \"2026-09-10T08:00:00+00:00\"}], \"total\": 1, \"returned\": 1, \"truncated\": false}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-15T09:49:41.457Z",
+  "model": "claude-sonnet-5-5"
+}

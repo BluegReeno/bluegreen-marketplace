@@ -1,17 +1,17 @@
 # Installing connectors & skills — Claude, Gemini, OpenAI
 
 How to connect the `hal` plugin's MCP server (**connector**) and the `SKILL.md` files shipped by
-the `edifice`, `pm` and `gtm` plugins (**skills**) across the three major AI providers.
+the `pm` and `gtm` plugins (**skills**) across the three major AI providers.
 
 Read this first: **a connector and a skill are two different things with different reach.**
 
 | | What it is | Where it installs |
 |---|---|---|
 | **Connector** | A remote **MCP server** (our Supabase Edge Function `hal-mcp`) exposing tools | **Every** surface: Claude (Code / Desktop / claude.ai), Gemini (Enterprise / CLI), ChatGPT |
-| **Skill** | A `SKILL.md` capability file (`/edifice`, `/pm`, `/crm` …) | **Only the agent/CLI surfaces**: Claude Code, Gemini **CLI**, OpenAI **Codex** — via the [agentskills.io](https://agentskills.io) standard. **Not** the chat apps. |
+| **Skill** | A `SKILL.md` capability file (`/pm`, `/crm` …) | **Only the agent/CLI surfaces**: Claude Code, Gemini **CLI**, OpenAI **Codex** — via the [agentskills.io](https://agentskills.io) standard. **Not** the chat apps. |
 
 The chat apps (claude.ai chat, ChatGPT app, Gemini Enterprise) **cannot install a skill** —
-they only call the connector's tools. The full `/edifice` / `/pm` / `/crm` skill experience lives in
+they only call the connector's tools. The full `/pm` / `/crm` skill experience lives in
 **Claude Code**. That is our primary, fully-supported target.
 
 ---
@@ -21,8 +21,8 @@ they only call the connector's tools. The full `/edifice` / `/pm` / `/crm` skill
 | | Value |
 |---|---|
 | MCP server | `hal-mcp` — Supabase Edge Function |
-| Project ref | `zgkvbjqlvebttbnkklpo` |
-| URL | `https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp` |
+| Host | self-hosted Supabase on `bluegreen-vps` (the cloud project `zgkvbjqlvebttbnkklpo` is frozen since the cutover of 2026-10-16) |
+| URL | `https://supabase.bluegreen.ai/functions/v1/hal-mcp` |
 | Transport | **Streamable HTTP** (required by all three; Gemini Enterprise refuses SSE) |
 | Auth — chat/web/mobile | **OAuth 2.1** via Supabase Auth (`/auth/v1`), with discovery + dynamic client registration |
 | Auth — Claude Code CLI / Desktop | **`apikey` header** (`secret:hal_api_key` mode) — no OAuth dance |
@@ -42,20 +42,19 @@ pasted manually.
 ```
 /plugin marketplace add BluegReeno/bluegreen-marketplace
 /plugin install hal@bluegreen-marketplace          # the connector — required
-/plugin install edifice@bluegreen-marketplace      # then whichever skills you use
-/plugin install pm@bluegreen-marketplace
+/plugin install pm@bluegreen-marketplace           # then whichever skills you use
 /plugin install gtm@bluegreen-marketplace
 ```
 
 `hal` registers the `hal-mcp` connector automatically (its bundled `.mcp.json` auto-starts when the
-plugin is enabled); the three others register the skills (`/edifice`, `/pm`, `/crm`, `/linkedin`)
+plugin is enabled); the two others register the skills (`/pm`, `/crm`, `/linkedin`)
 and call that same connector. Run `/reload-plugins` if something doesn't appear immediately.
 
 The connector authenticates via the `apikey` header. If it isn't already wired, add it once:
 
 ```
 claude mcp add --transport http hal-mcp \
-  https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp \
+  https://supabase.bluegreen.ai/functions/v1/hal-mcp \
   --header "apikey: <HAL_API_KEY>"
 ```
 
@@ -69,7 +68,7 @@ paste the URL → **Add**.
 - ⚠️ The browser's claude.ai session must be the **same account** as the app, or you get
   "Account mismatch / Incompatibilité de compte".
 
-> Claude Desktop / claude.ai run the **tools**, not the `/edifice` / `/hal` skills. For the full
+> Claude Desktop / claude.ai run the **tools**, not the `/pm` / `/crm` skills. For the full
 > command experience, use Claude Code (§1a).
 
 ---
@@ -84,11 +83,11 @@ manually (no discovery, no dynamic registration). Status: **Preview** — UI lab
 **Google Cloud console → Gemini Enterprise:**
 1. Nav menu → **Data stores** → **Create data store**.
 2. On **Select a data source**, type **Custom MCP Server** in the search field → select it.
-3. **MCP Server URL**: `https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp`
+3. **MCP Server URL**: `https://supabase.bluegreen.ai/functions/v1/hal-mcp`
 4. **Transport: Streamable HTTP** (the only option Gemini Enterprise supports).
 5. **Authentication settings** (all manual):
-   - **Authorization URI**: `https://zgkvbjqlvebttbnkklpo.supabase.co/auth/v1/authorize`
-   - **Token URI**: `https://zgkvbjqlvebttbnkklpo.supabase.co/auth/v1/token`
+   - **Authorization URI**: `https://supabase.bluegreen.ai/auth/v1/authorize`
+   - **Token URI**: `https://supabase.bluegreen.ai/auth/v1/token`
    - **Client ID** / **Client Secret**: from a Supabase OAuth client (see box below)
    - **Scopes**: as required by the client registration
 6. Google fixes the **redirect URI** to `https://vertexaisearch.cloud.google.com/oauth-redirect`
@@ -122,7 +121,7 @@ the URL. Edit `~/.gemini/settings.json`:
 ```json
 "mcpServers": {
   "hal-mcp": {
-    "httpUrl": "https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp",
+    "httpUrl": "https://supabase.bluegreen.ai/functions/v1/hal-mcp",
     "oauth": { "enabled": true }
   }
 }
@@ -134,7 +133,7 @@ Then authorize once with `/mcp auth hal-mcp` (opens the browser flow).
 > is recent and `httpUrl` has no effect, replace it with `url` in `settings.json`.
 
 Gemini CLI also reads the `SKILL.md` standard — skills live in `~/.gemini/skills/`
-(alias `~/.agents/skills/`), so the §4 symlinks expose `/edifice` and `/hal` here too.
+(alias `~/.agents/skills/`), so the §4 symlinks expose `/pm`, `/crm` and `/linkedin` here too.
 
 ---
 
@@ -145,7 +144,7 @@ ChatGPT needs **Developer Mode** for a connector that exposes write tools (not j
 1. `Settings → Apps & Connectors → Advanced settings → Developer mode` → toggle **ON**
    (confirm the warning). On Business/Enterprise/Edu a workspace admin must enable it first.
 2. `Settings → Apps & Connectors → Add new connector` (a.k.a. **Create**).
-3. **MCP Server URL**: `https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp`
+3. **MCP Server URL**: `https://supabase.bluegreen.ai/functions/v1/hal-mcp`
 4. **Authentication = OAuth** → **Create**. ChatGPT discovers the auth server, registers itself
    dynamically (PKCE), and opens the Supabase consent flow. No endpoints to paste.
 
@@ -157,7 +156,7 @@ custom connectors).
 > pre-register a static OAuth client on Supabase so you can paste a `client_id` if the
 > automatic flow fails.
 
-> ChatGPT has no Agent Skills in the chat app. The `/edifice` / `/hal` *skills* run in **Codex**
+> ChatGPT has no Agent Skills in the chat app. The `/pm` / `/crm` *skills* run in **Codex**
 > (which adopted `SKILL.md`) via `.agents/skills/` — see §4. The chat app only calls tools.
 
 ### 3b. OpenAI Codex — connector + skills
@@ -169,7 +168,7 @@ For the MCP connector, add it to your Codex MCP config (path varies by install):
 
 ```json
 "hal-mcp": {
-  "url": "https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp",
+  "url": "https://supabase.bluegreen.ai/functions/v1/hal-mcp",
   "auth": { "type": "oauth" }
 }
 ```
@@ -188,8 +187,7 @@ symlink them at the repo root:
 ```bash
 # run from the repo root
 mkdir -p .agents/skills
-ln -sf "$(pwd)/plugins/edifice/skills/edifice" .agents/skills/edifice
-ln -sf "$(pwd)/plugins/pm/skills/pm"          .agents/skills/pm
+ln -sf "$(pwd)/plugins/work/skills/pm"          .agents/skills/pm
 ln -sf "$(pwd)/plugins/gtm/skills/crm"        .agents/skills/crm
 ln -sf "$(pwd)/plugins/gtm/skills/linkedin"   .agents/skills/linkedin
 ```
@@ -216,16 +214,16 @@ No frontmatter change needed. The chat apps (claude.ai, ChatGPT, Gemini Enterpri
 
 ```bash
 # OAuth discovery — must return JSON with authorization_servers
-curl https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp/.well-known/oauth-protected-resource
+curl https://supabase.bluegreen.ai/functions/v1/hal-mcp/.well-known/oauth-protected-resource
 
 # Supabase OAuth server enabled — must NOT return {"error_code":"feature_disabled"}
-curl https://zgkvbjqlvebttbnkklpo.supabase.co/auth/v1/.well-known/oauth-authorization-server
+curl https://supabase.bluegreen.ai/auth/v1/.well-known/oauth-authorization-server
 
 # Tool list over the apikey header (Claude Code path)
 # Never share <HAL_API_KEY> — treat it like a password
 npx @modelcontextprotocol/inspector \
   --header "apikey: <HAL_API_KEY>" \
-  https://zgkvbjqlvebttbnkklpo.supabase.co/functions/v1/hal-mcp
+  https://supabase.bluegreen.ai/functions/v1/hal-mcp
 ```
 
 For the server-side OAuth and Edge Function implementation details, see the `renaud-marketplace`

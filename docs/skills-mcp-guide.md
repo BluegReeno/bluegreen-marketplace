@@ -14,13 +14,13 @@ Claude Code has two separate invocation systems:
 | **Skills** | `skills/<name>/SKILL.md` | Semantic trigger (description match) OR `plugin:skill` menu |
 | **Commands** | `commands/<name>.md` | Explicit `/command-name` slash syntax |
 
-Skills are always namespaced by their plugin: the skill `pm` in plugin `pm` → `pm:pm` in the menu.
+Skills are always namespaced by their plugin: the skill `pm` in plugin `work` → `work:pm` in the menu.
 Typing `/pm` raw looks for a **command** named `pm`, not a skill. Without `commands/pm.md`,
 Claude Code returns "compétence inconnue".
 
 **Fix**: each plugin ships a `commands/<name>.md` per skill (auto-discovered from the `commands/`
-directory, no manifest entry needed) — that is what registers `/pm`, `/edifice`, `/crm`, `/linkedin`,
-`/sprint-planner` and `/sprint-review` as first-class slash commands.
+directory, no manifest entry needed) — that is what registers `/pm`, `/crm`, `/linkedin`
+and `/sprint-planner` as first-class slash commands.
 
 ### Command file format
 
@@ -58,7 +58,7 @@ Add a pre-flight check at the top of every skill section and command body that
 requires MCP tools.
 
 ```
-1. Call whoami (pm / crm skills — no args) or list_edifice_missions (edifice skill) with workspace_slug: "blue-green"
+1. Call whoami (no args)
 2. Success → proceed normally. For the pm / crm skills, cache the whoami payload
    (default_workspace_slug, workspaces, user_email) for the current command.
 3. Failure (tool not found / connection refused / timeout) → show reconnection message, stop
@@ -83,12 +83,7 @@ not by the user's shell.
 | `/pm …` | ✅ | `whoami` |
 | `/crm …` | ✅ | `whoami` |
 | `/linkedin …` | ✅ | `whoami` |
-| `/sprint-planner`, `/sprint-review` | ✅ | `whoami` |
-| `/edifice list` | ✅ | `list_edifice_missions` |
-| `/edifice pull` | ✅ | `list_edifice_missions` |
-| `/edifice improve` | ❌ (local files) | skip |
-| `/edifice report` | ❌ (local files) | skip |
-| `/edifice push` | ✅ | `list_edifice_missions` |
+| `/sprint-planner` | ✅ | `whoami` |
 
 ---
 
@@ -99,7 +94,7 @@ for skills. Our SKILL.md files already comply:
 
 | Field | Spec | Our SKILL.md |
 |-------|------|-------------|
-| `name` | required — matches directory name | ✅ `edifice` / `pm` / `crm` … |
+| `name` | required — matches directory name | ✅ `pm` / `crm` … |
 | `description` | required | ✅ present |
 | `allowed-tools` | optional, experimental | ✅ used |
 | `version` | not in spec (use `metadata.version`) | **not used** — skills carry no version, see §4 |
@@ -122,8 +117,7 @@ plugin system:
 
 ```bash
 mkdir -p .agents/skills
-ln -sf "$(pwd)/plugins/edifice/skills/edifice" .agents/skills/edifice
-ln -sf "$(pwd)/plugins/pm/skills/pm" .agents/skills/pm
+ln -sf "$(pwd)/plugins/work/skills/pm" .agents/skills/pm
 ```
 
 The SKILL.md frontmatter requires no changes — it already complies with the spec.
@@ -153,8 +147,7 @@ See `CLAUDE.md` → Versioning Policy for the full bump table.
 
 ```bash
 # Frontmatter compliance (agentskills.io)
-npx skills-ref validate ./plugins/edifice/skills/edifice
-npx skills-ref validate ./plugins/pm/skills/pm
+npx skills-ref validate ./plugins/work/skills/pm
 
 # Version sync — every plugin at once, same check CI runs
 bash scripts/check_version_sync.sh

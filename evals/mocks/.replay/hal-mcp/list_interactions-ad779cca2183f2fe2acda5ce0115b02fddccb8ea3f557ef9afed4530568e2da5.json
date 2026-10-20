@@ -1,0 +1,11 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-pme",
+    "project_id": "audit-bg-pr-club",
+    "limit": 1
+  },
+  "output": "{\"interactions\":[{\"id\":\"audit-bg-in-4\",\"workspace_slug\":\"hal-audit-pme\",\"project_id\":\"audit-bg-pr-club\",\"contact_id\":\"audit-bg-ct-roux\",\"channel\":\"call\",\"occurred_at\":\"2026-09-03T07:30:00+00:00\",\"summary\":\"Atelier confirmé sur le principe, budget 4 500 €, octobre de préférence.\",\"transcript\":null,\"tags\":[\"commercial\"],\"sensitive\":null,\"created_by\":null,\"created_at\":\"2026-10-14T09:00:00+00:00\",\"updated_at\":\"2026-10-14T09:00:00+00:00\"}],\"total\":1,\"offset\":0,\"returned\":1,\"truncated\":false}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T12:55:52.682Z",
+  "model": "claude-sonnet-5-5"
+}

@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-famille",
+    "slug": "certificat-scolarite-leo-2026"
+  },
+  "output": "{\n  \"id\": \"e3a7c1d4-5b2f-4c8e-9a61-7d0f2b4c8a15\",\n  \"workspace_slug\": \"hal-audit-famille\",\n  \"slug\": \"certificat-scolarite-leo-2026\",\n  \"domain\": \"ecole\",\n  \"kind\": \"school-certificate\",\n  \"title\": \"Certificat de scolarité — Léo, CM1\",\n  \"person_name\": \"Léo Doe\",\n  \"project_id\": null,\n  \"content_md\": \"# Certificat de scolarité — Léo, CM1\\n\\n- **ecole**: École Jean-Moulin\\n- **classe**: CM1\\n- **annee**: 2026-2027\\n\",\n  \"facts\": {\n    \"ecole\": \"École Jean-Moulin\",\n    \"classe\": \"CM1\",\n    \"annee\": \"2026-2027\"\n  },\n  \"storage\": null,\n  \"issued_date\": \"2026-09-03\",\n  \"valid_until\": \"2027-07-04\",\n  \"sensitive\": false,\n  \"knowledge\": false,\n  \"created_at\": \"2026-10-14T09:00:00+00:00\",\n  \"updated_at\": \"2026-10-14T09:00:00+00:00\"\n}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T15:52:43.379Z",
+  "model": "claude-sonnet-5-5"
+}

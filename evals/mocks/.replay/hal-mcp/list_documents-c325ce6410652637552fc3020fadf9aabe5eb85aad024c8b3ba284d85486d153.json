@@ -1,0 +1,10 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-famille",
+    "search": "mutuelle"
+  },
+  "output": "{\"documents\":[{\"slug\":\"attestation-mutuelle-2026\",\"domain\":\"sante\",\"kind\":\"insurance-certificate\",\"title\":\"Attestation Mutuelle Horizon — famille\",\"person_name\":null,\"valid_until\":\"2026-12-31\",\"has_file\":false,\"sensitive\":false,\"project_id\":null,\"knowledge\":false}],\"total\":1,\"returned\":1,\"truncated\":false}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T15:53:02.663Z",
+  "model": "claude-sonnet-5-5"
+}

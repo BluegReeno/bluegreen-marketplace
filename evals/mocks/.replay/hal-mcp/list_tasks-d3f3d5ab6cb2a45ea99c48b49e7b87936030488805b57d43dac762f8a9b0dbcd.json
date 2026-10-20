@@ -1,0 +1,11 @@
+{
+  "input": {
+    "workspace_slug": "hal-audit-pme",
+    "project_id": "audit-bg-pr-valdor",
+    "status": "in_progress"
+  },
+  "output": "{\"tasks\":[],\"total\":0,\"offset\":0,\"returned\":0,\"truncated\":false}",
+  "verdict": "ok",
+  "recordedAt": "2026-10-14T12:55:58.669Z",
+  "model": "claude-sonnet-5-5"
+}

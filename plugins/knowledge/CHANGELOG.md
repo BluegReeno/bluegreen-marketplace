@@ -1,0 +1,48 @@
+# Changelog — knowledge
+
+All notable changes to this plugin are documented here.
+
+## Versioning convention
+
+`0.MINOR.PATCH` (pre-1.0):
+- **PATCH** (`0.x.Y+1`) — bugfix, optional field, internal improvement with no interface impact
+- **MINOR** (`0.X+1.0`) — interface change: new required field, renamed command, observable behaviour change
+
+Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's skills call.
+
+---
+
+## [0.2.0] — 2026-10-20 — file places a paper with hal-mcp get_filing_path
+
+- `file` § 4: the folder and the file name come from hal-mcp `get_filing_path` (hal#322, q66) —
+  `ok` is shown with its `rule` lines, `missing` facts are asked, never guessed, `ambiguous`
+  candidates are chosen by Renaud and passed back as `layout_key`, a name over 50 characters is
+  shortened by its subject. `whoami`'s `folders` stays the fallback for a workspace whose layout is
+  not loaded.
+- **Requires** the hal-mcp that registers `get_filing_path`: deploy hal first
+  (`make install ENV_FILE=.env.vps`) and load the layouts (`make layout WORKSPACE=blue-green`),
+  then merge this release.
+
+## [0.1.1] — 2026-10-16 — file shows a filed paper's facts; ingest points call passages to gtm:call
+
+- `file`: a paper already filed is shown with what is filed — `get_document`, its facts, its
+  validity, a file attached or not — before any question (hal migration block 5, eval
+  `s03-s1-ranger`, 2026-10-15: two runs of three named the existing fiche by its title and
+  validity only, the school and class unread).
+- `ingest`'s description points « retrouver un passage d'appel » to `gtm:call` § 12, which looks it
+  up with `kb_search` (hal S01 on the real rows, 2026-10-15: the question answered with no hal call).
+
+## [0.1.0] — 2026-10-09 — created: `ingest` and `file` (hal audit q29, q35, q41)
+
+The plugin of the Documents and Knowledge pillars (q39). Two skills, the only gestures of the
+pillar that chain several tools or carry a judgement; retrieving, reading, what expires and querying
+stay named tools in the sentence (`list_documents`, `get_document`, `get_document_link`, `kb_search`).
+
+- `ingest` — index what is worth recalling: the catch-up of knowledge-flagged documents and call
+  transcripts (`--pending`), or one source from a file (course, video transcript, document). Runs
+  the hal checkout's `scripts/kb/ingest.py` on the Mac and refuses by name anywhere else.
+  The environment file is `HAL_ENV_FILE` (default the checkout's `.env`); its host is shown before any
+  write, so the passages land in the instance hal-mcp reads.
+- `file` — file a paper: extract the facts, choose workspace, domain, kind and slug, answer the
+  « fiche or knowledge base » question, reference the file in the workspace's storage
+  (`storage {provider, uri}`), write the fiche with `save_document`.

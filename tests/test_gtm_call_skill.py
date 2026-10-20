@@ -1,0 +1,191 @@
+"""Invariants of the `gtm:call` skill — the contract that `jobsearch:log-cr` (renaud-marketplace)
+relies on, and the hygiene a public repo needs.
+
+Prose skills have no unit test; these guards catch the drifts that would break a caller silently:
+a renamed skill, a `disable-model-invocation` that would refuse the cross-plugin
+`Skill("gtm:call")`, a hal tool dropped from `allowed-tools`, `knowledge=true` lost from the
+analysis write (hal#235), an email literal, or a retired `/crm log` resurrected.
+"""
+import pathlib
+import re
+import unittest
+
+from skilltext import HAL_TOOLS, REPO, allowed_tools, frontmatter, hal_tools_allowed, hal_tools_mentioned, read
+
+GTM = REPO / "plugins/gtm"
+SKILL = GTM / "skills/call/SKILL.md"
+EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+")
+
+
+class TestCallSkillFrontmatter(unittest.TestCase):
+    def setUp(self):
+        self.fm = frontmatter(SKILL)
+
+    def test_name_is_call(self):
+        # `Skill("gtm:call")` resolves on plugin name + this field; a rename breaks log-cr.
+        self.assertEqual(self.fm["name"], "call")
+
+    def test_no_disable_model_invocation(self):
+        self.assertNotIn("disable-model-invocation", self.fm)
+
+    def test_allowed_tools_cover_the_hal_writes(self):
+        tools = hal_tools_allowed(SKILL)
+        for name in ("save_document", "log_interaction", "list_interactions",
+                     "update_interaction", "whoami", "list_projects", "update_project"):
+            self.assertIn(name, tools, name)
+        self.assertIn("Bash(uv *)", allowed_tools(SKILL))   # render + ingest
+        self.assertIn("Bash(test *)", allowed_tools(SKILL))  # the pre-flight
+
+    def test_allowed_tools_call_no_other_skill(self):
+        # gtm:call is the leaf of the chain: log-cr calls it, it calls nobody.
+        self.assertNotIn("Skill(", self.fm["allowed-tools"])
+
+    def test_description_names_the_caller(self):
+        self.assertIn("log-cr", self.fm["description"])
+
+
+class TestCallSkillAgainstTheTargetContract(unittest.TestCase):
+    def setUp(self):
+        self.text = read(SKILL)
+
+    def test_every_tool_named_exists_in_hal_mcp(self):
+        self.assertLessEqual(hal_tools_allowed(SKILL), HAL_TOOLS)
+        self.assertLessEqual(hal_tools_mentioned(SKILL), HAL_TOOLS)
+
+    def test_the_analysis_is_saved_as_knowledge(self):
+        # hal#235: `ingest.py --pending` indexes a document only when its fiche carries
+        # `knowledge`. Without the flag the analysis is counted as skipped and the run succeeds.
+        body = " ".join(self.text.split())
+        call = re.search(r'`save_document\(workspace_slug=WS[^`]*kind="call_analysis"[^`]*\)`', body)
+        self.assertIsNotNone(call)
+        self.assertIn("knowledge=true", call.group(0))
+
+    def test_projects_are_read_by_the_four_kinds_not_the_old_project_kind(self):
+        self.assertIn('kind="opportunity"', self.text)
+        self.assertIn('kind="client"', self.text)
+        self.assertNotIn('kind="project"', self.text)
+
+    def test_archived_workspaces_are_refused_by_name(self):
+        self.assertIn("archived", self.text)
+
+    def test_the_analysis_carries_no_file(self):
+        # `save_document` takes `storage {provider, uri}` now; an analysis is text, not a file.
+        self.assertNotIn("filename", self.text)
+        self.assertIn("Aucun `storage`", self.text)
+
+    def test_the_interview_workspace_comes_from_its_type_not_a_tag_or_a_slug(self):
+        self.assertIn('type == "jobsearch"', self.text)
+
+    def test_no_legacy_table_names(self):
+        self.assertNotIn("halcrm", self.text)
+
+
+class TestCallSkillTargetsTheRightInstance(unittest.TestCase):
+    def setUp(self):
+        self.text = read(SKILL)
+
+    def test_env_file_is_selectable_and_its_host_shown(self):
+        self.assertIn("HAL_ENV_FILE", self.text)
+        self.assertNotIn('--env-file "$HAL/.env"', self.text)
+        self.assertIn("l'hôte seul", self.text)
+
+
+class TestCallSkillCarriesWhatPr109Had(unittest.TestCase):
+    """hal q56: next won over bluegreen-marketplace#109, which gave up three sections."""
+
+    def setUp(self):
+        self.text = read(SKILL)
+
+    def test_inventory_finds_calls_by_the_granola_mark_the_write_sets(self):
+        self.assertIn("### 3a. Inventaire", self.text)
+        self.assertIn('search="granola:<8', self.text)
+        self.assertIn("[granola:<8 premiers caractères>]", self.text)
+
+    def test_prepare_the_next_meeting_reads_hal_only(self):
+        self.assertIn("## 11. Préparer le rendez-vous suivant", self.text)
+        for name in ("kb_search", "list_documents", "get_document_link", "list_sprints"):
+            self.assertIn(name, hal_tools_allowed(SKILL), name)
+
+    def test_acceptance_s01_splits_vault_and_hal(self):
+        self.assertIn("## Acceptance — S01", self.text)
+        self.assertIn("q54", self.text)
+
+
+class TestCallSkillBlock4Rules(unittest.TestCase):
+    """hal migration block 4 (S01 on the real rows, 2026-10-15): one rule for a summary-only
+    source, no pick on a non-answer, indexing scoped to the call, a passage looked up in hal."""
+
+    def setUp(self):
+        self.text = read(SKILL)
+        self.body = " ".join(self.text.split())
+
+    def test_a_summary_is_never_a_transcript(self):
+        # l1 refused to analyse a Granola summary, l2 analysed the same file: the rule is stated.
+        self.assertIn("### Un résumé n'est pas un transcript", self.text)
+        self.assertIn("Aucun `call_analysis` ne s'écrit sans transcript.", self.body)
+        self.assertIn("granola:SANS TRANSCRIPT", self.text)
+
+    def test_a_non_answer_is_asked_again(self):
+        self.assertIn("Une question à options attend une option nommée.", self.body)
+        self.assertIn("reposer la même question", self.body)
+
+    def test_ingest_never_sweeps_the_workspace(self):
+        # `--pending` alone indexes every pending row of the workspace (a `retex-*` fiche, run of
+        # 2026-10-15). Every invocation in a code block carries `--only`.
+        blocks = re.findall(r"```bash\n(.*?)```", self.text, re.S)
+        calls = [b for b in blocks if "ingest.py" in b]
+        self.assertTrue(calls)
+        for block in calls:
+            self.assertIn('--only "$URI"', block)
+
+    def test_a_passage_is_looked_up_in_hal_first(self):
+        self.assertIn("## 12. Retrouver un passage", self.text)
+        section = self.text.split("## 12. Retrouver un passage", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("kb_search(", section)
+        self.assertIn("avant toute réponse", section)
+        self.assertIn("retrouve le passage", frontmatter(SKILL)["description"])
+
+
+class TestCallSkillHygiene(unittest.TestCase):
+    def setUp(self):
+        self.text = read(SKILL)
+
+    def test_no_email_literal(self):
+        # Public repo: owner addresses come from whoami / Granola, never from this file.
+        found = [e for e in EMAIL.findall(self.text) if not e.endswith("example.com")]
+        self.assertEqual(found, [])
+
+    def test_renderer_is_the_hal_cli(self):
+        for needle in ("call_analysis.py", "render", "prompts", "ingest.py"):
+            self.assertIn(needle, self.text)
+
+    def test_source_keys_match_call_analysis_render(self):
+        # `render` refuses a `source` missing any of these (hal call_analysis.CALL_SOURCE_KEYS).
+        for key in ("granola_id", "opportunite", "outcome", "type_entretien", "feeling",
+                    "format", "heure", "interlocuteurs"):
+            self.assertIn(key, self.text, key)
+
+    def test_reflection_is_a_string_under_reflexion(self):
+        self.assertIn("## Réflexion", self.text)
+        self.assertNotIn("reflection.fit", self.text)
+
+
+class TestCrmLogRetired(unittest.TestCase):
+    """`/crm log` and `/crm log update` are gone from the gtm plugin: `gtm:call` replaced the first,
+    `update_interaction` named in the sentence replaces the second."""
+
+    def test_no_crm_log_left_in_the_plugin(self):
+        for path in GTM.rglob("*.md"):
+            if path.name == "CHANGELOG.md":
+                continue
+            for n, line in enumerate(read(path).splitlines(), 1):
+                self.assertNotRegex(line, r"/crm log", f"{path}:{n}")
+
+    def test_crm_no_longer_logs_interactions(self):
+        tools = hal_tools_allowed(GTM / "skills/crm/SKILL.md")
+        self.assertNotIn("log_interaction", tools)
+        self.assertNotIn("update_interaction", tools)
+
+
+if __name__ == "__main__":
+    unittest.main()

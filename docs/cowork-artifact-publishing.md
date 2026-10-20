@@ -7,7 +7,7 @@
 >
 > Everything below is **observed**, not inferred. Where an instrument could not measure
 > something, that is stated rather than guessed. Companion documents:
-> [`artifact-front-ends.md`](./artifact-front-ends.md) (architecture),
+> [`artifact-front-ends.md`](./_archive/artifact-front-ends.md) (architecture),
 > [`connectors-and-skills.md`](./connectors-and-skills.md) (connector installation).
 
 ---
