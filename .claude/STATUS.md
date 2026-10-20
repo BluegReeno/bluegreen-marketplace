@@ -1,23 +1,20 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-10-15
+Last updated: 2026-10-20
 
 > History up to 2026-09-09 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
 
 ## Current Focus
 
-Three plugins live — `hal` 0.12.0 (connector only), `gtm` 0.2.6, `pm` 0.3.0, top-level 0.10.34
-(`marketplace.json`); `edifice` archived at tag `archive/edifice-plugin`. Next: land the two open PRs.
+Five plugins live — `hal` 0.13.0 (connector only), `work` 0.5.0, `gtm` 0.3.0, `knowledge` 0.2.0,
+`docs` 0.1.0, top-level 0.10.38 (`marketplace.json`); `edifice` archived. Next: land PR #101.
 
 ## In Progress
 
 - [ ] PR [#101](https://github.com/BluegReeno/bluegreen-marketplace/pull/101) — `gtm:call`, `/crm log`
       retired (`hal#192` phase B). Written against `gtm` 0.3.0 / top-level 0.10.31, both overtaken
       by the 2026-10-07 releases: rebase, renumber, then release through `release.sh`. No CI run.
-- [ ] PR [#103](https://github.com/BluegReeno/bluegreen-marketplace/pull/103) — new `docs` plugin
-      (`brand`, `study-report`, `proposal`). CI green. Merging it adds a fourth plugin: update
-      `BLUEGREEN_MAP.md` and this file's plugin list in the same session.
 - [ ] **Local branch `wip/edifice-front-mcp` can go.** Its unfinished exploration targeted
       `ui/edifice-front/`, archived on 2026-10-07; deleting it also drops the 28 contaminated blobs
       left in the local object store (residual accepted when `#95` was closed). Renaud's call.
@@ -51,6 +48,7 @@ Three plugins live — `hal` 0.12.0 (connector only), `gtm` 0.2.6, `pm` 0.3.0, t
 
 ## Done (current sprint)
 
+- [x] PR [#103](https://github.com/BluegReeno/bluegreen-marketplace/pull/103) merged — new `docs` plugin 0.1.0 (`brand`, `study-report`, `proposal`), top-level 0.10.38; README presents `knowledge`; `BLUEGREEN_MAP.md` lists `docs` (archon-workflows `da7ec15`). Still open from its review: `brand.yaml` carries the business mobile and address in a public repo, `blue-green-page.md` is flagged `TO REWRITE` — 2026-10-20
 - [x] PR [#116](https://github.com/BluegReeno/bluegreen-marketplace/pull/116) merged into `next` — `gtm:crm new` proposes before it creates (hal block-3 A1); harness sc1-intro 7/7 — 2026-10-14
 - [x] Released `pm` **0.3.0** (`sprint-review` retired, q12) and `gtm` **0.2.6** (no `/edifice` routing); `edifice` archived (#106, tag `archive/edifice-plugin`) — 2026-10-07
 - [x] `#100` — `sprint-planner` no longer names any appointment: capacity is 35h minus the job-search blocks, the LinkedIn post and the events actually read from the declared calendars (the IC Ingénieurs weekly meeting, stopped end of August, was still costing 1h and pushing Monday's block). Planned-week dates now derive from the weekday, with catch-up of a week left without a sprint; `pm` **0.2.1**, top-level **0.10.31**. `sprint-review` kept the old `next monday` / `next friday` lines until it was retired in `pm` 0.3.0 — 2026-09-30
