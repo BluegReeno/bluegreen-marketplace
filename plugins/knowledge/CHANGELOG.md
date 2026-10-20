@@ -12,6 +12,17 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.2.0] — 2026-10-20 — file places a paper with hal-mcp get_filing_path
+
+- `file` § 4: the folder and the file name come from hal-mcp `get_filing_path` (hal#322, q66) —
+  `ok` is shown with its `rule` lines, `missing` facts are asked, never guessed, `ambiguous`
+  candidates are chosen by Renaud and passed back as `layout_key`, a name over 50 characters is
+  shortened by its subject. `whoami`'s `folders` stays the fallback for a workspace whose layout is
+  not loaded.
+- **Requires** the hal-mcp that registers `get_filing_path`: deploy hal first
+  (`make install ENV_FILE=.env.vps`) and load the layouts (`make layout WORKSPACE=blue-green`),
+  then merge this release.
+
 ## [0.1.1] — 2026-10-16 — file shows a filed paper's facts; ingest points call passages to gtm:call
 
 - `file`: a paper already filed is shown with what is filed — `get_document`, its facts, its

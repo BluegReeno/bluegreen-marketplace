@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "version": "0.10.36",
+  "version": "0.10.37",
   "name": "bluegreen-marketplace",
   "description": "BlueGreen AI plugins for Claude Code — CRM, projects and sprints",
   "owner": { "name": "Blue Green AI", "email": "renaud@bluegreen.ai" },
@@ -36,7 +36,7 @@
       "name": "knowledge",
       "description": "Knowledge — Documents and Knowledge pillars: file a paper (file) and index what is worth recalling (ingest).",
       "source": "./plugins/knowledge",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" },
       "homepage": "https://github.com/BluegReeno/bluegreen-marketplace",
       "repository": "https://github.com/BluegReeno/bluegreen-marketplace"

@@ -99,6 +99,15 @@ class TestFile(unittest.TestCase):
     def test_facts_are_shown_before_anything_is_written(self):
         self.assertIn("Les montrer avant d'écrire", self.text)
 
+    def test_the_path_and_the_name_come_from_get_filing_path(self):
+        # hal#322, q66: the filing rules are applied once, server-side — the skill never composes a
+        # path or a file name itself, and every status the tool answers is handled.
+        self.assertIn("get_filing_path", hal_tools_allowed(FILE))
+        for status in ("`ok`", "`missing`", "`ambiguous`", "`layout_key`", "50 caractères"):
+            self.assertIn(status, self.text, status)
+        self.assertIn("jamais un nom tapé à la place", flat(self.text))
+        self.assertIn("ne passer ni `date` ni `issuer`", flat(self.text))
+
 
 if __name__ == "__main__":
     unittest.main()
