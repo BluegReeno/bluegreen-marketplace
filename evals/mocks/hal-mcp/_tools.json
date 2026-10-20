@@ -967,7 +967,7 @@
   {
    "name": "list_tasks",
    "title": "List Tasks",
-   "description": "List tasks in a workspace. Filters: project_id, assignee_email, status (todo|in_progress|done|blocked|cancelled), sprint_id, tags (overlap match — returns tasks that have ANY of the listed tags). Returns assignee_email surfaced from auth.users. Sorted newest-first (created_at DESC) and capped at 100 rows by default — pass `limit` to raise it. Response is {tasks, total, returned, truncated}: `truncated` is true when `total > returned`, i.e. rows were withheld.",
+   "description": "List tasks in a workspace. Filters: project_id, assignee_email, status (open|todo|in_progress|done|blocked|cancelled), sprint_id, tags (overlap match — returns tasks that have ANY of the listed tags). Returns assignee_email surfaced from auth.users. Sorted newest-first (created_at DESC) and capped at 100 rows by default — pass `limit` to raise it. Response is {tasks, total, returned, truncated}: `truncated` is true when `total > returned`, i.e. rows were withheld. `open` = todo + in_progress + blocked. A single status hides the others: to find the task someone just called done, or to answer what is left to do, use `open` — never `todo` alone.",
    "inputSchema": {
     "type": "object",
     "properties": {
@@ -983,6 +983,7 @@
      "status": {
       "type": "string",
       "enum": [
+       "open",
        "todo",
        "in_progress",
        "done",
@@ -1022,7 +1023,7 @@
   {
    "name": "update_task_status",
    "title": "Update Task Status",
-   "description": "Update the status of a task in a workspace. Valid values: todo, in_progress, done, blocked, cancelled. `cancelled_reason` is accepted only when status is 'cancelled' (optional free text). Setting status to 'done' stamps `completed_at`; moving away from 'done' clears it; a task moved to 'cancelled' never carries a `completed_at`.",
+   "description": "Update the status of a task in a workspace. Valid values: todo, in_progress, done, blocked, cancelled. `cancelled_reason` is accepted only when status is 'cancelled' (optional free text). Setting status to 'done' stamps `completed_at`; moving away from 'done' clears it; a task moved to 'cancelled' never carries a `completed_at`. `done` records the title and description as what happened, so before setting it: (1) when the outcome differs from the plan, rewrite the title or description with `update_task` first — 'observations sent to the tax office on 19/10', not 'appointment taken'; (2) follow the task ids the description cites (`list_tasks` with status `open`) and close or update those too — the work someone calls done may be tracked on the cited task, not this one.",
    "inputSchema": {
     "type": "object",
     "properties": {
