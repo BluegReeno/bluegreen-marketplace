@@ -20,6 +20,12 @@ jobs:
           python-version: '3.12'
       - name: Version sync + CHANGELOG check
         run: bash scripts/check_version_sync.sh
+      - name: Install docs render test dependencies
+        # tests/test_docs_md2docx.py renders real .docx through md2docx.py, which needs python-docx, PyYAML
+        # and a pandoc binary. pypandoc_binary ships pandoc as a wheel (no apt step); the script
+        # falls back to it when pandoc is not on PATH. CI/test tooling only, exempt from the
+        # "uv run --with, never pip install" rule (see CLAUDE.md § Plugin Skill Constraint).
+        run: pip install python-docx pyyaml pypandoc_binary pypdf
       - name: Tests
         run: |
           # Capture output so we can fail closed when discovery collects zero tests:
