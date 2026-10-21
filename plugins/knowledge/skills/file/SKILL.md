@@ -84,6 +84,16 @@ document elle est ? »**
   - Refus « nom de plus de 50 caractères » → raccourcir `subject` et rappeler. Tout autre refus se dit
     tel quel (domaine sans dossier, type inconnu, fiche absente).
 
+  Le chemin `ok` existe-t-il déjà ? `storage.provider` = `gdrive` et un connecteur Google Drive dans
+  la session → le parcourir depuis `storage.root` (l'id du dossier est la fin de l'URL), un segment de
+  `path` à la fois : `search_files` avec `parentId = '<id>' and title = '<segment>' and mimeType =
+  'application/vnd.google-apps.folder'`, nom exact, accents compris. Les segments absents sont des
+  **dossiers à créer** : les annoncer dans le plan (§ 5), puis après le oui les créer dans l'ordre avec
+  `create_file` (`contentMimeType` = `application/vnd.google-apps.folder`, `parentId` = le dossier
+  au-dessus) et donner le lien du dernier. Deux dossiers du même nom sous un même parent → s'arrêter
+  et le dire, ne pas choisir. Le connecteur n'atteint pas `storage.root` (il agit en un seul compte
+  Google), ou pas de connecteur, ou un autre `provider` → dire quels dossiers créer, à la main.
+
   hal ne pousse pas le fichier : Renaud le dépose à ce chemin, sous ce nom, puis donne le lien.
 - Le workspace n'a pas de layout (refus nommé de `get_filing_path`) → `folders` de `whoami`
   (`[{name, domain, rule?}]`) : le dossier de premier niveau est celui dont le `domain` est le domaine de
@@ -95,7 +105,8 @@ document elle est ? »**
 ## 5. Écrire — après une confirmation
 
 Montrer le plan en un message (workspace, domain, kind, slug, titre, faits, dates, `sensitive`,
-`knowledge`, `project_id`, `storage`) et attendre le oui, puis :
+`knowledge`, `project_id`, `storage`, les dossiers à créer) et attendre le oui, puis créer les dossiers
+manquants (§ 4) et :
 
 `save_document(workspace_slug, slug, domain, kind, title, facts, content_md?, storage?, issued_date?,
 valid_until?, person_name?, sensitive?, knowledge?, project_id?)`.
@@ -108,7 +119,8 @@ fiche déjà rangée : `save_document` avec son `slug` et `project_id`, rien d'a
 ## Garde-fous
 
 - Rien n'est écrit avant que les faits aient été montrés et le plan confirmé.
-- Jamais de fichier envoyé, déplacé ou écrasé par hal ; jamais un chemin ou un nom de fichier composé à la main
+- Jamais de fichier envoyé, déplacé ou écrasé par hal ; la seule écriture dans le stockage est un dossier
+  manquant du chemin que `get_filing_path` a rendu, annoncé dans le plan ; jamais un chemin ou un nom de fichier composé à la main
   quand `get_filing_path` répond, jamais d'emplacement hors des `folders` déclarés sinon.
 - Une valeur refusée par hal (domaine, slug, kind…) se corrige d'après le message, sans contournement.
 - Une pièce `sensitive` n'est jamais cochée `knowledge` et son lien ne sort de la conversation qu'avec l'accord de Renaud.
