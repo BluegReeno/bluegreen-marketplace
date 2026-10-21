@@ -31,9 +31,9 @@ _TOOL_LIKE = re.compile(
 # Names that look like a tool and are not one (a CLI flag, a column, a script verb).
 _NOT_TOOLS = frozenset({
     "log_cr",
-    # Tools of other connectors (Granola, Google Calendar) that gtm:call calls.
+    # Tools of other connectors: Granola and Google Calendar (gtm:call), Google Drive (knowledge:file).
     "list_calendars", "list_events", "list_meetings", "get_meetings", "get_meeting_transcript",
-    "get_account_info",
+    "get_account_info", "create_file",
 })
 
 
