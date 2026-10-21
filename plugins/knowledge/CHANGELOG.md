@@ -12,6 +12,8 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 
 ---
 
+## [0.3.0] — 2026-10-21 — file creates the missing Google Drive folders of the path get_filing_path returns, announced in the plan and created after the yes (folders only, never a file)
+
 ## [0.2.0] — 2026-10-20 — file places a paper with hal-mcp get_filing_path
 
 - `file` § 4: the folder and the file name come from hal-mcp `get_filing_path` (hal#322, q66) —
