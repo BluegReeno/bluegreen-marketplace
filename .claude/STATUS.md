@@ -1,17 +1,18 @@
 # STATUS — bluegreen-marketplace
 
-Last updated: 2026-10-20
+Last updated: 2026-10-21
 
 > History up to 2026-09-09 lives in [`STATUS-ARCHIVE.md`](./STATUS-ARCHIVE.md), verbatim and in
 > French. Nothing below repeats it.
 
 ## Current Focus
 
-Five plugins live — `hal` 0.13.0 (connector only), `work` 0.5.0, `gtm` 0.3.0, `knowledge` 0.2.0,
-`docs` 0.1.0, top-level 0.10.38 (`marketplace.json`); `edifice` archived. Next: land PR #101.
+Five plugins live — `hal` 0.13.0 (connector only), `work` 0.5.0, `gtm` 0.3.0, `knowledge` 0.3.0 (PR open),
+`docs` 0.1.0, top-level 0.10.39 (`marketplace.json`); `edifice` archived. Next: land PR #101.
 
 ## In Progress
 
+- [ ] `knowledge` 0.3.0 — `file` creates the missing Google Drive folders of the path `get_filing_path` returns (folders only, announced in the plan, after the yes); asked by Renaud 2026-10-21 after `Juridique/Dépôts au greffe` was created by hand for hal#337 — PR open
 - [ ] PR [#101](https://github.com/BluegReeno/bluegreen-marketplace/pull/101) — `gtm:call`, `/crm log`
       retired (`hal#192` phase B). Written against `gtm` 0.3.0 / top-level 0.10.31, both overtaken
       by the 2026-10-07 releases: rebase, renumber, then release through `release.sh`. No CI run.
