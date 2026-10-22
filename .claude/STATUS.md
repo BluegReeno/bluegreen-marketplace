@@ -22,7 +22,7 @@ Five plugins live — `hal` 0.13.0 (connector only), `work` 0.5.0, `gtm` 0.3.0, 
 
 ## Backlog
 
-- [ ] Decide on a single install channel for `hal` and `pm`: today both reach a Claude Code session twice, via the CLI install (`~/.claude/plugins/cache/bluegreen-marketplace/`) and via the Claude Desktop sync (`~/.claude/plugins/synced/…/{hal,pm}~g2`); versions matched on 2026-09-30 after a manual `claude plugin update`, but the CLI copy had silently stayed on `pm` 0.1.9 for a month
+- [x] Install channel settled — 2026-10-21: Claude Code on the Mac registers both marketplaces from GitHub (`claude plugin marketplace add BluegReeno/<repo>`) with `autoUpdate: true` in `~/.claude/plugins/known_marketplaces.json`; plugins are copied to `~/.claude/plugins/cache/` and refreshed within ~10 min of a session's first message. The `~/Projects/*-marketplace-next` worktrees are no longer marketplaces (they were read in place and had silently stayed at the 2026-10-16 cutover commit for a week); they remain the story harness bench only. Cowork keeps its own sync from claude.ai (`~/.claude/plugins/synced/`). Development in a session: `claude --plugin-dir plugins/<plugin>`
 
 **Open issues**
 
