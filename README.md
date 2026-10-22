@@ -14,8 +14,9 @@ In Claude Code or Cowork (one-time):
 
 ## Available plugins
 
-**`hal` first, always** — it carries the `hal-mcp` connector every other plugin calls, and ships
-no command of its own. Then add what you actually use.
+**`hal` first, always** — it carries the `hal-mcp` connector every other plugin calls, and
+`google-mcp` (Gmail and Drive per workspace, which `knowledge:file` uses to file a Drive document), and
+ships no command of its own. Then add what you actually use.
 
 ```
 /plugin install hal@bluegreen-marketplace
@@ -76,7 +77,8 @@ The `hal-mcp` **connector** (the MCP server) works on all three providers; the `
 | **Gemini Enterprise** | Data stores → Custom MCP Server → paste URL + **manual** OAuth endpoints (see guide) |
 | **ChatGPT** | Settings → Apps & Connectors → Developer mode → Add connector → OAuth |
 
-MCP server URL: `https://supabase.bluegreen.ai/functions/v1/hal-mcp`
+MCP server URLs: `https://supabase.bluegreen.ai/functions/v1/hal-mcp`, and for Gmail and Drive
+`https://supabase.bluegreen.ai/functions/v1/google-mcp`
 
 **Full step-by-step for every provider** — including the Gemini OAuth gotchas —
 is in [`docs/connectors-and-skills.md`](docs/connectors-and-skills.md).
@@ -109,7 +111,7 @@ only version table; read it there.
 plugins/
 ├── hal/                         # the connector — no skill, no command
 │   ├── .claude-plugin/plugin.json
-│   └── .mcp.json                # hal-mcp HTTP server (OAuth) — the only one in the repo
+│   └── .mcp.json                # hal-mcp and google-mcp HTTP servers (OAuth) — the only .mcp.json in the repo
 ├── work/
 │   └── skills/                  # pm, sprint-planner
 ├── gtm/

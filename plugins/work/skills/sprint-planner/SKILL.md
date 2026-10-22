@@ -10,7 +10,7 @@ description: >
   "planifier la semaine", "plan my week", "sprint de la semaine prochaine", "weekly planning",
   "priorités de la semaine", "organiser ma semaine", "sprint review", "bilan du sprint", "bilan de
   la semaine", "weekly review", "fin de sprint".
-allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__transition_sprint mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__get_document mcp__plugin_hal_hal-mcp__save_document mcp__claude_ai_Google_Calendar__list_events mcp__plugin_briefing_gmail-mcp__search_emails Skill(jobsearch-vault)"
+allowed-tools: "mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_sprints mcp__plugin_hal_hal-mcp__list_tasks mcp__plugin_hal_hal-mcp__create_sprint mcp__plugin_hal_hal-mcp__update_sprint mcp__plugin_hal_hal-mcp__transition_sprint mcp__plugin_hal_hal-mcp__create_task mcp__plugin_hal_hal-mcp__assign_task_to_sprint mcp__plugin_hal_hal-mcp__update_task_status mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__get_document mcp__plugin_hal_hal-mcp__save_document mcp__claude_ai_Google_Calendar__list_events mcp__plugin_hal_google-mcp__search_emails Skill(jobsearch-vault)"
 ---
 
 # Sprint Planner — Renaud Laborbe
@@ -119,10 +119,12 @@ entretien en deux semaines ; pas de post → trois sujets pour la suivante.
 
 ## Étape 3 — Offres LinkedIn (même condition)
 
-Si `gmail-mcp` (plugin `briefing`) est co-installé : `search_emails` sur les alertes LinkedIn des 7
-derniers jours, boîte perso. Scorer avec les critères du plugin `jobsearch` (ne pas les restater
+`search_emails` de google-mcp (plugin `hal`) sur les alertes LinkedIn des 7 derniers jours, boîte
+perso : `workspace_slug` = le workspace retenu de type `personal`, dont le compte Google connecté est
+cette boîte. Scorer avec les critères du plugin `jobsearch` (ne pas les restater
 ici) et croiser avec les candidatures déjà dans le vault (`?` si `jobsearch:DOWN`). Les 🔥 vont dans
-les blocs de recherche. Outil indisponible → `gmail:DOWN`, on continue.
+les blocs de recherche. Outil indisponible, ou refus « No Google identity connected » → `gmail:DOWN` (le dire, avec le
+lien de `google_connect` à ouvrir plus tard), on continue.
 
 ## Étape 4 — Calendriers
 

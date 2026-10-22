@@ -17,16 +17,16 @@ Requires the `hal` plugin, which carries the `hal-mcp` connector this plugin's s
 ## Cross-repo couplings — unresolved
 
 `sprint-planner` and `sprint-review` were adopted from `briefing` (`renaud-marketplace`) and still
-declare two dependencies owned by that repo:
+declare one dependency owned by that repo:
 
 - `Skill(jobsearch-vault)` — declared by **both** skills; the skill lives in the `jobsearch`
   plugin of `renaud-marketplace`.
-- `mcp__plugin_briefing_gmail-mcp__search_emails` — declared by `sprint-planner` only; the MCP
-  server moved from the `jobsearch` plugin to `briefing` in `renaud-marketplace`
-  ([rm#96](https://github.com/BluegReeno/renaud-marketplace/pull/96)) — `sprint-planner` now
-  requires `briefing` co-installed to reach the perso inbox, not `jobsearch`.
 
-Neither dependency is removed here — `Skill(jobsearch-vault)` and the gmail-mcp tool stay in
+The second one, gmail-mcp's `search_emails` from the `briefing` plugin, is resolved by hal#348:
+`sprint-planner` reads the perso inbox through `mcp__plugin_hal_google-mcp__search_emails`, carried
+by `hal` like hal-mcp, with the `personal` workspace's `workspace_slug`.
+
+The remaining dependency is not removed here — `Skill(jobsearch-vault)` stays in
 `allowed-tools` — but as of 0.1.1 both skills degrade gracefully (`jobsearch:DOWN`, mirroring the
 pre-existing `gmail:DOWN` pattern) instead of silently showing misleading zero-activity metrics
 when the `jobsearch` plugin is absent, which is the expected shape for an installer who only wants

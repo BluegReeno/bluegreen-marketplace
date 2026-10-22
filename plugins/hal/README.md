@@ -1,7 +1,10 @@
 # HAL — the BlueGreen connector plugin
 
-`hal` carries **one thing**: the `hal-mcp` connector that every other BlueGreen plugin calls.
-It ships no skill and no command of its own — it is the mandatory base you install first.
+`hal` carries the BlueGreen connectors: `hal-mcp`, which every other BlueGreen plugin calls, and
+`google-mcp` — Gmail and Google Drive for a hal workspace, as the Google account its member connected
+once (`google_connect`, a consent link opened in a browser; hal#343). Both are on
+`supabase.bluegreen.ai`, signed in with the same hal account by OAuth. It ships no skill and no
+command of its own — it is the mandatory base you install first.
 
 Since **0.12.0** the skills that used to live here have moved into installable plugins (`edifice`, the third, is archived since 2026-10-07).
 Install `hal` plus whichever of them matches your work:
