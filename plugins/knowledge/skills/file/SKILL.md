@@ -7,7 +7,7 @@ description: >
   "enregistre cette procédure", "fais une fiche pour ce papier". NE PAS déclencher pour : retrouver ou
   lire un document (→ list_documents, get_document, get_document_link nommés dans la phrase), indexer
   (→ knowledge:ingest).
-allowed-tools: "Read mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_documents mcp__plugin_hal_hal-mcp__get_document mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__get_filing_path mcp__plugin_hal_hal-mcp__save_document mcp__plugin_hal_google-mcp__google_connect mcp__plugin_hal_google-mcp__drive_search mcp__plugin_hal_google-mcp__drive_get mcp__plugin_hal_google-mcp__drive_resolve_path mcp__plugin_hal_google-mcp__drive_find_duplicate mcp__plugin_hal_google-mcp__drive_move mcp__plugin_hal_google-mcp__drive_trash mcp__plugin_hal_google-mcp__drive_upload_from_gmail"
+allowed-tools: "Read mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_documents mcp__plugin_hal_hal-mcp__get_document mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__get_filing_path mcp__plugin_hal_hal-mcp__save_document mcp__plugin_hal_google-mcp__google_connect mcp__plugin_hal_google-mcp__drive_search mcp__plugin_hal_google-mcp__drive_get mcp__plugin_hal_google-mcp__drive_resolve_path mcp__plugin_hal_google-mcp__drive_find_duplicate mcp__plugin_hal_google-mcp__drive_move mcp__plugin_hal_google-mcp__drive_trash mcp__plugin_hal_google-mcp__drive_upload_from_gmail mcp__plugin_hal_google-mcp__read_email"
 ---
 
 # File — ranger un papier

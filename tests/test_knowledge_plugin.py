@@ -3,6 +3,7 @@
 never uploaded; `ingest` refuses by name off the Mac; an archived workspace is never written.
 """
 import json
+import re
 import unittest
 
 from skilltext import GOOGLE_TOOLS, HAL_TOOLS, REPO, flat, frontmatter, google_tools_allowed, hal_tools_allowed, hal_tools_mentioned, read
@@ -109,8 +110,6 @@ class TestFile(unittest.TestCase):
         self.assertIn("ne passer ni `date` ni `issuer`", flat(self.text))
 
 
-if __name__ == "__main__":
-    unittest.main()
 
 
 class TestFileThroughGoogleMcp(unittest.TestCase):
@@ -124,6 +123,12 @@ class TestFileThroughGoogleMcp(unittest.TestCase):
         self.assertLessEqual(allowed, GOOGLE_TOOLS)
         self.assertLessEqual({"drive_resolve_path", "drive_find_duplicate", "drive_move", "google_connect"}, allowed)
 
+    def test_every_google_mcp_tool_the_body_calls_is_allowed(self):
+        # A tool the body names but allowed-tools omits prompts interactively and stalls headless.
+        body = re.sub(r"^---\n.*?\n---\n", "", self.text, count=1, flags=re.S)
+        named = {t for t in GOOGLE_TOOLS if re.search(rf"`{t}[`(]", body)}
+        self.assertLessEqual(named, google_tools_allowed(FILE))
+
     def test_the_chain_in_order_and_the_fiche_last(self):
         body = flat(self.text)
         steps = [body.index(s) for s in ("drive_get", "drive_resolve_path(workspace_slug, path)",
@@ -135,3 +140,5 @@ class TestFileThroughGoogleMcp(unittest.TestCase):
         for legacy in ("search_files", "create_file", "contentMimeType"):
             self.assertNotIn(legacy, self.text, legacy)
 
+if __name__ == "__main__":
+    unittest.main()
