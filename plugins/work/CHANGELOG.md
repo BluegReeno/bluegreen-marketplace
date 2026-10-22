@@ -38,6 +38,8 @@ has no `optionalDependencies` primitive in `plugin.json` to build it on. Tracked
 
 ---
 
+## [0.6.0] — 2026-10-22 — sprint-planner reads the LinkedIn alerts through google-mcp as the jobsearch workspace (hal#348)
+
 ## [0.5.0] — 2026-10-19 — `pm` finds open tasks with `status="open"` and closes on the outcome (hal#319)
 
 MINOR — observable behaviour change. Requires hal-mcp with the `open` filter on `list_tasks`
