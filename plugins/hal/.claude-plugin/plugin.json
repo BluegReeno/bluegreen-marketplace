@@ -1,6 +1,6 @@
 {
   "name": "hal",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "HAL — the BlueGreen connector: carries the hal-mcp server every other BlueGreen plugin calls, and google-mcp (Gmail and Drive per workspace).",
   "author": { "name": "Renaud Laborbe", "email": "renaud@bluegreen.ai" }
 }

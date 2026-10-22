@@ -17,6 +17,8 @@ Entries up to `0.11.6` cover the monolith era, when this plugin also shipped the
 
 ---
 
+## [0.14.0] — 2026-10-22 — google-mcp declared beside hal-mcp: Gmail and Drive through the hal plugin, one Google account per member per workspace (hal#348)
+
 ## [0.13.0] — 2026-10-16 — connector on the self-hosted instance supabase.bluegreen.ai (hal migration cutover) — reconnect and sign in again
 
 ## [0.12.0] — 2026-08-02 — reduce hal to the MCP connector — breaking
