@@ -7,13 +7,14 @@ description: >
   "enregistre cette procédure", "fais une fiche pour ce papier". NE PAS déclencher pour : retrouver ou
   lire un document (→ list_documents, get_document, get_document_link nommés dans la phrase), indexer
   (→ knowledge:ingest).
-allowed-tools: "Read mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_documents mcp__plugin_hal_hal-mcp__get_document mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__get_filing_path mcp__plugin_hal_hal-mcp__save_document"
+allowed-tools: "Read mcp__plugin_hal_hal-mcp__whoami mcp__plugin_hal_hal-mcp__list_documents mcp__plugin_hal_hal-mcp__get_document mcp__plugin_hal_hal-mcp__list_projects mcp__plugin_hal_hal-mcp__get_filing_path mcp__plugin_hal_hal-mcp__save_document mcp__plugin_hal_google-mcp__google_connect mcp__plugin_hal_google-mcp__drive_search mcp__plugin_hal_google-mcp__drive_get mcp__plugin_hal_google-mcp__drive_resolve_path mcp__plugin_hal_google-mcp__drive_find_duplicate mcp__plugin_hal_google-mcp__drive_move mcp__plugin_hal_google-mcp__drive_trash mcp__plugin_hal_google-mcp__drive_upload_from_gmail mcp__plugin_hal_google-mcp__read_email"
 ---
 
 # File — ranger un papier
 
 hal garde la **fiche** (faits, validité, lien) ; le **fichier** reste dans le stockage du workspace.
-hal ne copie, n'envoie et n'écrase aucun fichier : il le référence par `storage {provider, uri}`.
+Sur Google Drive, google-mcp (le second serveur du plugin `hal`) le range : un seul déplacement, annoncé
+dans le plan ; il n'écrase ni ne copie rien. hal le référence par `storage {provider, uri, version}`.
 Les faits d'abord, le fichier ensuite. Sorties en français.
 
 ## 1. Lire et extraire
@@ -84,17 +85,30 @@ document elle est ? »**
   - Refus « nom de plus de 50 caractères » → raccourcir `subject` et rappeler. Tout autre refus se dit
     tel quel (domaine sans dossier, type inconnu, fiche absente).
 
-  Le chemin `ok` existe-t-il déjà ? `storage.provider` = `gdrive` et un connecteur Google Drive dans
-  la session → le parcourir depuis `storage.root` (l'id du dossier est la fin de l'URL), un segment de
-  `path` à la fois : `search_files` avec `parentId = '<id>' and title = '<segment>' and mimeType =
-  'application/vnd.google-apps.folder'`, nom exact, accents compris. Les segments absents sont des
-  **dossiers à créer** : les annoncer dans le plan (§ 5), puis après le oui les créer dans l'ordre avec
-  `create_file` (`contentMimeType` = `application/vnd.google-apps.folder`, `parentId` = le dossier
-  au-dessus) et donner le lien du dernier. Deux dossiers du même nom sous un même parent → s'arrêter
-  et le dire, ne pas choisir. Le connecteur n'atteint pas `storage.root` (il agit en un seul compte
-  Google), ou pas de connecteur, ou un autre `provider` → dire quels dossiers créer, à la main.
+- **Ranger sur Google Drive** (`storage.provider` = `gdrive`) — par google-mcp, tous ses outils prennent
+  `workspace_slug` ; aucun autre connecteur Drive dans cette chaîne :
+  1. **Le fichier.** Un lien ou un id Drive donné, ou trouvé par `drive_search` (dans « A traiter » par
+     exemple) → `drive_get` : son nom, `md5Checksum`, `size`, et s'il peut être déplacé. Une pièce jointe
+     Gmail → son `message_id` et son `attachmentId` (`read_email`). Un fichier hors Drive (PDF joint à la
+     conversation, photo) → google-mcp ne le reçoit pas : Renaud le dépose dans le dossier sous le nom
+     rendu, puis donne le lien.
+  2. **Le dossier.** `drive_resolve_path(workspace_slug, path)` avec le `path` de `get_filing_path` : les
+     ids depuis `storage.root`, noms comparés sans casse ni accents. `missing` non vide → ce sont des
+     **dossiers à créer**, à annoncer dans le plan (§ 5) ; deux dossiers candidats → refus nommé : le dire,
+     ne pas choisir.
+  3. **Le doublon.** `drive_find_duplicate(folder_id, md5, name = file_name, size)` :
+     `identical` → rien à déplacer, la fiche pointe sur le fichier déjà là ; proposer de mettre l'autre
+     exemplaire à la corbeille (`drive_trash`, après le oui). `same_name_other_content` → s'arrêter et
+     montrer les deux. `none` → le déplacement entre dans le plan.
+  4. **Après le oui** (§ 5) : `drive_resolve_path(..., create_missing=true)` si des dossiers manquent,
+     puis `drive_move(file_id, to_folder_id, new_name = file_name)` — ou `drive_upload_from_gmail(message_id,
+     attachment_id, folder_id, name = file_name)` pour une pièce jointe. La réponse donne `webViewLink` et
+     `md5Checksum` : ce seront `storage.uri` et `storage.version`.
 
-  hal ne pousse pas le fichier : Renaud le dépose à ce chemin, sous ce nom, puis donne le lien.
+  Refus « No Google identity connected for '<slug>' » → `google_connect(workspace_slug)` et donner le
+  lien à ouvrir dans un navigateur (valable dix minutes, une fois) ; reprendre après. Tout autre refus
+  (fichier ou dossier hors du drive de `storage.root`, Google qui refuse le déplacement) se dit tel quel.
+  Un autre `provider` → dire quels dossiers créer et où déposer le fichier, à la main.
 - Le workspace n'a pas de layout (refus nommé de `get_filing_path`) → `folders` de `whoami`
   (`[{name, domain, rule?}]`) : le dossier de premier niveau est celui dont le `domain` est le domaine de
   la fiche, sa `rule` dit le sous-dossier. Pas de `folders` pour ce domaine, ou `storage` vide → **ne pas
@@ -105,11 +119,14 @@ document elle est ? »**
 ## 5. Écrire — après une confirmation
 
 Montrer le plan en un message (workspace, domain, kind, slug, titre, faits, dates, `sensitive`,
-`knowledge`, `project_id`, `storage`, les dossiers à créer) et attendre le oui, puis créer les dossiers
-manquants (§ 4) et :
+`knowledge`, `project_id`, `storage`, les dossiers à créer, le fichier à déplacer : d'où, vers quel
+dossier, sous quel nom) et attendre le oui, puis créer les dossiers manquants, déplacer le fichier (§ 4)
+et, en dernier :
 
 `save_document(workspace_slug, slug, domain, kind, title, facts, content_md?, storage?, issued_date?,
-valid_until?, person_name?, sensitive?, knowledge?, project_id?)`.
+valid_until?, person_name?, sensitive?, knowledge?, project_id?)`, avec `storage = {provider: "gdrive",
+uri: webViewLink, version: md5Checksum}` pour un fichier rangé par google-mcp. La fiche s'écrit après le
+déplacement : un échec entre les deux laisse un fichier rangé sans fiche, jamais une fiche sans fichier.
 
 Lire la réponse : un `unindexed` non nul veut dire que des passages sont sortis de la base (fiche
 repassée à `knowledge` faux ou `sensitive`). Fiche cochée `knowledge` → « en attente : elle sera trouvable
@@ -119,8 +136,9 @@ fiche déjà rangée : `save_document` avec son `slug` et `project_id`, rien d'a
 ## Garde-fous
 
 - Rien n'est écrit avant que les faits aient été montrés et le plan confirmé.
-- Jamais de fichier envoyé, déplacé ou écrasé par hal ; la seule écriture dans le stockage est un dossier
-  manquant du chemin que `get_filing_path` a rendu, annoncé dans le plan ; jamais un chemin ou un nom de fichier composé à la main
-  quand `get_filing_path` répond, jamais d'emplacement hors des `folders` déclarés sinon.
+- Les seules écritures dans le stockage sont celles du plan confirmé : les dossiers manquants du chemin que
+  `get_filing_path` a rendu, le déplacement (ou le dépôt d'une pièce jointe) du fichier vers ce dossier sous
+  ce nom, la corbeille d'un exemplaire byte-identique. Jamais un fichier écrasé ; jamais un chemin ou un nom de
+  fichier composé à la main quand `get_filing_path` répond, jamais d'emplacement hors des `folders` déclarés sinon.
 - Une valeur refusée par hal (domaine, slug, kind…) se corrige d'après le message, sans contournement.
 - Une pièce `sensitive` n'est jamais cochée `knowledge` et son lien ne sort de la conversation qu'avec l'accord de Renaud.

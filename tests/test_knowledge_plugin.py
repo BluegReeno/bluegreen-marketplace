@@ -3,9 +3,10 @@
 never uploaded; `ingest` refuses by name off the Mac; an archived workspace is never written.
 """
 import json
+import re
 import unittest
 
-from skilltext import HAL_TOOLS, REPO, flat, frontmatter, hal_tools_allowed, hal_tools_mentioned, read
+from skilltext import GOOGLE_TOOLS, HAL_TOOLS, REPO, flat, frontmatter, google_tools_allowed, hal_tools_allowed, hal_tools_mentioned, read
 
 KNOWLEDGE = REPO / "plugins/knowledge"
 INGEST = KNOWLEDGE / "skills/ingest/SKILL.md"
@@ -77,8 +78,8 @@ class TestFile(unittest.TestCase):
     def setUp(self):
         self.text = read(FILE)
 
-    def test_references_the_file_by_storage_never_uploads_it(self):
-        self.assertIn("storage {provider, uri}", self.text)
+    def test_references_the_file_by_storage(self):
+        self.assertIn("storage {provider, uri, version}", self.text)
         for legacy in ("filename", "mime_type", "gdrive_uri", "get_document_file", "bucket", "halcrm"):
             self.assertNotIn(legacy, self.text, legacy)
 
@@ -108,6 +109,36 @@ class TestFile(unittest.TestCase):
         self.assertIn("jamais un nom tapé à la place", flat(self.text))
         self.assertIn("ne passer ni `date` ni `issuer`", flat(self.text))
 
+
+
+
+class TestFileThroughGoogleMcp(unittest.TestCase):
+    """hal#348: a Drive file is filed by google-mcp, never by the claude.ai Drive connector."""
+
+    def setUp(self):
+        self.text = read(FILE)
+
+    def test_allows_only_existing_google_mcp_tools(self):
+        allowed = google_tools_allowed(FILE)
+        self.assertLessEqual(allowed, GOOGLE_TOOLS)
+        self.assertLessEqual({"drive_resolve_path", "drive_find_duplicate", "drive_move", "google_connect"}, allowed)
+
+    def test_every_google_mcp_tool_the_body_calls_is_allowed(self):
+        # A tool the body names but allowed-tools omits prompts interactively and stalls headless.
+        body = re.sub(r"^---\n.*?\n---\n", "", self.text, count=1, flags=re.S)
+        named = {t for t in GOOGLE_TOOLS if re.search(rf"`{t}[`(]", body)}
+        self.assertLessEqual(named, google_tools_allowed(FILE))
+
+    def test_the_chain_in_order_and_the_fiche_last(self):
+        body = flat(self.text)
+        steps = [body.index(s) for s in ("drive_get", "drive_resolve_path(workspace_slug, path)",
+                                          "drive_find_duplicate(folder_id", "drive_move(file_id", "en dernier :")]
+        self.assertEqual(steps, sorted(steps))
+        self.assertIn("uri: webViewLink, version: md5Checksum", body)
+
+    def test_no_claude_ai_drive_connector(self):
+        for legacy in ("search_files", "create_file", "contentMimeType"):
+            self.assertNotIn(legacy, self.text, legacy)
 
 if __name__ == "__main__":
     unittest.main()

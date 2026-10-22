@@ -36,9 +36,11 @@ without a version bump, Claude Desktop won't surface the update and clients stay
 Split in #66 (`hal` 0.12.0), because a client who needs `/pm` should not download `/edifice`,
 `/crm`, `/linkedin` and ten Python scripts along with it.
 
-**`hal` is the only carrier of the MCP connector** — the others declare no `.mcp.json` and
-call the same server through it. Because `hal` kept its name, the tool prefix stays
+**`hal` is the only carrier of the MCP connectors** — the others declare no `.mcp.json` and
+call the same servers through it. Because `hal` kept its name, the tool prefix stays
 `mcp__plugin_hal_hal-mcp__`: no `allowed-tools` list anywhere in the portfolio needs rewriting.
+Its second server, `google-mcp` (Gmail and Drive per workspace, hal#343), is reached as
+`mcp__plugin_hal_google-mcp__<tool>`.
 Same model as `briefing` in `renaud-marketplace`, which has consumed this connector without
 carrying it since before the split.
 
@@ -169,7 +171,7 @@ See `docs/brief.md` → "Plugin skill constraints" for full rationale and decisi
 - `marketplace.json` **plugin entry** (`plugins[name].version`) must match `plugin.json` version — always in sync (enforced by `scripts/check_version_sync.sh`). The **top-level** `version` is a separate monotonic counter, incremented by one PATCH on every release.
 - The five plugins are developed directly in this repo, under `plugins/<name>/`
 - **Creating a plugin = three files at once** — `plugin.json`, `CHANGELOG.md` with a matching `## [<version>]` entry, and a `marketplace.json` entry. Miss one and `check_version_sync.sh` blocks every plugin's release, not just the new one
-- Only `hal` carries a `.mcp.json`. Adding one to another plugin would create a second connector and a second tool prefix — the skills' `allowed-tools` lists all assume `mcp__plugin_hal_hal-mcp__`
+- Only `hal` carries a `.mcp.json` (hal-mcp and google-mcp). Adding one to another plugin would create a second connector and a second tool prefix — the skills' `allowed-tools` lists all assume `mcp__plugin_hal_hal-mcp__` / `mcp__plugin_hal_google-mcp__`. `release.sh --mcp-version` bumps the first `version` key of `.mcp.json`, hal-mcp's; google-mcp's entry carries none
 
 ---
 

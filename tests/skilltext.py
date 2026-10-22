@@ -6,12 +6,16 @@ HAL_TOOLS is the tool list of the target `hal-mcp` (supabase/functions/hal-mcp/i
 repo, 30 registerTool calls, read 2026-10-20 — get_filing_path added by hal#322). A skill that names a tool outside it is calling
 something that does not exist; when hal adds, renames or removes a tool, this list changes in the
 same commit as the skills.
+
+GOOGLE_TOOLS is the same for hal's second server, `google-mcp` (supabase/functions/google-mcp/index.ts,
+17 registerTool calls, read 2026-10-22 — hal#343), reached as mcp__plugin_hal_google-mcp__<tool>.
 """
 import pathlib
 import re
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 PREFIX = "mcp__plugin_hal_hal-mcp__"
+GOOGLE_PREFIX = "mcp__plugin_hal_google-mcp__"
 
 HAL_TOOLS = frozenset("""
 list_projects create_project update_project_stage update_project
@@ -24,6 +28,13 @@ save_document list_documents get_document get_document_link get_filing_path
 kb_index kb_search whoami
 """.split())
 
+GOOGLE_TOOLS = frozenset("""
+google_connect google_disconnect
+drive_search drive_get drive_resolve_path drive_find_duplicate drive_move drive_rename
+drive_create_folder drive_trash drive_upload_from_gmail
+search_emails read_email draft_email list_labels get_attachment forward
+""".split())
+
 # A hal tool is spelled verb_noun; these verbs are the ones the 30 names start with.
 _TOOL_LIKE = re.compile(
     r"\b(?:list|create|update|get|save|log|assign|transition)_[a-z_]+\b|\bkb_[a-z_]+\b|\bwhoami\b"
@@ -31,9 +42,11 @@ _TOOL_LIKE = re.compile(
 # Names that look like a tool and are not one (a CLI flag, a column, a script verb).
 _NOT_TOOLS = frozenset({
     "log_cr",
-    # Tools of other connectors: Granola and Google Calendar (gtm:call), Google Drive (knowledge:file).
+    # Tools of other connectors: Granola and Google Calendar (gtm:call).
     "list_calendars", "list_events", "list_meetings", "get_meetings", "get_meeting_transcript",
-    "get_account_info", "create_file",
+    "get_account_info",
+    # google-mcp: its tools (GOOGLE_TOOLS) and drive_resolve_path's parameter (knowledge:file).
+    *GOOGLE_TOOLS, "create_missing",
 })
 
 
@@ -63,6 +76,10 @@ def allowed_tools(path: pathlib.Path) -> list:
 
 def hal_tools_allowed(path: pathlib.Path) -> set:
     return {t[len(PREFIX):] for t in allowed_tools(path) if t.startswith(PREFIX)}
+
+
+def google_tools_allowed(path: pathlib.Path) -> set:
+    return {t[len(GOOGLE_PREFIX):] for t in allowed_tools(path) if t.startswith(GOOGLE_PREFIX)}
 
 
 def hal_tools_mentioned(path: pathlib.Path) -> set:

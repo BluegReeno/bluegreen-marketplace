@@ -4,6 +4,10 @@
       "type": "http",
       "url": "https://supabase.bluegreen.ai/functions/v1/hal-mcp",
       "version": "0.3.0"
+    },
+    "google-mcp": {
+      "type": "http",
+      "url": "https://supabase.bluegreen.ai/functions/v1/google-mcp"
     }
   }
 }
