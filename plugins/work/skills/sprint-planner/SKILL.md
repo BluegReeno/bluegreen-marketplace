@@ -119,9 +119,9 @@ entretien en deux semaines ; pas de post → trois sujets pour la suivante.
 
 ## Étape 3 — Offres LinkedIn (même condition)
 
-`search_emails` de google-mcp (plugin `hal`) sur les alertes LinkedIn des 7 derniers jours, boîte
-perso : `workspace_slug` = le workspace retenu de type `personal`, dont le compte Google connecté est
-cette boîte. Scorer avec les critères du plugin `jobsearch` (ne pas les restater
+`search_emails` de google-mcp (plugin `hal`) sur les alertes LinkedIn des 7 derniers jours :
+`workspace_slug` = le workspace retenu de type `jobsearch` — le compte Google connecté à ce workspace
+est la boîte qui reçoit les alertes. Scorer avec les critères du plugin `jobsearch` (ne pas les restater
 ici) et croiser avec les candidatures déjà dans le vault (`?` si `jobsearch:DOWN`). Les 🔥 vont dans
 les blocs de recherche. Outil indisponible, ou refus « No Google identity connected » → `gmail:DOWN` (le dire, avec le
 lien de `google_connect` à ouvrir plus tard), on continue.

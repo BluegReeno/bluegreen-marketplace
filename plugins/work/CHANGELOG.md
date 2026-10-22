@@ -24,7 +24,8 @@ declare one dependency owned by that repo:
 
 The second one, gmail-mcp's `search_emails` from the `briefing` plugin, is resolved by hal#348:
 `sprint-planner` reads the perso inbox through `mcp__plugin_hal_google-mcp__search_emails`, carried
-by `hal` like hal-mcp, with the `personal` workspace's `workspace_slug`.
+by `hal` like hal-mcp, with the `jobsearch` workspace's `workspace_slug` (its connected Google account
+receives the alerts).
 
 The remaining dependency is not removed here — `Skill(jobsearch-vault)` stays in
 `allowed-tools` — but as of 0.1.1 both skills degrade gracefully (`jobsearch:DOWN`, mirroring the
